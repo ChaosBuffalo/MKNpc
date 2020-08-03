@@ -1,0 +1,43 @@
+package com.chaosbuffalo.mknpc.command;
+
+import com.chaosbuffalo.mknpc.npc.NpcDefinition;
+import com.chaosbuffalo.mknpc.npc.NpcDefinitionManager;
+import com.mojang.brigadier.Command;
+import com.mojang.brigadier.builder.LiteralArgumentBuilder;
+import com.mojang.brigadier.context.CommandContext;
+import com.mojang.brigadier.exceptions.CommandSyntaxException;
+import com.mojang.brigadier.suggestion.Suggestions;
+import com.mojang.brigadier.suggestion.SuggestionsBuilder;
+import net.minecraft.command.CommandSource;
+import net.minecraft.command.Commands;
+import net.minecraft.command.ISuggestionProvider;
+import net.minecraft.entity.player.ServerPlayerEntity;
+import net.minecraft.util.ResourceLocation;
+
+import java.util.concurrent.CompletableFuture;
+
+public class MKSummonCommand {
+
+    public static LiteralArgumentBuilder<CommandSource> register() {
+        return Commands.literal("mksummon")
+                .then(Commands.argument("npc_definition", NpcDefinitionIdArgument.definition())
+                        .suggests(MKSummonCommand::suggestNpcDefinitions)
+                        .executes(MKSummonCommand::summon));
+    }
+
+    static CompletableFuture<Suggestions> suggestNpcDefinitions(final CommandContext<CommandSource> context,
+                                                                final SuggestionsBuilder builder) throws CommandSyntaxException {
+        return ISuggestionProvider.suggest(NpcDefinitionManager.DEFINITIONS.keySet().stream()
+                .map(ResourceLocation::toString), builder);
+    }
+
+    static int summon(CommandContext<CommandSource> ctx) throws CommandSyntaxException {
+        ServerPlayerEntity player = ctx.getSource().asPlayer();
+        ResourceLocation definition_id = ctx.getArgument("npc_definition", ResourceLocation.class);
+        NpcDefinition definition = NpcDefinitionManager.getDefinition(definition_id);
+        if (definition != null){
+            definition.spawnEntity(player.getServerWorld(), player.getPositionVec());
+        }
+        return Command.SINGLE_SUCCESS;
+    }
+}

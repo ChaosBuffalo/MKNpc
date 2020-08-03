@@ -1,0 +1,30 @@
+{
+  "entityType": "mkcore:green_lady",
+  "name": "Test Lady",
+  "abilities": [
+    {
+      "abilityName": "mkcore:ability.whirlwind_blades",
+      "priority": 1
+    }
+  ],
+  "attributes": [
+    {
+      "attributeName": "generic.maxHealth",
+      "value": 100
+    }
+  ],
+  "equipment": {
+    "mainhand": [
+      {
+        "dropChance": 1.1,
+        "item": "minecraft:gold_sword",
+        "weight": 5
+      },
+      {
+        "dropChance": 1.1,
+        "item": "minecraft:iron_sword",
+        "weight": 10
+      }
+    ]
+  }
+}
