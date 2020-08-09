@@ -99,7 +99,9 @@ dependencies {
     // that the dep is a ForgeGradle 'patcher' dependency. And it's patches will be applied.
     // The userdev artifact is a special name and will get all sorts of transformations applied to it.
     minecraft "net.minecraftforge:forge:${forge_version}"
-    compile group: "com.chaosbuffalo.mkcore", name: "MKCore", version: '0.1.0'
+    compile group: "com.chaosbuffalo.mkcore", name: "MKCore", version: '0.11'
+    compile group: "com.chaosbuffalo.mkchat", name: "MKChat", version: '0.11'
+    compile group: 'targetingapi', name: 'targeting_api', version: '0.21'
 
 }
 

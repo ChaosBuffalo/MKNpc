@@ -37,6 +37,18 @@ MKChat extends the chat functionality of Minecraft to be a little more mmo-like
 [[dependencies.mknpc]]
     modId="mkcore"
     mandatory=true
-    versionRange="[0.1.0,)"
+    versionRange="[0.11,)"
+    ordering="NONE"
+    side="BOTH"
+[[dependencies.mknpc]]
+    modId="mkchat"
+    mandatory=true
+    versionRange="[0.11,)"
+    ordering="NONE"
+    side="BOTH"
+[[dependencies.mknpc]]
+    modId="targeting_api"
+    mandatory=true
+    versionRange="[0.21,)"
     ordering="NONE"
     side="BOTH"

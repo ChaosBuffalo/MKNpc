@@ -1,5 +1,5 @@
 {
-  "entityType": "mkcore:green_lady",
+  "entityType": "mknpc:green_lady",
   "name": "Test Lady",
   "abilities": [
     {
@@ -13,11 +13,12 @@
       "value": 100
     }
   ],
+  "dialogue": "mkchat:test",
   "equipment": {
     "mainhand": [
       {
         "dropChance": 1.1,
-        "item": "minecraft:gold_sword",
+        "item": "minecraft:golden_sword",
         "weight": 5
       },
       {

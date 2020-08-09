@@ -2,6 +2,7 @@ package com.chaosbuffalo.mknpc;
 
 import com.chaosbuffalo.mknpc.capabilities.Capabilities;
 import com.chaosbuffalo.mknpc.command.NpcCommands;
+import com.chaosbuffalo.mknpc.entity.MKEntityTypes;
 import com.chaosbuffalo.mknpc.npc.NpcDefinitionManager;
 import net.minecraftforge.common.MinecraftForge;
 import net.minecraftforge.eventbus.api.SubscribeEvent;
@@ -24,6 +25,7 @@ public class MKNpc
     public MKNpc() {
         MinecraftForge.EVENT_BUS.register(this);
         FMLJavaModLoadingContext.get().getModEventBus().addListener(this::setup);
+        MKEntityTypes.ENTITY_TYPES.register(FMLJavaModLoadingContext.get().getModEventBus());
     }
 
     @SuppressWarnings("unused")
@@ -36,7 +38,6 @@ public class MKNpc
     @SuppressWarnings("unused")
     @SubscribeEvent
     public void onServerStarting(FMLServerStartingEvent event) {
-        // do something when the server starts
         NpcCommands.register(event.getCommandDispatcher());
     }
 

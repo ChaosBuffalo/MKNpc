@@ -1,10 +1,13 @@
 package com.chaosbuffalo.mknpc.npc;
 
+import com.chaosbuffalo.mkchat.dialogue.DialogueManager;
+import com.chaosbuffalo.mkchat.dialogue.DialogueTree;
 import com.chaosbuffalo.mkcore.MKCoreRegistry;
 import com.chaosbuffalo.mkcore.abilities.MKAbility;
 import com.chaosbuffalo.mkcore.abilities.MKAbilityInfo;
 import com.chaosbuffalo.mknpc.MKNpc;
 import com.chaosbuffalo.mknpc.capabilities.Capabilities;
+import com.chaosbuffalo.mknpc.entity.MKEntity;
 import com.chaosbuffalo.mknpc.utils.RandomCollection;
 import com.google.gson.Gson;
 import com.google.gson.JsonArray;
@@ -19,6 +22,7 @@ import net.minecraft.entity.ai.attributes.IAttributeInstance;
 import net.minecraft.inventory.EquipmentSlotType;
 import net.minecraft.item.Item;
 import net.minecraft.item.ItemStack;
+import net.minecraft.item.Items;
 import net.minecraft.util.ResourceLocation;
 import net.minecraft.util.math.Vec3d;
 import net.minecraft.util.text.StringTextComponent;
@@ -34,6 +38,7 @@ import java.util.Map;
 public class NpcDefinition {
     private final ResourceLocation entityType;
     private final ResourceLocation definitionName;
+    private ResourceLocation dialogueName;
     private String name;
     private final List<NpcAbilityEntry> abilities;
     private final List<NpcAttributeEntry> attributes;
@@ -46,6 +51,7 @@ public class NpcDefinition {
         this.attributes = new ArrayList<>();
         this.itemChoices = new HashMap<>();
         this.entityType = entityType;
+        this.dialogueName = null;
         this.experiencePoints = 100;
     }
 
@@ -59,6 +65,15 @@ public class NpcDefinition {
 
     public int getExperiencePoints() {
         return experiencePoints;
+    }
+
+    public void setDialogueName(ResourceLocation dialogueName) {
+        this.dialogueName = dialogueName;
+    }
+
+    @Nullable
+    public ResourceLocation getDialogueName() {
+        return dialogueName;
     }
 
     @Nullable
@@ -80,6 +95,7 @@ public class NpcDefinition {
         }
         itemChoices.get(slot).add(choice);
     }
+
 
     public void addAbilityEntry(NpcAbilityEntry entry){
         abilities.add(entry);
@@ -118,6 +134,9 @@ public class NpcDefinition {
         if (obj.has("experience")){
             def.setExperiencePoints(obj.get("experience").getAsInt());
         }
+        if (obj.has("dialogue")){
+            def.setDialogueName(new ResourceLocation(obj.get("dialogue").getAsString()));
+        }
         if (obj.has("equipment")){
             JsonObject equipmentObject = obj.getAsJsonObject("equipment");
             for (Map.Entry<String, JsonElement> entry : equipmentObject.entrySet()){
@@ -130,19 +149,17 @@ public class NpcDefinition {
                         dropChance = itemChoiceObj.get("dropChance").getAsFloat();
                     }
                     String itemName = itemChoiceObj.get("item").getAsString();
-                    Item item;
-                    if (itemName.equals("EMPTY")) {
-                        item = null;
-                    } else {
+                    Item item = Items.AIR;
+                    if (!itemName.equals("EMPTY")) {
                         item = ForgeRegistries.ITEMS.getValue(new ResourceLocation(itemName));
                     }
-                    if (item == null && !itemName.equals("EMPTY")) {
-                        MKNpc.LOGGER.debug("Failed to load item for {} in definition: {}",
+                    if (item.equals(Items.AIR) && !itemName.equals("EMPTY")) {
+                        MKNpc.LOGGER.info("Failed to load item for {} in definition: {}",
                                 itemChoiceObj.get("item").getAsString(), name);
                         continue;
                     } else {
                         ItemStack itemStack;
-                        if (item == null) {
+                        if (item.equals(Items.AIR)) {
                             itemStack = ItemStack.EMPTY;
                         } else {
                             itemStack = new ItemStack(item, 1);
@@ -159,6 +176,12 @@ public class NpcDefinition {
     }
 
     public void applyDefinition(Entity entity){
+        if (entity instanceof MKEntity){
+            MKEntity mkEntity = (MKEntity) entity;
+            if (getDialogueName() != null){
+                mkEntity.getDialogueComponent().setTreeName(getDialogueName());
+            }
+        }
         if (entity instanceof LivingEntity){
             LivingEntity livingEntity = (LivingEntity) entity;
             livingEntity.getCapability(com.chaosbuffalo.mkcore.Capabilities.ENTITY_CAPABILITY).ifPresent((cap) -> {
