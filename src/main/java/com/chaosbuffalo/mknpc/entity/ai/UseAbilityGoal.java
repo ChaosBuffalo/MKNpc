@@ -1,6 +1,6 @@
 package com.chaosbuffalo.mknpc.entity.ai;
 
-import com.chaosbuffalo.mkcore.Capabilities;
+import com.chaosbuffalo.mkcore.CoreCapabilities;
 import com.chaosbuffalo.mkcore.MKCore;
 import com.chaosbuffalo.mkcore.abilities.AbilityContext;
 import com.chaosbuffalo.mkcore.abilities.MKAbility;
@@ -62,13 +62,13 @@ public class UseAbilityGoal extends Goal {
     }
 
     public boolean canActivate() {
-        return entity.getCapability(Capabilities.ENTITY_CAPABILITY).map((entityData) ->
+        return entity.getCapability(CoreCapabilities.ENTITY_CAPABILITY).map((entityData) ->
                 entityData.getAbilityExecutor().canActivateAbility(currentAbility))
                 .orElse(false);
     }
 
     public boolean shouldContinueExecuting() {
-        return entity.getCapability(Capabilities.ENTITY_CAPABILITY).map(
+        return entity.getCapability(CoreCapabilities.ENTITY_CAPABILITY).map(
                 (entityData) -> entityData.getAbilityExecutor().isCasting()).orElse(false);
     }
 
@@ -78,7 +78,7 @@ public class UseAbilityGoal extends Goal {
         entity.getLookController().setLookPositionWithEntity(target, 50.0f, 50.0f);
         AbilityContext context = new BrainAbilityContext(entity);
         MKCore.LOGGER.info("ai {} casting {} on {}", entity, currentAbility.getAbilityId(), target);
-        entity.getCapability(Capabilities.ENTITY_CAPABILITY).ifPresent(
+        entity.getCapability(CoreCapabilities.ENTITY_CAPABILITY).ifPresent(
                 (entityData) -> entityData.getAbilityExecutor().executeAbilityWithContext(currentAbility.getAbilityId(), context));
     }
 

@@ -11,8 +11,10 @@ import com.mojang.brigadier.suggestion.SuggestionsBuilder;
 import net.minecraft.command.CommandSource;
 import net.minecraft.command.Commands;
 import net.minecraft.command.ISuggestionProvider;
+import net.minecraft.entity.Entity;
 import net.minecraft.entity.player.ServerPlayerEntity;
 import net.minecraft.util.ResourceLocation;
+import net.minecraft.util.text.StringTextComponent;
 
 import java.util.concurrent.CompletableFuture;
 
@@ -36,7 +38,15 @@ public class MKSummonCommand {
         ResourceLocation definition_id = ctx.getArgument("npc_definition", ResourceLocation.class);
         NpcDefinition definition = NpcDefinitionManager.getDefinition(definition_id);
         if (definition != null){
-            definition.spawnEntity(player.getServerWorld(), player.getPositionVec());
+            Entity entity = definition.createEntity(player.getServerWorld(), player.getPositionVec());
+            if (entity != null){
+                player.getServerWorld().addEntity(entity);
+            } else {
+                player.sendMessage(new StringTextComponent(String.format("Failed to summon: %s",
+                        definition_id.toString())));
+            }
+        } else {
+            player.sendMessage(new StringTextComponent("Definition not found."));
         }
         return Command.SINGLE_SUCCESS;
     }

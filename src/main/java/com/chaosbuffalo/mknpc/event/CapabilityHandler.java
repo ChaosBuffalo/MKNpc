@@ -1,7 +1,7 @@
 package com.chaosbuffalo.mknpc.event;
 
 import com.chaosbuffalo.mknpc.MKNpc;
-import com.chaosbuffalo.mknpc.capabilities.Capabilities;
+import com.chaosbuffalo.mknpc.capabilities.NpcCapabilities;
 import com.chaosbuffalo.mknpc.capabilities.NpcDataProvider;
 import net.minecraft.entity.Entity;
 import net.minecraft.entity.LivingEntity;
@@ -18,7 +18,7 @@ public class CapabilityHandler {
     @SubscribeEvent
     public static void attachEntityCapability(AttachCapabilitiesEvent<Entity> e) {
         if (!(e.getObject() instanceof PlayerEntity) && e.getObject() instanceof LivingEntity) {
-            e.addCapability(Capabilities.MK_NPC_CAP_ID, new NpcDataProvider((LivingEntity) e.getObject()));
+            e.addCapability(NpcCapabilities.MK_NPC_CAP_ID, new NpcDataProvider((LivingEntity) e.getObject()));
         }
     }
 }

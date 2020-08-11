@@ -22,19 +22,19 @@ public class NpcDataProvider implements ICapabilitySerializable<CompoundNBT> {
     @Nonnull
     @Override
     public <T> LazyOptional<T> getCapability(@Nonnull Capability<T> cap, @Nullable Direction side) {
-        return Capabilities.NPC_DATA_CAPABILITY.orEmpty(cap, LazyOptional.of(() -> data));
+        return NpcCapabilities.NPC_DATA_CAPABILITY.orEmpty(cap, LazyOptional.of(() -> data));
     }
 
     @Override
     public CompoundNBT serializeNBT() {
-        return (CompoundNBT) Capabilities.NPC_DATA_CAPABILITY.getStorage().writeNBT(
-                Capabilities.NPC_DATA_CAPABILITY, data, null);
+        return (CompoundNBT) NpcCapabilities.NPC_DATA_CAPABILITY.getStorage().writeNBT(
+                NpcCapabilities.NPC_DATA_CAPABILITY, data, null);
     }
 
     @Override
     public void deserializeNBT(CompoundNBT nbt) {
-        Capabilities.NPC_DATA_CAPABILITY.getStorage().readNBT(
-                Capabilities.NPC_DATA_CAPABILITY, data, null, nbt);
+        NpcCapabilities.NPC_DATA_CAPABILITY.getStorage().readNBT(
+                NpcCapabilities.NPC_DATA_CAPABILITY, data, null, nbt);
     }
 
 

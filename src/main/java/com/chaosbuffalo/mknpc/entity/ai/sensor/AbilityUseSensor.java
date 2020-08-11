@@ -1,6 +1,6 @@
 package com.chaosbuffalo.mknpc.entity.ai.sensor;
 
-import com.chaosbuffalo.mkcore.Capabilities;
+import com.chaosbuffalo.mkcore.CoreCapabilities;
 import com.chaosbuffalo.mkcore.abilities.MKAbility;
 import com.chaosbuffalo.mkcore.abilities.MKAbilityInfo;
 import com.chaosbuffalo.mkcore.abilities.MKAbilityMemories;
@@ -13,6 +13,7 @@ import net.minecraft.entity.LivingEntity;
 import net.minecraft.entity.ai.brain.memory.MemoryModuleType;
 import net.minecraft.entity.ai.brain.sensor.Sensor;
 import net.minecraft.world.server.ServerWorld;
+import org.apache.logging.log4j.core.Core;
 
 import javax.annotation.Nonnull;
 import java.util.Collections;
@@ -31,7 +32,7 @@ public class AbilityUseSensor extends Sensor<MKEntity> {
         if (abilityOptional.isPresent())
             return;
 
-        entityIn.getCapability(Capabilities.ENTITY_CAPABILITY).ifPresent(mkEntityData -> {
+        entityIn.getCapability(CoreCapabilities.ENTITY_CAPABILITY).ifPresent(mkEntityData -> {
             AbilityDecisionContext context = createAbilityDecisionContext(entityIn);
             for (MKAbilityInfo ability : mkEntityData.getKnowledge().getAbilitiesPriorityOrder()) {
                 MKAbility mkAbility = ability.getAbility();

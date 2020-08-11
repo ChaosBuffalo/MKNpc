@@ -25,6 +25,9 @@ public class RandomCollection<E> {
         return map.values();
     }
 
+    public void clear(){
+        map.clear();
+    }
 
     public int size() {
         return map.size();

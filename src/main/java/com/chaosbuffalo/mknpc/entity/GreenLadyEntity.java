@@ -1,22 +1,15 @@
 package com.chaosbuffalo.mknpc.entity;
 
-import com.chaosbuffalo.mkcore.Capabilities;
-import com.chaosbuffalo.mkcore.MKCore;
+import com.chaosbuffalo.mkcore.CoreCapabilities;
 import com.chaosbuffalo.mkcore.abilities.training.*;
 import com.chaosbuffalo.mkcore.mku.abilities.*;
-import com.chaosbuffalo.mkcore.network.OpenLearnAbilitiesGuiPacket;
-import com.chaosbuffalo.mkcore.network.PacketHandler;
 import com.chaosbuffalo.mknpc.entity.ai.*;
 import com.chaosbuffalo.mknpc.entity.ai.controller.MovementStrategyController;
 import com.chaosbuffalo.mknpc.entity.ai.memory.MKMemoryModuleTypes;
 import net.minecraft.entity.*;
-import net.minecraft.entity.player.PlayerEntity;
-import net.minecraft.entity.player.ServerPlayerEntity;
 import net.minecraft.item.Items;
 import net.minecraft.nbt.CompoundNBT;
-import net.minecraft.util.ActionResultType;
 import net.minecraft.util.Hand;
-import net.minecraft.util.math.Vec3d;
 import net.minecraft.world.DifficultyInstance;
 import net.minecraft.world.IWorld;
 import net.minecraft.world.World;
@@ -34,19 +27,17 @@ public class GreenLadyEntity extends MKEntity implements IAbilityTrainingEntity 
         timesDone = 0;
         abilityTrainer = new EntityAbilityTrainer(this);
         abilityTrainer.addTrainedAbility(EmberAbility.INSTANCE);
-        abilityTrainer.addTrainedAbility(ClericHeal.INSTANCE)
-                .addRequirement(new HeldItemRequirement(Items.ROTTEN_FLESH, Hand.MAIN_HAND))
-                .addRequirement(new HeldItemRequirement(Items.ROTTEN_FLESH, Hand.OFF_HAND));
+        abilityTrainer.addTrainedAbility(ClericHeal.INSTANCE);
         abilityTrainer.addTrainedAbility(WhirlwindBlades.INSTANCE)
                 .addRequirement(new HeldItemRequirement(Items.DIAMOND_SWORD, Hand.MAIN_HAND))
-                .addRequirement(new ExperienceLevelRequirement(30));
+                .addRequirement(new ExperienceLevelRequirement(5));
     }
 
     @Nullable
     @Override
     public ILivingEntityData onInitialSpawn(IWorld worldIn, DifficultyInstance difficultyIn, SpawnReason reason,
                                             @Nullable ILivingEntityData spawnDataIn, @Nullable CompoundNBT dataTag) {
-        this.getCapability(Capabilities.ENTITY_CAPABILITY).ifPresent(
+        this.getCapability(CoreCapabilities.ENTITY_CAPABILITY).ifPresent(
                 mkEntityData -> {
                     mkEntityData.getKnowledge().learnAbility(EmberAbility.INSTANCE, 2);
                     mkEntityData.getKnowledge().learnAbility(FireArmor.INSTANCE);
@@ -58,17 +49,6 @@ public class GreenLadyEntity extends MKEntity implements IAbilityTrainingEntity 
         return super.onInitialSpawn(worldIn, difficultyIn, reason, spawnDataIn, dataTag);
 
     }
-
-    @Override
-    public ActionResultType applyPlayerInteraction(PlayerEntity player, Vec3d vec, Hand hand) {
-        if (!player.getEntityWorld().isRemote()) {
-            MKCore.getPlayer(player).ifPresent(playerData -> {
-                PacketHandler.sendMessage(new OpenLearnAbilitiesGuiPacket(playerData, abilityTrainer), (ServerPlayerEntity) player);
-            });
-        }
-        return ActionResultType.SUCCESS;
-    }
-
 
     @Override
     protected void registerGoals() {

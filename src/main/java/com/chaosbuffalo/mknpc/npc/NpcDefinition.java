@@ -1,12 +1,11 @@
 package com.chaosbuffalo.mknpc.npc;
 
-import com.chaosbuffalo.mkchat.dialogue.DialogueManager;
-import com.chaosbuffalo.mkchat.dialogue.DialogueTree;
+import com.chaosbuffalo.mkcore.CoreCapabilities;
 import com.chaosbuffalo.mkcore.MKCoreRegistry;
 import com.chaosbuffalo.mkcore.abilities.MKAbility;
 import com.chaosbuffalo.mkcore.abilities.MKAbilityInfo;
 import com.chaosbuffalo.mknpc.MKNpc;
-import com.chaosbuffalo.mknpc.capabilities.Capabilities;
+import com.chaosbuffalo.mknpc.capabilities.NpcCapabilities;
 import com.chaosbuffalo.mknpc.entity.MKEntity;
 import com.chaosbuffalo.mknpc.utils.RandomCollection;
 import com.google.gson.Gson;
@@ -38,6 +37,7 @@ import java.util.Map;
 public class NpcDefinition {
     private final ResourceLocation entityType;
     private final ResourceLocation definitionName;
+    private ResourceLocation factionName;
     private ResourceLocation dialogueName;
     private String name;
     private final List<NpcAbilityEntry> abilities;
@@ -52,7 +52,17 @@ public class NpcDefinition {
         this.itemChoices = new HashMap<>();
         this.entityType = entityType;
         this.dialogueName = null;
+        this.factionName = null;
         this.experiencePoints = 100;
+    }
+
+    public void setFactionName(ResourceLocation name){
+        this.factionName = name;
+    }
+
+    @Nullable
+    public ResourceLocation getFactionName() {
+        return factionName;
     }
 
     public void setName(String name) {
@@ -128,6 +138,9 @@ public class NpcDefinition {
                 def.addAttributeEntry(entry);
             }
         }
+        if (obj.has("faction")){
+            def.setFactionName(new ResourceLocation(obj.get("faction").getAsString()));
+        }
         if (obj.has("name")){
             def.setName(obj.get("name").getAsString());
         }
@@ -184,7 +197,7 @@ public class NpcDefinition {
         }
         if (entity instanceof LivingEntity){
             LivingEntity livingEntity = (LivingEntity) entity;
-            livingEntity.getCapability(com.chaosbuffalo.mkcore.Capabilities.ENTITY_CAPABILITY).ifPresent((cap) -> {
+            livingEntity.getCapability(CoreCapabilities.ENTITY_CAPABILITY).ifPresent((cap) -> {
                 for (MKAbilityInfo ability : cap.getKnowledge().getAbilities()){
                     cap.getKnowledge().unlearnAbility(ability.getId());
                 }
@@ -220,18 +233,20 @@ public class NpcDefinition {
         }
     }
 
-    public void spawnEntity(World world, Vec3d pos){
+    @Nullable
+    public Entity createEntity(World world, Vec3d pos){
        EntityType<?> type = ForgeRegistries.ENTITIES.getValue(entityType);
        if (type != null){
            Entity entity = type.create(world);
            if (entity == null){
-               return;
+               return null;
            }
            entity.setPosition(pos.getX(), pos.getY(), pos.getZ());
-           entity.getCapability(Capabilities.NPC_DATA_CAPABILITY).ifPresent(
+           entity.getCapability(NpcCapabilities.NPC_DATA_CAPABILITY).ifPresent(
                    cap -> cap.setDefinition(this));
            applyDefinition(entity);
-           world.addEntity(entity);
+           return entity;
        }
+       return null;
     }
 }

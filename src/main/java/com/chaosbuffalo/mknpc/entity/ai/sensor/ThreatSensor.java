@@ -49,8 +49,6 @@ public class ThreatSensor extends Sensor<LivingEntity> {
                 entityIn.getBrain().removeMemory(MKMemoryModuleTypes.THREAT_TARGET);
             }
         }
-
-
     }
 
     @Override

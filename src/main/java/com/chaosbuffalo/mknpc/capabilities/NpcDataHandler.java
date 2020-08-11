@@ -14,8 +14,10 @@ import javax.annotation.Nullable;
 public class NpcDataHandler implements IMKNpcData {
     private LivingEntity entity;
     private NpcDefinition definition;
+    private boolean mkSpawned;
 
     public NpcDataHandler(){
+        mkSpawned = false;
     }
 
     @Override
@@ -44,11 +46,22 @@ public class NpcDataHandler implements IMKNpcData {
     }
 
     @Override
+    public boolean wasMKSpawned() {
+        return mkSpawned;
+    }
+
+    @Override
+    public void setMKSpawned(boolean value) {
+        this.mkSpawned = value;
+    }
+
+    @Override
     public CompoundNBT serializeNBT() {
         CompoundNBT tag = new CompoundNBT();
         if (definition != null){
             tag.putString("npc_definition", definition.getDefinitionName().toString());
         }
+        tag.putBoolean("mk_spawned", mkSpawned);
         return tag;
     }
 
@@ -61,6 +74,9 @@ public class NpcDataHandler implements IMKNpcData {
             if (def != null){
                 def.applyDefinition(getEntity());
             }
+        }
+        if (nbt.contains("mk_spawned")){
+            mkSpawned = nbt.getBoolean("mk_spawned");
         }
     }
 

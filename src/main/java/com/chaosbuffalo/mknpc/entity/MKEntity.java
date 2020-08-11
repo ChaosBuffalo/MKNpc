@@ -2,10 +2,11 @@ package com.chaosbuffalo.mknpc.entity;
 
 import com.chaosbuffalo.mkchat.entity.DialogueComponent;
 import com.chaosbuffalo.mkchat.entity.IPlayerChatReceiver;
-import com.chaosbuffalo.mkcore.Capabilities;
+import com.chaosbuffalo.mkcore.CoreCapabilities;
 import com.chaosbuffalo.mkcore.abilities.MKAbility;
 import com.chaosbuffalo.mkcore.abilities.MKAbilityMemories;
 import com.chaosbuffalo.mkcore.abilities.ai.AbilityTargetingDecision;
+import com.chaosbuffalo.mkfaction.capabilities.FactionCapabilities;
 import com.chaosbuffalo.mknpc.MKNpc;
 import com.chaosbuffalo.mknpc.entity.ai.memory.MKMemoryModuleTypes;
 import com.chaosbuffalo.mknpc.entity.ai.memory.ThreatMapEntry;
@@ -14,6 +15,7 @@ import com.chaosbuffalo.mknpc.entity.ai.movement_strategy.KiteMovementStrategy;
 import com.chaosbuffalo.mknpc.entity.ai.movement_strategy.MovementStrategy;
 import com.chaosbuffalo.mknpc.entity.ai.movement_strategy.StationaryMovementStrategy;
 import com.chaosbuffalo.mknpc.entity.ai.sensor.MKSensorTypes;
+import com.chaosbuffalo.targeting_api.Targeting;
 import com.google.common.collect.ImmutableList;
 import com.mojang.datafixers.Dynamic;
 import net.minecraft.entity.CreatureEntity;
@@ -50,13 +52,14 @@ public abstract class MKEntity extends CreatureEntity implements IPlayerChatRece
         RELEASE,
     }
 
+
     protected MKEntity(EntityType<? extends CreatureEntity> type, World worldIn) {
         super(type, worldIn);
         castAnimTimer = 0;
         visualCastState = VisualCastState.NONE;
         castingAbility = null;
         this.dialogueComponent = createDialogueComponent();
-        getCapability(Capabilities.ENTITY_CAPABILITY).ifPresent((mkEntityData -> {
+        getCapability(CoreCapabilities.ENTITY_CAPABILITY).ifPresent((mkEntityData -> {
             mkEntityData.getAbilityExecutor().setStartCastCallback(this::startCast);
             mkEntityData.getAbilityExecutor().setCompleteAbilityCallback(this::endCast);
         }));
@@ -171,10 +174,14 @@ public abstract class MKEntity extends CreatureEntity implements IPlayerChatRece
 
     @Override
     public ActionResultType applyPlayerInteraction(PlayerEntity player, Vec3d vec, Hand hand) {
-        if (!player.world.isRemote()){
-            dialogueComponent.startDialogue((ServerPlayerEntity) player);
+        if (hand.equals(Hand.MAIN_HAND) && getCapability(FactionCapabilities.MOB_FACTION_CAPABILITY)
+                .map((cap) -> cap.getRelationToMob(player) != Targeting.TargetRelation.ENEMY).orElse(false)){
+            if (!player.world.isRemote()){
+                dialogueComponent.startDialogue((ServerPlayerEntity) player);
+            }
+            return ActionResultType.SUCCESS;
         }
-        return ActionResultType.SUCCESS;
+        return ActionResultType.PASS;
     }
 
     @Override

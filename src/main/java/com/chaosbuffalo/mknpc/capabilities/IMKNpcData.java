@@ -19,4 +19,8 @@ public interface IMKNpcData extends INBTSerializable<CompoundNBT> {
     void setDefinition(NpcDefinition definition);
 
     int getBonusXp();
+
+    boolean wasMKSpawned();
+
+    void setMKSpawned(boolean value);
 }
