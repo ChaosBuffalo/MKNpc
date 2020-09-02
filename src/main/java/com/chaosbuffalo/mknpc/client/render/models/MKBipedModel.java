@@ -6,6 +6,8 @@ import com.chaosbuffalo.mknpc.client.render.animations.MKEntityCompleteCastAnima
 import com.chaosbuffalo.mknpc.entity.MKEntity;
 import net.minecraft.client.renderer.entity.model.BipedModel;
 
+import javax.annotation.ParametersAreNonnullByDefault;
+
 public class MKBipedModel<T extends MKEntity> extends BipedModel<T> {
     private final BipedCastAnimation<MKEntity> castAnimation = new BipedCastAnimation<>(this);
     private final MKEntityCompleteCastAnimation completeCastAnimation = new MKEntityCompleteCastAnimation(this);

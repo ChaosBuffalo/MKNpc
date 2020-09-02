@@ -4,6 +4,7 @@ import com.chaosbuffalo.mkcore.CoreCapabilities;
 import com.chaosbuffalo.mkcore.MKCoreRegistry;
 import com.chaosbuffalo.mkcore.abilities.MKAbility;
 import com.chaosbuffalo.mkcore.abilities.MKAbilityInfo;
+import com.chaosbuffalo.mkfaction.faction.MKFaction;
 import com.chaosbuffalo.mknpc.MKNpc;
 import com.chaosbuffalo.mknpc.capabilities.NpcCapabilities;
 import com.chaosbuffalo.mknpc.entity.MKEntity;
@@ -52,7 +53,8 @@ public class NpcDefinition {
         this.itemChoices = new HashMap<>();
         this.entityType = entityType;
         this.dialogueName = null;
-        this.factionName = null;
+        this.factionName = MKFaction.INVALID_FACTION;
+        this.name = "";
         this.experiencePoints = 100;
     }
 
@@ -218,7 +220,7 @@ public class NpcDefinition {
             applyItemChoices(livingEntity);
             livingEntity.setHealth(livingEntity.getMaxHealth());
         }
-        if (getName() != null){
+        if (getName() != null && !getName().equals("")){
             entity.setCustomName(new StringTextComponent(getName()));
         }
     }

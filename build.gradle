@@ -101,6 +101,7 @@ dependencies {
     minecraft "net.minecraftforge:forge:${forge_version}"
     compile group: "com.chaosbuffalo.mkcore", name: "MKCore", version: '0.11'
     compile group: "com.chaosbuffalo.mkchat", name: "MKChat", version: '0.11'
+    compile group: "com.chaosbuffalo.mkwidgets", name: "MKWidgets", version: '1.14'
     compile group: 'targetingapi', name: 'targeting_api', version: '0.21'
     compile group: "com.chaosbuffalo.mkfaction", name: "MKFaction", version: '0.1'
 

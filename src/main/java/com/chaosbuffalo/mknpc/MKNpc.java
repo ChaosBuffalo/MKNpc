@@ -3,7 +3,10 @@ package com.chaosbuffalo.mknpc;
 import com.chaosbuffalo.mknpc.capabilities.NpcCapabilities;
 import com.chaosbuffalo.mknpc.command.NpcCommands;
 import com.chaosbuffalo.mknpc.dialogue.NPCDialogueExtension;
-import com.chaosbuffalo.mknpc.entity.MKEntityTypes;
+import com.chaosbuffalo.mknpc.init.MKNpcEntityTypes;
+import com.chaosbuffalo.mknpc.init.MKNpcBlocks;
+import com.chaosbuffalo.mknpc.init.MKNpcTileEntityTypes;
+import com.chaosbuffalo.mknpc.network.PacketHandler;
 import com.chaosbuffalo.mknpc.npc.NpcDefinitionManager;
 import net.minecraftforge.common.MinecraftForge;
 import net.minecraftforge.eventbus.api.SubscribeEvent;
@@ -28,13 +31,15 @@ public class MKNpc
         MinecraftForge.EVENT_BUS.register(this);
         FMLJavaModLoadingContext.get().getModEventBus().addListener(this::setup);
         FMLJavaModLoadingContext.get().getModEventBus().addListener(this::enqueueIMC);
-        MKEntityTypes.ENTITY_TYPES.register(FMLJavaModLoadingContext.get().getModEventBus());
+        MKNpcEntityTypes.register();
+        MKNpcBlocks.register();
+        MKNpcTileEntityTypes.register();
     }
 
     @SuppressWarnings("unused")
     @SubscribeEvent
     public void aboutToStart(FMLServerAboutToStartEvent event){
-        npcDefinitionManager = new NpcDefinitionManager();
+        npcDefinitionManager = new NpcDefinitionManager(event.getServer());
         event.getServer().getResourceManager().addReloadListener(npcDefinitionManager);
     }
 
@@ -50,5 +55,6 @@ public class MKNpc
 
     private void setup(final FMLCommonSetupEvent event){
         NpcCapabilities.registerCapabilities();
+        PacketHandler.setupHandler();
     }
 }

@@ -1,6 +1,8 @@
 package com.chaosbuffalo.mknpc.spawn;
 
 import com.chaosbuffalo.mkcore.GameConstants;
+import com.chaosbuffalo.mknpc.MKNpc;
+import com.chaosbuffalo.mknpc.init.MKNpcTileEntityTypes;
 import com.chaosbuffalo.mknpc.npc.NpcDefinition;
 import com.chaosbuffalo.mknpc.utils.RandomCollection;
 import net.minecraft.entity.Entity;
@@ -21,8 +23,12 @@ public class MKSpawnerTileEntity extends TileEntity implements ITickableTileEnti
     private int ticksSinceDeath;
     private int ticksSincePlayer;
     private final static double SPAWN_RANGE = 100.0;
-    private static int IDLE_TIME = GameConstants.TICKS_PER_SECOND * 60;
+    private static final int IDLE_TIME = GameConstants.TICKS_PER_SECOND * 60;
     private final RandomCollection<NpcDefinition> randomSpawns;
+
+    public MKSpawnerTileEntity(){
+        this(MKNpcTileEntityTypes.MK_SPAWNER_TILE_ENTITY_TYPE.get());
+    }
 
     public MKSpawnerTileEntity(TileEntityType<?> tileEntityTypeIn) {
         super(tileEntityTypeIn);
@@ -33,6 +39,7 @@ public class MKSpawnerTileEntity extends TileEntity implements ITickableTileEnti
         this.ticksSincePlayer = 0;
         this.entity = null;
         this.randomSpawns = new RandomCollection<>();
+        MKNpc.LOGGER.info("creating tile entity");
     }
 
     public void populateRandomSpawns(){
@@ -46,6 +53,7 @@ public class MKSpawnerTileEntity extends TileEntity implements ITickableTileEnti
     public CompoundNBT write(CompoundNBT compound) {
         compound.put("spawnList", spawnList.serializeNBT());
         compound.putUniqueId("spawnId", spawnUUID);
+        compound.putInt("ticksSinceDeath", ticksSinceDeath);
         return super.write(compound);
     }
 
@@ -72,6 +80,7 @@ public class MKSpawnerTileEntity extends TileEntity implements ITickableTileEnti
             spawnList.deserializeNBT(compound.getCompound("spawnList"));
             populateRandomSpawns();
         }
+        ticksSinceDeath = compound.getInt("ticksSinceDeath");
         spawnUUID = compound.getUniqueId("spawnId");
     }
 
@@ -102,22 +111,25 @@ public class MKSpawnerTileEntity extends TileEntity implements ITickableTileEnti
 
     @Override
     public void tick() {
-        if (isPlayerInRange()){
-            if (!isSpawnAlive()){
-                ticksSinceDeath++;
-                if (ticksSinceDeath >= getRespawnTime()){
-                    spawnEntity();
-                    ticksSinceDeath = 0;
-                }
-            } else {
-                ticksSincePlayer = 0;
+        if (getWorld() != null && !getWorld().isRemote() && randomSpawns.size() >0){
+            if (ticksSinceDeath > 0){
+                ticksSinceDeath--;
             }
-        } else {
-            if (isSpawnAlive()){
-                ticksSincePlayer++;
-                if (ticksSincePlayer > IDLE_TIME){
-                    entity.remove();
-                    ticksSincePlayer = 0;
+            if (isPlayerInRange()){
+                if (!isSpawnAlive()){
+                    if (ticksSinceDeath <= 0){
+                        spawnEntity();
+                        ticksSinceDeath = getRespawnTime();
+                    }
+                }
+                ticksSincePlayer = 0;
+            } else {
+                if (isSpawnAlive()){
+                    ticksSincePlayer++;
+                    if (ticksSincePlayer > IDLE_TIME){
+                        entity.remove();
+                        ticksSincePlayer = 0;
+                    }
                 }
             }
         }
