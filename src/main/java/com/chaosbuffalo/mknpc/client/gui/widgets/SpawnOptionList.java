@@ -1,0 +1,37 @@
+package com.chaosbuffalo.mknpc.client.gui.widgets;
+
+import com.chaosbuffalo.mknpc.spawn.SpawnList;
+import com.chaosbuffalo.mknpc.spawn.SpawnOption;
+import com.chaosbuffalo.mkwidgets.client.gui.layouts.MKStackLayoutVertical;
+import net.minecraft.client.Minecraft;
+import net.minecraft.client.gui.FontRenderer;
+
+public class SpawnOptionList extends ScrollingList {
+    private final FontRenderer font;
+    private final SpawnList spawnList;
+
+    public SpawnOptionList(int x, int y, int width, int height, FontRenderer font,
+                           SpawnList spawnList) {
+        super(x, y, width, height);
+        this.font = font;
+        this.spawnList = spawnList;
+        populate();
+    }
+
+    @Override
+    public void preDraw(Minecraft mc, int x, int y, int width, int height, int mouseX, int mouseY, float partialTicks) {
+        mkFill(x, y, x + width, y + height, 0x55aaaaaa);
+    }
+
+    @Override
+    protected void populateList(MKStackLayoutVertical layout) {
+        for (SpawnOption option : spawnList.getOptions()){
+            layout.addWidget(new SpawnOptionEntry(0, 0, 20, option, font,
+                    (spawnOption) -> {
+                        spawnList.getOptions().remove(spawnOption);
+                        populate();
+                    }
+            ));
+        }
+    }
+}

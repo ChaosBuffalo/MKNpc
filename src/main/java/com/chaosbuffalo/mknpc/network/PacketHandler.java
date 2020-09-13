@@ -1,7 +1,5 @@
 package com.chaosbuffalo.mknpc.network;
 
-import com.chaosbuffalo.mkcore.MKCore;
-import com.chaosbuffalo.mkcore.network.PlayerDataSyncPacket;
 import com.chaosbuffalo.mknpc.MKNpc;
 import net.minecraft.util.ResourceLocation;
 import net.minecraftforge.fml.network.NetworkRegistry;
@@ -29,5 +27,11 @@ public class PacketHandler {
         networkChannel.registerMessage(id++, NpcDefinitionClientUpdatePacket.class,
                 NpcDefinitionClientUpdatePacket::toBytes,
                 NpcDefinitionClientUpdatePacket::new, NpcDefinitionClientUpdatePacket::handle);
+        networkChannel.registerMessage(id++, SetSpawnListPacket.class,
+                SetSpawnListPacket::toBytes,
+                SetSpawnListPacket::new, SetSpawnListPacket::handle);
+        networkChannel.registerMessage(id++, OpenMKSpawnerPacket.class,
+                OpenMKSpawnerPacket::toBytes,
+                OpenMKSpawnerPacket::new, OpenMKSpawnerPacket::handle);
     }
 }

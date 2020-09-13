@@ -1,6 +1,7 @@
 package com.chaosbuffalo.mknpc.spawn;
 
 import com.chaosbuffalo.mknpc.npc.NpcDefinition;
+import com.chaosbuffalo.mknpc.npc.NpcDefinitionClient;
 import com.chaosbuffalo.mknpc.npc.NpcDefinitionManager;
 import net.minecraft.nbt.CompoundNBT;
 import net.minecraft.util.ResourceLocation;
@@ -8,19 +9,19 @@ import net.minecraftforge.common.util.INBTSerializable;
 
 public class SpawnOption implements INBTSerializable<CompoundNBT> {
     private double weight;
-    private NpcDefinition definition;
+    private ResourceLocation definitionName;
 
     public SpawnOption(){
         this.weight = 1.0;
     }
 
-    public SpawnOption(double weight, NpcDefinition definition) {
+    public SpawnOption(double weight, ResourceLocation definition) {
         this.weight = weight;
-        this.definition = definition;
+        this.definitionName = definition;
     }
 
-    public void setDefinition(NpcDefinition definition) {
-        this.definition = definition;
+    public void setDefinition(ResourceLocation definition) {
+        this.definitionName = definition;
     }
 
     public double getWeight() {
@@ -32,7 +33,11 @@ public class SpawnOption implements INBTSerializable<CompoundNBT> {
     }
 
     public NpcDefinition getDefinition() {
-        return definition;
+        return NpcDefinitionManager.getDefinition(definitionName);
+    }
+
+    public NpcDefinitionClient getDefinitionClient(){
+        return NpcDefinitionManager.CLIENT_DEFINITIONS.get(definitionName);
     }
 
     @Override
@@ -46,8 +51,7 @@ public class SpawnOption implements INBTSerializable<CompoundNBT> {
     @Override
     public void deserializeNBT(CompoundNBT nbt) {
         ResourceLocation definitionName = new ResourceLocation(nbt.getString("definition"));
-        NpcDefinition def = NpcDefinitionManager.getDefinition(definitionName);
-        setDefinition(def);
+        setDefinition(definitionName);
         setWeight(nbt.getDouble("weight"));
     }
 }
