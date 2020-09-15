@@ -1,5 +1,7 @@
 package com.chaosbuffalo.mknpc;
 
+import com.chaosbuffalo.mkcore.core.IMKEntityData;
+import com.chaosbuffalo.mknpc.capabilities.IMKNpcData;
 import com.chaosbuffalo.mknpc.capabilities.NpcCapabilities;
 import com.chaosbuffalo.mknpc.command.NpcCommands;
 import com.chaosbuffalo.mknpc.dialogue.NPCDialogueExtension;
@@ -8,7 +10,10 @@ import com.chaosbuffalo.mknpc.init.MKNpcBlocks;
 import com.chaosbuffalo.mknpc.init.MKNpcTileEntityTypes;
 import com.chaosbuffalo.mknpc.network.PacketHandler;
 import com.chaosbuffalo.mknpc.npc.NpcDefinitionManager;
+import net.minecraft.entity.Entity;
+import net.minecraft.entity.LivingEntity;
 import net.minecraftforge.common.MinecraftForge;
+import net.minecraftforge.common.util.LazyOptional;
 import net.minecraftforge.eventbus.api.SubscribeEvent;
 import net.minecraftforge.fml.common.Mod;
 import net.minecraftforge.fml.event.lifecycle.FMLCommonSetupEvent;
@@ -56,5 +61,9 @@ public class MKNpc
     private void setup(final FMLCommonSetupEvent event){
         NpcCapabilities.registerCapabilities();
         PacketHandler.setupHandler();
+    }
+
+    public static LazyOptional<? extends IMKNpcData> getNpcData(Entity entity){
+        return entity.getCapability(NpcCapabilities.NPC_DATA_CAPABILITY);
     }
 }

@@ -8,12 +8,14 @@ import com.chaosbuffalo.mknpc.network.PacketHandler;
 import com.chaosbuffalo.mknpc.network.SetSpawnListPacket;
 import com.chaosbuffalo.mknpc.spawn.MKSpawnerTileEntity;
 import com.chaosbuffalo.mknpc.spawn.SpawnOption;
+import com.chaosbuffalo.mkwidgets.client.gui.constraints.MarginConstraint;
 import com.chaosbuffalo.mkwidgets.client.gui.layouts.MKLayout;
 import com.chaosbuffalo.mkwidgets.client.gui.layouts.MKStackLayoutHorizontal;
 import com.chaosbuffalo.mkwidgets.client.gui.screens.MKScreen;
 import com.chaosbuffalo.mkwidgets.client.gui.widgets.MKButton;
 import com.chaosbuffalo.mkwidgets.client.gui.widgets.MKImage;
 import com.chaosbuffalo.mkwidgets.client.gui.widgets.MKModal;
+import com.chaosbuffalo.mkwidgets.client.gui.widgets.MKText;
 import com.mojang.blaze3d.systems.RenderSystem;
 import net.minecraft.util.text.StringTextComponent;
 
@@ -49,10 +51,16 @@ public class MKSpawnerScreen extends MKScreen {
         int xPos = width / 2 - PANEL_WIDTH / 2;
         int yPos = height / 2 - PANEL_HEIGHT / 2;
         MKLayout root = new MKLayout(xPos, yPos, PANEL_WIDTH, PANEL_HEIGHT);
-        SpawnOptionList options = new SpawnOptionList(xPos + 20, yPos + 20, 280,
-                PANEL_HEIGHT - 60, font, spawnerTileEntity.getSpawnList());
-        MKButton addOption = new MKButton(xPos + PANEL_WIDTH / 2 - 30, yPos + PANEL_HEIGHT - 30, 60, 20,
-                "Add");
+        root.setMarginLeft(2);
+        root.setMarginTop(2);
+        MKText spawnListLabel = new MKText(font, "Spawn List:");
+        root.addWidget(spawnListLabel);
+        root.addConstraintToWidget(new MarginConstraint(MarginConstraint.MarginType.TOP), spawnListLabel);
+        root.addConstraintToWidget(new MarginConstraint(MarginConstraint.MarginType.LEFT), spawnListLabel);
+        SpawnOptionList options = new SpawnOptionList(xPos + 40, yPos + 20, 240,
+                PANEL_HEIGHT - 120, font, spawnerTileEntity.getSpawnList());
+        MKButton addOption = new MKButton(xPos + PANEL_WIDTH / 2 - 50, yPos + PANEL_HEIGHT - 90, 100, 20,
+                "Add Spawn");
         addOption.setPressedCallback((button, mouse) -> {
                 MKModal popup = new MKModal();
                 int screenWidth = getWidth();

@@ -39,8 +39,10 @@ public class SetSpawnListPacket {
     }
 
     protected void setSpawnerFromPacket(MKSpawnerTileEntity spawner){
-        spawner.getSpawnList().copyList(spawnList);
+        spawner.setSpawnList(spawnList);
         spawner.setRespawnTime(spawnTime);
+        spawner.clearSpawn();
+
     }
 
 

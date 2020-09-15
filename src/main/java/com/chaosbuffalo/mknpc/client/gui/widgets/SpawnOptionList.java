@@ -15,6 +15,8 @@ public class SpawnOptionList extends ScrollingList {
         super(x, y, width, height);
         this.font = font;
         this.spawnList = spawnList;
+        getStackLayout().setPaddingBot(1);
+        getStackLayout().setPaddingTop(1);
         populate();
     }
 

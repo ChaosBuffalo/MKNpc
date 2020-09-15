@@ -244,7 +244,7 @@ public class NpcDefinition {
                return null;
            }
            entity.setPosition(pos.getX(), pos.getY(), pos.getZ());
-           entity.getCapability(NpcCapabilities.NPC_DATA_CAPABILITY).ifPresent(
+           MKNpc.getNpcData(entity).ifPresent(
                    cap -> cap.setDefinition(this));
            applyDefinition(entity);
            return entity;

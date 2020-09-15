@@ -2,6 +2,7 @@ package com.chaosbuffalo.mknpc.spawn;
 
 import com.chaosbuffalo.mkcore.GameConstants;
 import com.chaosbuffalo.mknpc.MKNpc;
+import com.chaosbuffalo.mknpc.capabilities.NpcCapabilities;
 import com.chaosbuffalo.mknpc.init.MKNpcTileEntityTypes;
 import com.chaosbuffalo.mknpc.npc.NpcDefinition;
 import com.chaosbuffalo.mknpc.utils.RandomCollection;
@@ -102,6 +103,9 @@ public class MKSpawnerTileEntity extends TileEntity implements ITickableTileEnti
             if (entity != null){
                 entity.setUniqueId(spawnUUID);
                 getWorld().addEntity(entity);
+                MKNpc.getNpcData(entity).ifPresent((cap) -> {
+                    cap.setMKSpawned(true);
+                });
             }
         }
     }
@@ -117,6 +121,13 @@ public class MKSpawnerTileEntity extends TileEntity implements ITickableTileEnti
             }
         }
         return false;
+    }
+
+    public void clearSpawn(){
+        if (entity != null){
+            entity.remove();
+            ticksSinceDeath = 0;
+        }
     }
 
     @Override
