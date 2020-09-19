@@ -42,6 +42,16 @@ public class MKSpawnerTileEntity extends TileEntity implements ITickableTileEnti
         MKNpc.LOGGER.info("creating tile entity");
     }
 
+    public SpawnList getSpawnList() {
+        return spawnList;
+    }
+
+    public void setSpawnList(SpawnList list){
+        spawnList.copyList(list);
+        populateRandomSpawns();
+        ticksSinceDeath = 0;
+    }
+
     public void populateRandomSpawns(){
         randomSpawns.clear();
         for (SpawnOption option : spawnList.getOptions()){
@@ -128,7 +138,6 @@ public class MKSpawnerTileEntity extends TileEntity implements ITickableTileEnti
                     ticksSincePlayer++;
                     if (ticksSincePlayer > IDLE_TIME){
                         entity.remove();
-                        ticksSincePlayer = 0;
                     }
                 }
             }

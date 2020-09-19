@@ -1,6 +1,6 @@
 {
   "entityType": "mknpc:green_lady",
-  "name": "Test Lady",
+  "name": "Test Lady 2",
   "abilities": [
     {
       "abilityName": "mkcore:ability.whirlwind_blades",
@@ -13,7 +13,6 @@
       "value": 100
     }
   ],
-  "faction": "mkfaction:villagers",
   "dialogue": "mkchat:test",
   "equipment": {
     "mainhand": [

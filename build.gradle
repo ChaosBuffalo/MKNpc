@@ -99,11 +99,16 @@ dependencies {
     // that the dep is a ForgeGradle 'patcher' dependency. And it's patches will be applied.
     // The userdev artifact is a special name and will get all sorts of transformations applied to it.
     minecraft "net.minecraftforge:forge:${forge_version}"
-    compile group: "com.chaosbuffalo.mkcore", name: "MKCore", version: '0.11'
-    compile group: "com.chaosbuffalo.mkchat", name: "MKChat", version: '0.11'
-    compile group: "com.chaosbuffalo.mkwidgets", name: "MKWidgets", version: '1.14'
-    compile group: 'targetingapi', name: 'targeting_api', version: '0.21'
-    compile group: "com.chaosbuffalo.mkfaction", name: "MKFaction", version: '0.1'
+    compileOnly fg.deobf("com.chaosbuffalo.mkcore:MKCore:0.11")
+    runtimeOnly fg.deobf("com.chaosbuffalo.mkcore:MKCore:0.11")
+    compileOnly fg.deobf("com.chaosbuffalo.mkchat:MKChat:0.11")
+    runtimeOnly fg.deobf("com.chaosbuffalo.mkchat:MKChat:0.11")
+    compileOnly fg.deobf("com.chaosbuffalo.mkwidgets:MKWidgets:1.14")
+    runtimeOnly fg.deobf("com.chaosbuffalo.mkwidgets:MKWidgets:1.14")
+    compileOnly fg.deobf("com.chaosbuffalo.mkfaction:MKFaction:0.1")
+    runtimeOnly fg.deobf("com.chaosbuffalo.mkfaction:MKFaction:0.1")
+    compileOnly fg.deobf("com.chaosbuffalo.targeting_api:TargetingAPI:0.21")
+    runtimeOnly fg.deobf("com.chaosbuffalo.targeting_api:TargetingAPI:0.21")
 
 }
 

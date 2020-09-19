@@ -24,6 +24,13 @@ public class SpawnList implements INBTSerializable<CompoundNBT> {
         options.add(option);
     }
 
+    public void copyList(SpawnList other){
+        this.options.clear();
+        for (SpawnOption option : other.getOptions()){
+            addOption(option);
+        }
+    }
+
     public void setWeightForOption(int index, double weight){
         options.get(index).setWeight(weight);
     }
