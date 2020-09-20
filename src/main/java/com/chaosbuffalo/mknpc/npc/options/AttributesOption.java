@@ -21,7 +21,7 @@ public class AttributesOption extends NpcDefinitionOption {
     private final List<NpcAttributeEntry> attributes;
 
     public AttributesOption(){
-        super(NAME);
+        super(NAME, ApplyOrder.MIDDLE);
         attributes = new ArrayList<>();
     }
 

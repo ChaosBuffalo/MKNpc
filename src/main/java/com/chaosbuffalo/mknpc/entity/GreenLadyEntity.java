@@ -53,8 +53,7 @@ public class GreenLadyEntity extends MKEntity implements IAbilityTrainingEntity 
     @Override
     protected void registerGoals() {
         this.goalSelector.addGoal(7, new LookAtThreatTargetGoal(this));
-        this.targetSelector.addGoal(2, new TargetEnemyGoal(this, true,
-                true));
+        this.targetSelector.addGoal(2, new TargetEnemyGoal(this, true, true));
         this.goalSelector.addGoal(1, new MovementGoal(this));
         this.goalSelector.addGoal(3, new MKMeleeAttackGoal(this, .25));
         this.goalSelector.addGoal(2, new UseAbilityGoal(this));

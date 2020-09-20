@@ -9,10 +9,10 @@ import net.minecraft.nbt.CompoundNBT;
 import java.util.HashMap;
 import java.util.Map;
 
-public class EquipmentOptionsEntry implements INpcOptionEntry {
+public class EquipmentOptionEntry implements INpcOptionEntry {
     private final Map<EquipmentSlotType, NpcItemChoice> itemChoices;
 
-    public EquipmentOptionsEntry(){
+    public EquipmentOptionEntry(){
         this.itemChoices = new HashMap<>();
     }
 

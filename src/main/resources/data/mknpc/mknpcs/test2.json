@@ -1,4 +1,7 @@
 {
   "parent": "mknpc:test",
-  "mknpc:name": "Test Lady 2"
+  "mknpc:faction_name": {
+      "title": "Chief",
+      "hasLastName": true
+  }
 }

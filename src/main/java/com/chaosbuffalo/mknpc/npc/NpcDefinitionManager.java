@@ -3,8 +3,9 @@ package com.chaosbuffalo.mknpc.npc;
 import com.chaosbuffalo.mknpc.MKNpc;
 import com.chaosbuffalo.mknpc.network.NpcDefinitionClientUpdatePacket;
 import com.chaosbuffalo.mknpc.network.PacketHandler;
-import com.chaosbuffalo.mknpc.npc.option_entries.AbilityOptionsEntry;
-import com.chaosbuffalo.mknpc.npc.option_entries.EquipmentOptionsEntry;
+import com.chaosbuffalo.mknpc.npc.option_entries.AbilitiesOptionEntry;
+import com.chaosbuffalo.mknpc.npc.option_entries.EquipmentOptionEntry;
+import com.chaosbuffalo.mknpc.npc.option_entries.FactionNameOptionEntry;
 import com.chaosbuffalo.mknpc.npc.option_entries.INpcOptionEntry;
 import com.chaosbuffalo.mknpc.npc.options.*;
 import com.google.gson.Gson;
@@ -48,8 +49,8 @@ public class NpcDefinitionManager extends JsonReloadListener {
     }
 
     public static void setupDeserializers(){
-        putOptionEntryDeserializer(AbilitiesOption.NAME, AbilityOptionsEntry::new);
-        putOptionEntryDeserializer(EquipmentOption.NAME, EquipmentOptionsEntry::new);
+        putOptionEntryDeserializer(AbilitiesOption.NAME, AbilitiesOptionEntry::new);
+        putOptionEntryDeserializer(EquipmentOption.NAME, EquipmentOptionEntry::new);
         putOptionDeserializer(EquipmentOption.NAME, EquipmentOption::new);
         putOptionDeserializer(AbilitiesOption.NAME, AbilitiesOption::new);
         putOptionDeserializer(AttributesOption.NAME, AttributesOption::new);
@@ -57,6 +58,8 @@ public class NpcDefinitionManager extends JsonReloadListener {
         putOptionDeserializer(ExperienceOption.NAME, ExperienceOption::new);
         putOptionDeserializer(FactionOption.NAME, FactionOption::new);
         putOptionDeserializer(DialogueOption.NAME, DialogueOption::new);
+        putOptionDeserializer(FactionNameOption.NAME, FactionNameOption::new);
+        putOptionEntryDeserializer(FactionNameOption.NAME, FactionNameOptionEntry::new);
     }
 
     public static void putOptionDeserializer(ResourceLocation optionName,

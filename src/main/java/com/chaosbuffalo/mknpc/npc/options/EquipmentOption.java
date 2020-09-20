@@ -3,7 +3,7 @@ package com.chaosbuffalo.mknpc.npc.options;
 import com.chaosbuffalo.mknpc.MKNpc;
 import com.chaosbuffalo.mknpc.npc.NpcDefinition;
 import com.chaosbuffalo.mknpc.npc.NpcItemChoice;
-import com.chaosbuffalo.mknpc.npc.option_entries.EquipmentOptionsEntry;
+import com.chaosbuffalo.mknpc.npc.option_entries.EquipmentOptionEntry;
 import com.chaosbuffalo.mknpc.npc.option_entries.INpcOptionEntry;
 import com.chaosbuffalo.mknpc.utils.RandomCollection;
 import com.google.gson.Gson;
@@ -34,7 +34,7 @@ public class EquipmentOption extends WorldPermanentOption {
 
     @Override
     protected INpcOptionEntry makeOptionEntry(NpcDefinition definition, Entity entity) {
-        EquipmentOptionsEntry equipmentEntry = new EquipmentOptionsEntry();
+        EquipmentOptionEntry equipmentEntry = new EquipmentOptionEntry();
         for (Map.Entry<EquipmentSlotType, List<NpcItemChoice>> entry : itemChoices.entrySet()){
             RandomCollection<NpcItemChoice> slotChoices = new RandomCollection<>();
             for (NpcItemChoice choice : entry.getValue()){

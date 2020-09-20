@@ -8,8 +8,12 @@ import net.minecraft.entity.Entity;
 import net.minecraft.util.ResourceLocation;
 
 public abstract class WorldPermanentOption extends NpcDefinitionOption {
-    public WorldPermanentOption(ResourceLocation name) {
-        super(name);
+    public WorldPermanentOption(ResourceLocation name, ApplyOrder order) {
+        super(name, order);
+    }
+
+    public WorldPermanentOption(ResourceLocation name){
+        this(name, ApplyOrder.MIDDLE);
     }
 
     @Override

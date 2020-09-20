@@ -1,6 +1,7 @@
 package com.chaosbuffalo.mknpc.npc;
 
 import com.chaosbuffalo.mknpc.MKNpc;
+import com.chaosbuffalo.mknpc.npc.options.FactionNameOption;
 import com.chaosbuffalo.mknpc.npc.options.FactionOption;
 import com.chaosbuffalo.mknpc.npc.options.NameOption;
 import com.chaosbuffalo.mknpc.npc.options.NpcDefinitionOption;
@@ -25,9 +26,13 @@ public class NpcDefinition {
     private NpcDefinition parent;
     private final Map<ResourceLocation, NpcDefinitionOption> options;
     private static final Set<String> toSkip = new HashSet<>();
+    private static final List<NpcDefinitionOption.ApplyOrder> orders = new ArrayList<>();
     static {
         toSkip.add("entityType");
         toSkip.add("parent");
+        orders.add(NpcDefinitionOption.ApplyOrder.EARLY);
+        orders.add(NpcDefinitionOption.ApplyOrder.MIDDLE);
+        orders.add(NpcDefinitionOption.ApplyOrder.LATE);
     }
 
     boolean hasParentName(){
@@ -38,7 +43,7 @@ public class NpcDefinition {
         this.definitionName = definitionName;
         this.entityType = entityType;
         this.parentName = parentName;
-        this.options = new HashMap();
+        this.options = new HashMap<>();
     }
 
     public boolean hasParent(){
@@ -110,6 +115,10 @@ public class NpcDefinition {
 
     @Nullable
     public String getName() {
+        if (hasOption(FactionNameOption.NAME)){
+            FactionNameOption option = (FactionNameOption) getOption(FactionNameOption.NAME);
+            return option.getDisplayTitle();
+        }
         if (hasOption(NameOption.NAME)){
             NameOption option = (NameOption) getOption(NameOption.NAME);
             return option.getValue();
@@ -122,7 +131,9 @@ public class NpcDefinition {
     }
 
     public void applyDefinition(Entity entity){
-        apply(entity);
+        for (NpcDefinitionOption.ApplyOrder order : orders){
+            apply(entity, order);
+        }
         // hack to make sure we're at our new max health
         if (entity instanceof LivingEntity){
             ((LivingEntity) entity).setHealth(((LivingEntity) entity).getMaxHealth());
@@ -130,12 +141,14 @@ public class NpcDefinition {
     }
 
 
-    private void apply(Entity entity){
+    private void apply(Entity entity, NpcDefinitionOption.ApplyOrder order){
         if (hasParent()){
-            getParent().apply(entity);
+            getParent().apply(entity, order);
         }
         for (Map.Entry<ResourceLocation, NpcDefinitionOption> option : options.entrySet()){
-            option.getValue().applyToEntity(this, entity);
+            if (option.getValue().getOrdering() == order){
+                option.getValue().applyToEntity(this, entity);
+            }
         }
     }
 
@@ -178,8 +191,7 @@ public class NpcDefinition {
             }
             entity.setUniqueId(uuid);
             entity.setPosition(pos.getX(), pos.getY(), pos.getZ());
-            MKNpc.getNpcData(entity).ifPresent(
-                    cap -> cap.setDefinition(this));
+            MKNpc.getNpcData(entity).ifPresent(cap -> cap.setDefinition(this));
             applyDefinition(entity);
             return entity;
         }

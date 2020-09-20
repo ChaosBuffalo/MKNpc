@@ -15,15 +15,15 @@ import net.minecraftforge.common.util.Constants;
 import java.util.ArrayList;
 import java.util.List;
 
-public class AbilityOptionsEntry implements INpcOptionEntry {
+public class AbilitiesOptionEntry implements INpcOptionEntry {
 
     private final List<NpcAbilityEntry> abilities;
 
-    public AbilityOptionsEntry(List<NpcAbilityEntry> entries){
+    public AbilitiesOptionEntry(List<NpcAbilityEntry> entries){
         this.abilities = entries;
     }
 
-    public AbilityOptionsEntry(){
+    public AbilitiesOptionEntry(){
         this(new ArrayList<>());
     }
 

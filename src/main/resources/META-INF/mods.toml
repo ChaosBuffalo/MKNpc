@@ -52,3 +52,9 @@ MKNpc adds new utilities, spawners, and data driven mob definitions to Minecraft
     versionRange="[0.21,)"
     ordering="NONE"
     side="BOTH"
+[[dependencies.mknpc]]
+    modId="mkfaction"
+    mandatory=true
+    versionRange="[0.11,)"
+    ordering="NONE"
+    side="BOTH"

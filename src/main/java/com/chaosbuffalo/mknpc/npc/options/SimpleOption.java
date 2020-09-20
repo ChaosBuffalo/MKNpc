@@ -16,7 +16,7 @@ public class SimpleOption<T> extends NpcDefinitionOption {
 
     public SimpleOption(ResourceLocation name, BiFunction<Gson, JsonObject, T> jsonDeserializer,
                         TriConsumer<NpcDefinition, Entity, T> entityApplicator){
-        super(name);
+        super(name, ApplyOrder.MIDDLE);
         this.entityApplicator = entityApplicator;
         this.jsonDeserializer = jsonDeserializer;
     }

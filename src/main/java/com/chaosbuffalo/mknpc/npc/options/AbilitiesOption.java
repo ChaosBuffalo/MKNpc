@@ -3,7 +3,7 @@ package com.chaosbuffalo.mknpc.npc.options;
 import com.chaosbuffalo.mknpc.MKNpc;
 import com.chaosbuffalo.mknpc.npc.NpcAbilityEntry;
 import com.chaosbuffalo.mknpc.npc.NpcDefinition;
-import com.chaosbuffalo.mknpc.npc.option_entries.AbilityOptionsEntry;
+import com.chaosbuffalo.mknpc.npc.option_entries.AbilitiesOptionEntry;
 import com.chaosbuffalo.mknpc.npc.option_entries.INpcOptionEntry;
 import com.google.gson.Gson;
 import com.google.gson.JsonArray;
@@ -40,7 +40,7 @@ public class AbilitiesOption extends WorldPermanentOption {
                 }
             }
         }
-        return new AbilityOptionsEntry(finalChoices);
+        return new AbilitiesOptionEntry(finalChoices);
     }
 
     @Override
