@@ -1,7 +1,5 @@
 package com.chaosbuffalo.mknpc.command;
 
-import com.chaosbuffalo.mkcore.MKCoreRegistry;
-import com.chaosbuffalo.mknpc.npc.NpcDefinition;
 import com.chaosbuffalo.mknpc.npc.NpcDefinitionManager;
 import com.mojang.brigadier.StringReader;
 import com.mojang.brigadier.arguments.ArgumentType;

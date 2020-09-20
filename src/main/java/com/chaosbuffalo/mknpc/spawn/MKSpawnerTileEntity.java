@@ -2,7 +2,6 @@ package com.chaosbuffalo.mknpc.spawn;
 
 import com.chaosbuffalo.mkcore.GameConstants;
 import com.chaosbuffalo.mknpc.MKNpc;
-import com.chaosbuffalo.mknpc.capabilities.NpcCapabilities;
 import com.chaosbuffalo.mknpc.init.MKNpcTileEntityTypes;
 import com.chaosbuffalo.mknpc.npc.NpcDefinition;
 import com.chaosbuffalo.mknpc.utils.RandomCollection;
@@ -39,7 +38,7 @@ public class MKSpawnerTileEntity extends TileEntity implements ITickableTileEnti
         this.ticksSinceDeath = 0;
         this.ticksSincePlayer = 0;
         this.entity = null;
-        this.randomSpawns = new RandomCollection<>();
+        this.randomSpawns = new RandomCollection<NpcDefinition>();
         MKNpc.LOGGER.info("creating tile entity");
     }
 
@@ -98,10 +97,9 @@ public class MKSpawnerTileEntity extends TileEntity implements ITickableTileEnti
     public void spawnEntity(){
         if (getWorld() != null){
             NpcDefinition definition = randomSpawns.next();
-            Entity entity = definition.createEntity(getWorld(), new Vec3d(getPos()));
+            Entity entity = definition.createEntity(getWorld(), new Vec3d(getPos()), spawnUUID);
             this.entity = entity;
             if (entity != null){
-                entity.setUniqueId(spawnUUID);
                 getWorld().addEntity(entity);
                 MKNpc.getNpcData(entity).ifPresent((cap) -> {
                     cap.setMKSpawned(true);

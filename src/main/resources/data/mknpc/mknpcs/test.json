@@ -1,21 +1,21 @@
 {
   "entityType": "mknpc:green_lady",
-  "name": "Test Lady",
-  "abilities": [
+  "mknpc:name": "Test Lady",
+  "mknpc:abilities": [
     {
       "abilityName": "mkcore:ability.whirlwind_blades",
       "priority": 1
     }
   ],
-  "attributes": [
+  "mknpc:attributes": [
     {
       "attributeName": "generic.maxHealth",
       "value": 100
     }
   ],
-  "faction": "mkfaction:villagers",
-  "dialogue": "mkchat:test",
-  "equipment": {
+  "mknpc:faction": "mkfaction:villagers",
+  "mknpc:dialogue": "mkchat:test",
+  "mknpc:equipment": {
     "mainhand": [
       {
         "dropChance": 1.1,
