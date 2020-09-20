@@ -58,6 +58,7 @@ public class SpawnOptionEntry extends CenteringHorizontalLayout {
         HoverTextButton delButton = new HoverTextButton(fontRenderer, "X", () -> {
             removeCallback.accept(option);
         });
+        delButton.setColor(0xffff0000);
         addWidget(delButton);
     }
 

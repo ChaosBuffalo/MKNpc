@@ -1,31 +1,7 @@
 {
-  "entityType": "mknpc:green_lady",
-  "name": "Test Lady 2",
-  "abilities": [
-    {
-      "abilityName": "mkcore:ability.whirlwind_blades",
-      "priority": 1
-    }
-  ],
-  "attributes": [
-    {
-      "attributeName": "generic.maxHealth",
-      "value": 100
-    }
-  ],
-  "dialogue": "mkchat:test",
-  "equipment": {
-    "mainhand": [
-      {
-        "dropChance": 1.1,
-        "item": "minecraft:golden_sword",
-        "weight": 5
-      },
-      {
-        "dropChance": 1.1,
-        "item": "minecraft:iron_sword",
-        "weight": 10
-      }
-    ]
+  "parent": "mknpc:test",
+  "mknpc:faction_name": {
+      "title": "Chief",
+      "hasLastName": true
   }
 }

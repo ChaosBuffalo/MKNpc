@@ -20,6 +20,8 @@ public interface IMKNpcData extends INBTSerializable<CompoundNBT> {
 
     int getBonusXp();
 
+    void setBonusXp(int value);
+
     boolean wasMKSpawned();
 
     void setMKSpawned(boolean value);

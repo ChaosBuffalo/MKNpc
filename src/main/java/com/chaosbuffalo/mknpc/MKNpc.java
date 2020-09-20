@@ -1,5 +1,7 @@
 package com.chaosbuffalo.mknpc;
 
+import com.chaosbuffalo.mknpc.capabilities.IMKNpcData;
+import com.chaosbuffalo.mknpc.capabilities.IWorldNpcData;
 import com.chaosbuffalo.mknpc.capabilities.NpcCapabilities;
 import com.chaosbuffalo.mknpc.command.NpcCommands;
 import com.chaosbuffalo.mknpc.dialogue.NPCDialogueExtension;
@@ -7,12 +9,17 @@ import com.chaosbuffalo.mknpc.init.MKNpcEntityTypes;
 import com.chaosbuffalo.mknpc.init.MKNpcBlocks;
 import com.chaosbuffalo.mknpc.init.MKNpcTileEntityTypes;
 import com.chaosbuffalo.mknpc.network.PacketHandler;
+import com.chaosbuffalo.mknpc.npc.INpcOptionExtension;
 import com.chaosbuffalo.mknpc.npc.NpcDefinitionManager;
+import net.minecraft.entity.Entity;
+import net.minecraft.world.World;
 import net.minecraftforge.common.MinecraftForge;
+import net.minecraftforge.common.util.LazyOptional;
 import net.minecraftforge.eventbus.api.SubscribeEvent;
 import net.minecraftforge.fml.common.Mod;
 import net.minecraftforge.fml.event.lifecycle.FMLCommonSetupEvent;
 import net.minecraftforge.fml.event.lifecycle.InterModEnqueueEvent;
+import net.minecraftforge.fml.event.lifecycle.InterModProcessEvent;
 import net.minecraftforge.fml.event.server.FMLServerAboutToStartEvent;
 import net.minecraftforge.fml.event.server.FMLServerStartingEvent;
 import net.minecraftforge.fml.javafmlmod.FMLJavaModLoadingContext;
@@ -25,12 +32,14 @@ public class MKNpc
 {
     public static final Logger LOGGER = LogManager.getLogger();
     public static final String MODID = "mknpc";
+    public static final String REGISTER_NPC_OPTIONS_EXTENSION = "register_npc_options_extension";
     private NpcDefinitionManager npcDefinitionManager;
 
     public MKNpc() {
         MinecraftForge.EVENT_BUS.register(this);
         FMLJavaModLoadingContext.get().getModEventBus().addListener(this::setup);
         FMLJavaModLoadingContext.get().getModEventBus().addListener(this::enqueueIMC);
+        FMLJavaModLoadingContext.get().getModEventBus().addListener(this::processIMC);
         MKNpcEntityTypes.register();
         MKNpcBlocks.register();
         MKNpcTileEntityTypes.register();
@@ -47,6 +56,19 @@ public class MKNpc
         NPCDialogueExtension.sendExtension();
     }
 
+    private void processIMC(final InterModProcessEvent event)
+    {
+        LOGGER.info("MKNpc.processIMC");
+        event.getIMCStream().forEach(m -> {
+            if (m.getMethod().equals(REGISTER_NPC_OPTIONS_EXTENSION)) {
+                LOGGER.info("IMC register npc option extension from mod {} {}", m.getSenderModId(),
+                        m.getMethod());
+                INpcOptionExtension ext = (INpcOptionExtension) m.getMessageSupplier().get();
+                ext.registerNpcOptionExtension();
+            }
+        });
+    }
+
     @SuppressWarnings("unused")
     @SubscribeEvent
     public void onServerStarting(FMLServerStartingEvent event) {
@@ -56,5 +78,14 @@ public class MKNpc
     private void setup(final FMLCommonSetupEvent event){
         NpcCapabilities.registerCapabilities();
         PacketHandler.setupHandler();
+        NpcDefinitionManager.setupDeserializers();
+    }
+
+    public static LazyOptional<? extends IMKNpcData> getNpcData(Entity entity){
+        return entity.getCapability(NpcCapabilities.NPC_DATA_CAPABILITY);
+    }
+
+    public static LazyOptional<? extends IWorldNpcData> getWorldNpcData(World world){
+        return world.getCapability(NpcCapabilities.WORLD_NPC_DATA_CAPABILITY);
     }
 }

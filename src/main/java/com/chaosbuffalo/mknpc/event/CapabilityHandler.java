@@ -3,9 +3,11 @@ package com.chaosbuffalo.mknpc.event;
 import com.chaosbuffalo.mknpc.MKNpc;
 import com.chaosbuffalo.mknpc.capabilities.NpcCapabilities;
 import com.chaosbuffalo.mknpc.capabilities.NpcDataProvider;
+import com.chaosbuffalo.mknpc.capabilities.WorldNpcDataProvider;
 import net.minecraft.entity.Entity;
 import net.minecraft.entity.LivingEntity;
 import net.minecraft.entity.player.PlayerEntity;
+import net.minecraft.world.World;
 import net.minecraftforge.event.AttachCapabilitiesEvent;
 import net.minecraftforge.eventbus.api.SubscribeEvent;
 import net.minecraftforge.fml.common.Mod;
@@ -21,4 +23,11 @@ public class CapabilityHandler {
             e.addCapability(NpcCapabilities.MK_NPC_CAP_ID, new NpcDataProvider((LivingEntity) e.getObject()));
         }
     }
+
+    @SuppressWarnings("unused")
+    @SubscribeEvent
+    public static void attachWorldCapability(AttachCapabilitiesEvent<World> e) {
+        e.addCapability(NpcCapabilities.MK_WORLD_NPC_CAP_ID, new WorldNpcDataProvider(e.getObject()));
+    }
+
 }

@@ -48,7 +48,7 @@ public class MKSpawnerBlock extends Block {
     public ActionResultType onBlockActivated(BlockState state, World worldIn, BlockPos pos, PlayerEntity player,
                                              Hand handIn, BlockRayTraceResult hit) {
         if (handIn.equals(Hand.MAIN_HAND)){
-            if (!worldIn.isRemote()){
+            if (!worldIn.isRemote() && player.isCreative()){
                 ((ServerPlayerEntity) player).connection.sendPacket(
                         PacketHandler.getNetworkChannel().toVanillaPacket(
                                 new OpenMKSpawnerPacket((MKSpawnerTileEntity) worldIn.getTileEntity(pos)),

@@ -1,254 +1,200 @@
 package com.chaosbuffalo.mknpc.npc;
 
-import com.chaosbuffalo.mkcore.CoreCapabilities;
-import com.chaosbuffalo.mkcore.MKCoreRegistry;
-import com.chaosbuffalo.mkcore.abilities.MKAbility;
-import com.chaosbuffalo.mkcore.abilities.MKAbilityInfo;
-import com.chaosbuffalo.mkfaction.faction.MKFaction;
 import com.chaosbuffalo.mknpc.MKNpc;
-import com.chaosbuffalo.mknpc.capabilities.NpcCapabilities;
-import com.chaosbuffalo.mknpc.entity.MKEntity;
-import com.chaosbuffalo.mknpc.utils.RandomCollection;
+import com.chaosbuffalo.mknpc.npc.options.FactionNameOption;
+import com.chaosbuffalo.mknpc.npc.options.FactionOption;
+import com.chaosbuffalo.mknpc.npc.options.NameOption;
+import com.chaosbuffalo.mknpc.npc.options.NpcDefinitionOption;
 import com.google.gson.Gson;
-import com.google.gson.JsonArray;
 import com.google.gson.JsonElement;
 import com.google.gson.JsonObject;
 import net.minecraft.entity.Entity;
 import net.minecraft.entity.EntityType;
 import net.minecraft.entity.LivingEntity;
-import net.minecraft.entity.ai.attributes.AbstractAttributeMap;
-import net.minecraft.entity.ai.attributes.IAttribute;
-import net.minecraft.entity.ai.attributes.IAttributeInstance;
-import net.minecraft.inventory.EquipmentSlotType;
-import net.minecraft.item.Item;
-import net.minecraft.item.ItemStack;
-import net.minecraft.item.Items;
 import net.minecraft.util.ResourceLocation;
 import net.minecraft.util.math.Vec3d;
-import net.minecraft.util.text.StringTextComponent;
 import net.minecraft.world.World;
 import net.minecraftforge.registries.ForgeRegistries;
 
 import javax.annotation.Nullable;
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
 
 public class NpcDefinition {
-    private final ResourceLocation entityType;
+    private ResourceLocation entityType;
     private final ResourceLocation definitionName;
-    private ResourceLocation factionName;
-    private ResourceLocation dialogueName;
-    private String name;
-    private final List<NpcAbilityEntry> abilities;
-    private final List<NpcAttributeEntry> attributes;
-    private int experiencePoints;
-    private final Map<EquipmentSlotType, List<NpcItemChoice>> itemChoices;
+    private final ResourceLocation parentName;
+    private NpcDefinition parent;
+    private final Map<ResourceLocation, NpcDefinitionOption> options;
+    private static final Set<String> toSkip = new HashSet<>();
+    private static final List<NpcDefinitionOption.ApplyOrder> orders = new ArrayList<>();
+    static {
+        toSkip.add("entityType");
+        toSkip.add("parent");
+        orders.add(NpcDefinitionOption.ApplyOrder.EARLY);
+        orders.add(NpcDefinitionOption.ApplyOrder.MIDDLE);
+        orders.add(NpcDefinitionOption.ApplyOrder.LATE);
+    }
 
-    public NpcDefinition(ResourceLocation definitionName, ResourceLocation entityType){
+    boolean hasParentName(){
+        return parentName != null;
+    }
+
+    public NpcDefinition(ResourceLocation definitionName, ResourceLocation entityType, ResourceLocation parentName){
         this.definitionName = definitionName;
-        this.abilities = new ArrayList<>();
-        this.attributes = new ArrayList<>();
-        this.itemChoices = new HashMap<>();
         this.entityType = entityType;
-        this.dialogueName = null;
-        this.factionName = MKFaction.INVALID_FACTION;
-        this.name = "";
-        this.experiencePoints = 100;
+        this.parentName = parentName;
+        this.options = new HashMap<>();
     }
 
-    public void setFactionName(ResourceLocation name){
-        this.factionName = name;
+    public boolean hasParent(){
+        return parent != null;
     }
 
-    @Nullable
-    public ResourceLocation getFactionName() {
-        return factionName;
+    public NpcDefinition getParent() {
+        return parent;
     }
 
-    public void setName(String name) {
-        this.name = name;
-    }
-
-    public void setExperiencePoints(int experiencePoints) {
-        this.experiencePoints = experiencePoints;
-    }
-
-    public int getExperiencePoints() {
-        return experiencePoints;
-    }
-
-    public void setDialogueName(ResourceLocation dialogueName) {
-        this.dialogueName = dialogueName;
-    }
-
-    @Nullable
-    public ResourceLocation getDialogueName() {
-        return dialogueName;
-    }
-
-    @Nullable
-    public String getName() {
-        return name;
-    }
-
-    public void addAttribute(IAttribute attribute, double value){
-        attributes.add(new NpcAttributeEntry(attribute, value));
-    }
-
-    public void addAbility(ResourceLocation location, int priority){
-        abilities.add(new NpcAbilityEntry(location, priority));
-    }
-
-    public void addItemChoice(EquipmentSlotType slot, NpcItemChoice choice){
-        if (!itemChoices.containsKey(slot)){
-            itemChoices.put(slot, new ArrayList<>());
+    public boolean resolveParents(){
+        if (hasParentName()){
+            parent = NpcDefinitionManager.getDefinition(parentName);
+            return parent != null && parent.resolveParents();
         }
-        itemChoices.get(slot).add(choice);
+        return true;
     }
 
-
-    public void addAbilityEntry(NpcAbilityEntry entry){
-        abilities.add(entry);
+    public void resolveEntityType(){
+        if (entityType == null){
+            entityType = getAncestor().getEntityType();
+        }
     }
 
-    public void addAttributeEntry(NpcAttributeEntry entry){
-        attributes.add(entry);
+    public NpcDefinition getAncestor(){
+        if (!hasParent()){
+            return this;
+        } else {
+            return getParent().getAncestor();
+        }
+    }
+
+    public ResourceLocation getParentName() {
+        return parentName;
     }
 
     public ResourceLocation getDefinitionName() {
         return definitionName;
     }
 
-    public static NpcDefinition deserializeJson(Gson gson, ResourceLocation name, JsonObject obj){
-        ResourceLocation typeName = new ResourceLocation(obj.get("entityType").getAsString());
-        NpcDefinition def = new NpcDefinition(name, typeName);
-        if (obj.has("abilities")){
-            JsonArray abilityArray = obj.getAsJsonArray("abilities");
-            for (JsonElement ability : abilityArray) {
-                JsonObject abilityObj = ability.getAsJsonObject();
-                ResourceLocation abilityName = new ResourceLocation(abilityObj.get("abilityName").getAsString());
-                NpcAbilityEntry entry = new NpcAbilityEntry(abilityName, abilityObj.get("priority").getAsInt());
-                def.addAbilityEntry(entry);
-            }
+    public boolean hasOption(ResourceLocation optionName){
+        return options.containsKey(optionName) ||  (hasParent() && parent.hasOption(optionName));
+    }
+
+    public NpcDefinitionOption getOption(ResourceLocation optionName){
+        if (!hasOption(optionName)){
+            return null;
         }
-        if (obj.has("attributes")){
-            JsonArray attributeArray  = obj.getAsJsonArray("attributes");
-            for (JsonElement attr : attributeArray){
-                NpcAttributeEntry entry = gson.fromJson(attr, NpcAttributeEntry.class);
-                def.addAttributeEntry(entry);
-            }
+        if (options.containsKey(optionName)){
+            return options.get(optionName);
+        } else if (hasParent()){
+            return getParent().getOption(optionName);
         }
-        if (obj.has("faction")){
-            def.setFactionName(new ResourceLocation(obj.get("faction").getAsString()));
+        return null;
+    }
+
+    public void addOption(NpcDefinitionOption option){
+        options.put(option.getName(), option);
+    }
+
+    @Nullable
+    public ResourceLocation getFactionName(){
+        if (hasOption(FactionOption.NAME)){
+            FactionOption option = (FactionOption) getOption(FactionOption.NAME);
+            return option.getValue();
         }
-        if (obj.has("name")){
-            def.setName(obj.get("name").getAsString());
+        return null;
+    }
+
+    @Nullable
+    public String getName() {
+        if (hasOption(FactionNameOption.NAME)){
+            FactionNameOption option = (FactionNameOption) getOption(FactionNameOption.NAME);
+            return option.getDisplayTitle();
         }
-        if (obj.has("experience")){
-            def.setExperiencePoints(obj.get("experience").getAsInt());
+        if (hasOption(NameOption.NAME)){
+            NameOption option = (NameOption) getOption(NameOption.NAME);
+            return option.getValue();
         }
-        if (obj.has("dialogue")){
-            def.setDialogueName(new ResourceLocation(obj.get("dialogue").getAsString()));
-        }
-        if (obj.has("equipment")){
-            JsonObject equipmentObject = obj.getAsJsonObject("equipment");
-            for (Map.Entry<String, JsonElement> entry : equipmentObject.entrySet()){
-                EquipmentSlotType slot = EquipmentSlotType.fromString(entry.getKey());
-                JsonArray itemChoiceArray = entry.getValue().getAsJsonArray();
-                for (JsonElement itemChoiceEle : itemChoiceArray){
-                    JsonObject itemChoiceObj = itemChoiceEle.getAsJsonObject();
-                    float dropChance = .00f;
-                    if (itemChoiceObj.has("dropChance")) {
-                        dropChance = itemChoiceObj.get("dropChance").getAsFloat();
-                    }
-                    String itemName = itemChoiceObj.get("item").getAsString();
-                    Item item = Items.AIR;
-                    if (!itemName.equals("EMPTY")) {
-                        item = ForgeRegistries.ITEMS.getValue(new ResourceLocation(itemName));
-                    }
-                    if (item.equals(Items.AIR) && !itemName.equals("EMPTY")) {
-                        MKNpc.LOGGER.info("Failed to load item for {} in definition: {}",
-                                itemChoiceObj.get("item").getAsString(), name);
-                        continue;
-                    } else {
-                        ItemStack itemStack;
-                        if (item.equals(Items.AIR)) {
-                            itemStack = ItemStack.EMPTY;
-                        } else {
-                            itemStack = new ItemStack(item, 1);
-                        }
-                        NpcItemChoice choice = new NpcItemChoice(itemStack,
-                                itemChoiceObj.get("weight").getAsDouble(),
-                                dropChance);
-                        def.addItemChoice(slot, choice);
-                    }
-                }
-            }
-        }
-        return def;
+        return null;
+    }
+
+    public ResourceLocation getEntityType() {
+        return entityType;
     }
 
     public void applyDefinition(Entity entity){
-        if (entity instanceof MKEntity){
-            MKEntity mkEntity = (MKEntity) entity;
-            if (getDialogueName() != null){
-                mkEntity.getDialogueComponent().setTreeName(getDialogueName());
-            }
+        for (NpcDefinitionOption.ApplyOrder order : orders){
+            apply(entity, order);
         }
+        // hack to make sure we're at our new max health
         if (entity instanceof LivingEntity){
-            LivingEntity livingEntity = (LivingEntity) entity;
-            livingEntity.getCapability(CoreCapabilities.ENTITY_CAPABILITY).ifPresent((cap) -> {
-                for (MKAbilityInfo ability : cap.getKnowledge().getAbilities()){
-                    cap.getKnowledge().unlearnAbility(ability.getId());
-                }
-                for (NpcAbilityEntry entry : abilities){
-                    MKAbility ability = MKCoreRegistry.getAbility(entry.getAbilityName());
-                    if (ability != null){
-                        cap.getKnowledge().learnAbility(ability, entry.getPriority());
-                    }
-                }
-            });
-            AbstractAttributeMap attributeMap = livingEntity.getAttributes();
-            for (NpcAttributeEntry entry : attributes){
-                IAttributeInstance attribute = attributeMap.getAttributeInstanceByName(entry.getAttributeName());
-                if (attribute != null){
-                    attribute.setBaseValue(entry.getValue());
-                }
-            }
-            applyItemChoices(livingEntity);
-            livingEntity.setHealth(livingEntity.getMaxHealth());
-        }
-        if (getName() != null && !getName().equals("")){
-            entity.setCustomName(new StringTextComponent(getName()));
+            ((LivingEntity) entity).setHealth(((LivingEntity) entity).getMaxHealth());
         }
     }
 
-    public void applyItemChoices(LivingEntity entity){
-        for (Map.Entry<EquipmentSlotType, List<NpcItemChoice>> entry : itemChoices.entrySet()){
-            RandomCollection<NpcItemChoice> slotChoices = new RandomCollection<>();
-            for (NpcItemChoice choice : entry.getValue()){
-                slotChoices.add(choice.weight, choice);
+
+    private void apply(Entity entity, NpcDefinitionOption.ApplyOrder order){
+        if (hasParent()){
+            getParent().apply(entity, order);
+        }
+        for (Map.Entry<ResourceLocation, NpcDefinitionOption> option : options.entrySet()){
+            if (option.getValue().getOrdering() == order){
+                option.getValue().applyToEntity(this, entity);
             }
-            NpcItemChoice.livingEquipmentAssign(entity, entry.getKey(), slotChoices.next());
         }
     }
 
     @Nullable
     public Entity createEntity(World world, Vec3d pos){
-       EntityType<?> type = ForgeRegistries.ENTITIES.getValue(entityType);
-       if (type != null){
-           Entity entity = type.create(world);
-           if (entity == null){
-               return null;
-           }
-           entity.setPosition(pos.getX(), pos.getY(), pos.getZ());
-           entity.getCapability(NpcCapabilities.NPC_DATA_CAPABILITY).ifPresent(
-                   cap -> cap.setDefinition(this));
-           applyDefinition(entity);
-           return entity;
-       }
-       return null;
+        return createEntity(world, pos, UUID.randomUUID());
+    }
+
+    public static NpcDefinition deserializeJson(Gson gson, ResourceLocation name, JsonObject obj){
+        ResourceLocation parentName = null;
+        if (obj.has("parent")){
+            parentName = new ResourceLocation(obj.get("parent").getAsString());
+        }
+        ResourceLocation typeName = null;
+        if (parentName == null){
+            typeName = new ResourceLocation(obj.get("entityType").getAsString());
+        }
+        NpcDefinition def = new NpcDefinition(name, typeName, parentName);
+        for (Map.Entry<String, JsonElement> entry : obj.entrySet()){
+            if (toSkip.contains(entry.getKey())){
+                continue;
+            }
+            ResourceLocation attrLoc = new ResourceLocation(entry.getKey());
+            NpcDefinitionOption option = NpcDefinitionManager.getNpcOption(attrLoc);
+            if (option != null){
+                option.fromJson(gson, obj);
+                def.addOption(option);
+            }
+        }
+        return def;
+    }
+
+    @Nullable
+    public Entity createEntity(World world, Vec3d pos, UUID uuid){
+        EntityType<?> type = ForgeRegistries.ENTITIES.getValue(getEntityType());
+        if (type != null){
+            Entity entity = type.create(world);
+            if (entity == null){
+                return null;
+            }
+            entity.setUniqueId(uuid);
+            entity.setPosition(pos.getX(), pos.getY(), pos.getZ());
+            MKNpc.getNpcData(entity).ifPresent(cap -> cap.setDefinition(this));
+            applyDefinition(entity);
+            return entity;
+        }
+        return null;
     }
 }

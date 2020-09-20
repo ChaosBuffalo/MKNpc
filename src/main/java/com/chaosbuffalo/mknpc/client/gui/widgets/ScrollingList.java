@@ -27,5 +27,13 @@ public abstract class ScrollingList extends MKWidget {
         scrollView.setToTop();
     }
 
+    public MKScrollView getScrollView() {
+        return scrollView;
+    }
+
+    public MKStackLayoutVertical getStackLayout() {
+        return stackLayout;
+    }
+
     protected abstract void populateList(MKStackLayoutVertical layout);
 }

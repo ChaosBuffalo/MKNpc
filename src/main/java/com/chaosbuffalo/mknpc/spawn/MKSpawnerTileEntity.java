@@ -22,8 +22,9 @@ public class MKSpawnerTileEntity extends TileEntity implements ITickableTileEnti
     private int respawnTime;
     private int ticksSinceDeath;
     private int ticksSincePlayer;
-    private final static double SPAWN_RANGE = 100.0;
-    private static final int IDLE_TIME = GameConstants.TICKS_PER_SECOND * 60;
+    private boolean wasAlive;
+    private final static double SPAWN_RANGE = 75.0;
+    private static final int IDLE_TIME = GameConstants.TICKS_PER_SECOND * 10;
     private final RandomCollection<NpcDefinition> randomSpawns;
 
     public MKSpawnerTileEntity(){
@@ -34,10 +35,11 @@ public class MKSpawnerTileEntity extends TileEntity implements ITickableTileEnti
         super(tileEntityTypeIn);
         this.spawnList = new SpawnList();
         this.spawnUUID = UUID.randomUUID();
-        this.respawnTime = GameConstants.TICKS_PER_SECOND * 30;
+        this.respawnTime = GameConstants.TICKS_PER_SECOND * 25;
         this.ticksSinceDeath = 0;
         this.ticksSincePlayer = 0;
         this.entity = null;
+        this.wasAlive = false;
         this.randomSpawns = new RandomCollection<>();
         MKNpc.LOGGER.info("creating tile entity");
     }
@@ -97,11 +99,13 @@ public class MKSpawnerTileEntity extends TileEntity implements ITickableTileEnti
     public void spawnEntity(){
         if (getWorld() != null){
             NpcDefinition definition = randomSpawns.next();
-            Entity entity = definition.createEntity(getWorld(), new Vec3d(getPos()));
+            Entity entity = definition.createEntity(getWorld(), new Vec3d(getPos()).add(0.5, 0.0, 0.5), spawnUUID);
             this.entity = entity;
             if (entity != null){
-                entity.setUniqueId(spawnUUID);
                 getWorld().addEntity(entity);
+                MKNpc.getNpcData(entity).ifPresent((cap) -> {
+                    cap.setMKSpawned(true);
+                });
             }
         }
     }
@@ -119,28 +123,44 @@ public class MKSpawnerTileEntity extends TileEntity implements ITickableTileEnti
         return false;
     }
 
+    public void clearSpawn(){
+        if (entity != null){
+            entity.remove();
+            ticksSinceDeath = 0;
+        }
+    }
+
     @Override
     public void tick() {
         if (getWorld() != null && !getWorld().isRemote() && randomSpawns.size() >0){
+            boolean isAlive = isSpawnAlive();
             if (ticksSinceDeath > 0){
                 ticksSinceDeath--;
             }
+
             if (isPlayerInRange()){
-                if (!isSpawnAlive()){
+                if (!isAlive){
+                    if (wasAlive){
+                        ticksSinceDeath = getRespawnTime();
+                        MKNpc.LOGGER.info("Detected death, setting respawn time {}", ticksSinceDeath);
+                    }
                     if (ticksSinceDeath <= 0){
                         spawnEntity();
-                        ticksSinceDeath = getRespawnTime();
+                        isAlive = true;
                     }
                 }
+                wasAlive = isAlive;
                 ticksSincePlayer = 0;
             } else {
-                if (isSpawnAlive()){
+                if (isAlive){
                     ticksSincePlayer++;
                     if (ticksSincePlayer > IDLE_TIME){
                         entity.remove();
+                        wasAlive = false;
                     }
                 }
             }
+
         }
     }
 }

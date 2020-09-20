@@ -19,9 +19,7 @@ public class RenderRegistry {
 
     @SubscribeEvent
     public static void registerModels(ModelRegistryEvent evt) {
-        RenderingRegistry.registerEntityRenderingHandler(
-                MKNpcEntityTypes.GREEN_LADY.get(),
-                GreenLadyRenderer::new);
+        RenderingRegistry.registerEntityRenderingHandler(MKNpcEntityTypes.GREEN_LADY.get(), GreenLadyRenderer::new);
         RenderTypeLookup.setRenderLayer(MKNpcBlocks.MK_SPAWNER_BLOCK.get(), RenderType.getCutout());
     }
 }

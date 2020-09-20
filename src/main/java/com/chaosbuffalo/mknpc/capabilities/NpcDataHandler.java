@@ -1,7 +1,7 @@
 package com.chaosbuffalo.mknpc.capabilities;
 
-import com.chaosbuffalo.mknpc.npc.NpcDefinition;
 import com.chaosbuffalo.mknpc.npc.NpcDefinitionManager;
+import com.chaosbuffalo.mknpc.npc.NpcDefinition;
 import net.minecraft.entity.LivingEntity;
 import net.minecraft.nbt.CompoundNBT;
 import net.minecraft.nbt.INBT;
@@ -15,9 +15,11 @@ public class NpcDataHandler implements IMKNpcData {
     private LivingEntity entity;
     private NpcDefinition definition;
     private boolean mkSpawned;
+    private int bonusXp;
 
     public NpcDataHandler(){
         mkSpawned = false;
+        bonusXp = 0;
     }
 
     @Override
@@ -42,7 +44,12 @@ public class NpcDataHandler implements IMKNpcData {
 
     @Override
     public int getBonusXp() {
-        return definition != null ? definition.getExperiencePoints() : 0;
+        return bonusXp;
+    }
+
+    @Override
+    public void setBonusXp(int value) {
+        this.bonusXp = value;
     }
 
     @Override
