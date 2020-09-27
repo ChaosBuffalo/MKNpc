@@ -3,10 +3,12 @@ package com.chaosbuffalo.mknpc.entity;
 import com.chaosbuffalo.mkcore.CoreCapabilities;
 import com.chaosbuffalo.mkcore.abilities.training.*;
 import com.chaosbuffalo.mkcore.mku.abilities.*;
-import com.chaosbuffalo.mknpc.entity.ai.*;
 import com.chaosbuffalo.mknpc.entity.ai.controller.MovementStrategyController;
+import com.chaosbuffalo.mknpc.entity.ai.goal.*;
 import com.chaosbuffalo.mknpc.entity.ai.memory.MKMemoryModuleTypes;
 import net.minecraft.entity.*;
+import net.minecraft.entity.ai.goal.SwimGoal;
+import net.minecraft.entity.monster.AbstractSkeletonEntity;
 import net.minecraft.item.Items;
 import net.minecraft.nbt.CompoundNBT;
 import net.minecraft.util.Hand;
@@ -33,10 +35,14 @@ public class GreenLadyEntity extends MKEntity implements IAbilityTrainingEntity 
                 .addRequirement(new ExperienceLevelRequirement(5));
     }
 
+
+
     @Nullable
     @Override
     public ILivingEntityData onInitialSpawn(IWorld worldIn, DifficultyInstance difficultyIn, SpawnReason reason,
                                             @Nullable ILivingEntityData spawnDataIn, @Nullable CompoundNBT dataTag) {
+
+        ILivingEntityData entityData = super.onInitialSpawn(worldIn, difficultyIn, reason, spawnDataIn, dataTag);
         this.getCapability(CoreCapabilities.ENTITY_CAPABILITY).ifPresent(
                 mkEntityData -> {
                     mkEntityData.getKnowledge().learnAbility(EmberAbility.INSTANCE, 2);
@@ -45,26 +51,11 @@ public class GreenLadyEntity extends MKEntity implements IAbilityTrainingEntity 
                     mkEntityData.getKnowledge().learnAbility(SkinLikeWoodAbility.INSTANCE);
                 });
         this.getAttribute(SharedMonsterAttributes.MOVEMENT_SPEED).setBaseValue(.3);
-        MovementStrategyController.enterCastingMode(this, 5.0);
-        return super.onInitialSpawn(worldIn, difficultyIn, reason, spawnDataIn, dataTag);
+        return entityData;
 
     }
 
-    @Override
-    protected void registerGoals() {
-        this.goalSelector.addGoal(7, new LookAtThreatTargetGoal(this));
-        this.targetSelector.addGoal(2, new TargetEnemyGoal(this, true, true));
-        this.goalSelector.addGoal(1, new MovementGoal(this));
-        this.goalSelector.addGoal(3, new MKMeleeAttackGoal(this, .25));
-        this.goalSelector.addGoal(2, new UseAbilityGoal(this));
-    }
 
-
-    @Override
-    public void enterDefaultMovementState(LivingEntity target) {
-        this.brain.setMemory(MKMemoryModuleTypes.MOVEMENT_TARGET, target);
-        MovementStrategyController.enterCastingMode(this, 5.0);
-    }
 
     @Override
     public IAbilityTrainer getAbilityTrainer() {

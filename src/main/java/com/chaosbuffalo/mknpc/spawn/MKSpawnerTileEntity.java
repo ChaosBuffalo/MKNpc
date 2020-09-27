@@ -2,15 +2,20 @@ package com.chaosbuffalo.mknpc.spawn;
 
 import com.chaosbuffalo.mkcore.GameConstants;
 import com.chaosbuffalo.mknpc.MKNpc;
+import com.chaosbuffalo.mknpc.entity.MKEntity;
 import com.chaosbuffalo.mknpc.init.MKNpcTileEntityTypes;
 import com.chaosbuffalo.mknpc.npc.NpcDefinition;
 import com.chaosbuffalo.mknpc.utils.RandomCollection;
 import net.minecraft.entity.Entity;
+import net.minecraft.entity.LivingEntity;
+import net.minecraft.entity.MobEntity;
+import net.minecraft.entity.SpawnReason;
 import net.minecraft.entity.player.PlayerEntity;
 import net.minecraft.nbt.CompoundNBT;
 import net.minecraft.tileentity.ITickableTileEntity;
 import net.minecraft.tileentity.TileEntity;
 import net.minecraft.tileentity.TileEntityType;
+import net.minecraft.util.math.BlockPos;
 import net.minecraft.util.math.Vec3d;
 
 import java.util.UUID;
@@ -99,13 +104,23 @@ public class MKSpawnerTileEntity extends TileEntity implements ITickableTileEnti
     public void spawnEntity(){
         if (getWorld() != null){
             NpcDefinition definition = randomSpawns.next();
-            Entity entity = definition.createEntity(getWorld(), new Vec3d(getPos()).add(0.5, 0.0, 0.5), spawnUUID);
+            Vec3d spawnPos = new Vec3d(getPos()).add(0.5, 0.0630, 0.5);
+            Entity entity = definition.createEntity(getWorld(), spawnPos, spawnUUID);
             this.entity = entity;
             if (entity != null){
                 getWorld().addEntity(entity);
                 MKNpc.getNpcData(entity).ifPresent((cap) -> {
                     cap.setMKSpawned(true);
+                    cap.setSpawnPos(new BlockPos(spawnPos).up());
                 });
+                if (entity instanceof MobEntity){
+                    ((MobEntity) entity).onInitialSpawn(getWorld(), getWorld().getDifficultyForLocation(
+                            new BlockPos(entity)), SpawnReason.SPAWNER, null, null);
+                }
+                if (entity instanceof MKEntity){
+                    ((MKEntity) entity).enterNonCombatMovementState();
+                }
+                // this is where we would set movement strategy
             }
         }
     }

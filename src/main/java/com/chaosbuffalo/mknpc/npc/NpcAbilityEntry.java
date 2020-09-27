@@ -17,6 +17,7 @@ public class NpcAbilityEntry implements INBTSerializable<CompoundNBT> {
     public NpcAbilityEntry(ResourceLocation abilityName, int priority, double chance){
         this.priority = priority;
         this.abilityName = abilityName;
+        this.chance = chance;
     }
 
     public void setPriority(int priority) {

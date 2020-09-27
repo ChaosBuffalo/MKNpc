@@ -1,4 +1,4 @@
-package com.chaosbuffalo.mknpc.entity.ai;
+package com.chaosbuffalo.mknpc.entity.ai.goal;
 
 import com.chaosbuffalo.mknpc.entity.MKEntity;
 import com.chaosbuffalo.mknpc.entity.ai.memory.MKMemoryModuleTypes;
@@ -9,10 +9,11 @@ import net.minecraft.util.Hand;
 
 import java.util.EnumSet;
 import java.util.Optional;
+import java.util.function.Supplier;
 
 public class MKMeleeAttackGoal extends Goal {
     private final MKEntity entity;
-    private double speed;
+    private Supplier<Double> speedSupplier;
     private LivingEntity target;
     private double delayCounter;
 
@@ -30,11 +31,11 @@ public class MKMeleeAttackGoal extends Goal {
         return false;
     }
 
-    public MKMeleeAttackGoal(MKEntity entity, double speedIn) {
+    public MKMeleeAttackGoal(MKEntity entity, Supplier<Double> speedIn) {
         this.entity = entity;
-        this.speed = speedIn;
         this.delayCounter = 0;
         this.target = null;
+        this.speedSupplier = speedIn;
         this.setMutexFlags(EnumSet.of(Flag.MOVE, Flag.LOOK));
     }
 
@@ -46,7 +47,7 @@ public class MKMeleeAttackGoal extends Goal {
     @Override
     public void tick() {
         this.delayCounter = Math.max(delayCounter - 1, 0);
-        entity.getNavigator().tryMoveToEntityLiving(target, speed);
+        entity.getNavigator().tryMoveToEntityLiving(target, speedSupplier.get());
         entity.getLookController().setLookPositionWithEntity(target, 30.0f, 30.0f);
         if (delayCounter == 0) {
             checkAndPerformAttack(target, entity.getDistanceSq(target));

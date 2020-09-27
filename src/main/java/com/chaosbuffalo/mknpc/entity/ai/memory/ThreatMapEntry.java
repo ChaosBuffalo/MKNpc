@@ -1,22 +1,22 @@
 package com.chaosbuffalo.mknpc.entity.ai.memory;
 
 public class ThreatMapEntry {
-    private int currentThreat;
+    private float currentThreat;
 
     public ThreatMapEntry() {
         currentThreat = 0;
     }
 
-    public int getCurrentThreat() {
+    public float getCurrentThreat() {
         return currentThreat;
     }
 
-    public ThreatMapEntry addThreat(int value) {
+    public ThreatMapEntry addThreat(float value) {
         currentThreat += value;
         return this;
     }
 
-    public ThreatMapEntry subtractThreat(int value) {
+    public ThreatMapEntry subtractThreat(float value) {
         currentThreat -= value;
         return this;
     }

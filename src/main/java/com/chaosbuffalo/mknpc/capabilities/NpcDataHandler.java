@@ -7,6 +7,7 @@ import net.minecraft.nbt.CompoundNBT;
 import net.minecraft.nbt.INBT;
 import net.minecraft.util.Direction;
 import net.minecraft.util.ResourceLocation;
+import net.minecraft.util.math.BlockPos;
 import net.minecraftforge.common.capabilities.Capability;
 
 import javax.annotation.Nullable;
@@ -16,6 +17,7 @@ public class NpcDataHandler implements IMKNpcData {
     private NpcDefinition definition;
     private boolean mkSpawned;
     private int bonusXp;
+    private BlockPos blockPos;
 
     public NpcDataHandler(){
         mkSpawned = false;
@@ -55,6 +57,16 @@ public class NpcDataHandler implements IMKNpcData {
     @Override
     public boolean wasMKSpawned() {
         return mkSpawned;
+    }
+
+    @Override
+    public void setSpawnPos(BlockPos pos) {
+        this.blockPos = pos;
+    }
+
+    @Override
+    public BlockPos getSpawnPos() {
+        return blockPos;
     }
 
     @Override

@@ -1,4 +1,4 @@
-package com.chaosbuffalo.mknpc.entity.ai;
+package com.chaosbuffalo.mknpc.entity.ai.goal;
 
 import com.chaosbuffalo.mknpc.entity.ai.memory.MKMemoryModuleTypes;
 import net.minecraft.entity.LivingEntity;
@@ -25,6 +25,11 @@ public class LookAtThreatTargetGoal extends Goal {
             return true;
         }
         return false;
+    }
+
+    @Override
+    public void startExecuting() {
+        super.startExecuting();
     }
 
     @Override

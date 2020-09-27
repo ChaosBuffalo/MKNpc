@@ -3,6 +3,7 @@ package com.chaosbuffalo.mknpc.entity.ai.controller;
 import com.chaosbuffalo.mknpc.entity.ai.memory.MKMemoryModuleTypes;
 import com.chaosbuffalo.mknpc.entity.ai.movement_strategy.FollowMovementStrategy;
 import com.chaosbuffalo.mknpc.entity.ai.movement_strategy.KiteMovementStrategy;
+import com.chaosbuffalo.mknpc.entity.ai.movement_strategy.RandomWanderMovementStrategy;
 import com.chaosbuffalo.mknpc.entity.ai.movement_strategy.StationaryMovementStrategy;
 import net.minecraft.entity.LivingEntity;
 
@@ -22,5 +23,11 @@ public class MovementStrategyController {
     public static void enterCastingMode(LivingEntity entity, double castingDistance) {
         entity.getBrain().setMemory(MKMemoryModuleTypes.MOVEMENT_STRATEGY,
                 new KiteMovementStrategy(castingDistance));
+    }
+
+    public static void enterRandomWander(LivingEntity entity){
+        entity.getBrain().removeMemory(MKMemoryModuleTypes.MOVEMENT_TARGET);
+        entity.getBrain().setMemory(MKMemoryModuleTypes.MOVEMENT_STRATEGY,
+                new RandomWanderMovementStrategy(120));
     }
 }

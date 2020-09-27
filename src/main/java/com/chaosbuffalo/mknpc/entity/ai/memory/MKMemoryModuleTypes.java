@@ -6,6 +6,7 @@ import com.chaosbuffalo.mknpc.MKNpc;
 import com.chaosbuffalo.mknpc.entity.ai.movement_strategy.MovementStrategy;
 import net.minecraft.entity.LivingEntity;
 import net.minecraft.entity.ai.brain.memory.MemoryModuleType;
+import net.minecraft.util.math.BlockPos;
 import net.minecraftforge.event.RegistryEvent;
 import net.minecraftforge.eventbus.api.SubscribeEvent;
 import net.minecraftforge.fml.common.Mod;
@@ -45,6 +46,12 @@ public class MKMemoryModuleTypes {
     @ObjectHolder("mknpc:current_ability")
     public static MemoryModuleType<MKAbility> CURRENT_ABILITY;
 
+    @ObjectHolder("mknpc:spawn_point")
+    public static MemoryModuleType<BlockPos> SPAWN_POINT;
+
+    @ObjectHolder("mknpc:is_returning")
+    public static MemoryModuleType<Boolean> IS_RETURNING;
+
 
     @SubscribeEvent
     public static void registerModuleTypes(RegistryEvent.Register<MemoryModuleType<?>> evt) {
@@ -66,6 +73,10 @@ public class MKMemoryModuleTypes {
                 .setRegistryName(MKNpc.MODID, "movement_target"));
         evt.getRegistry().register(new MemoryModuleType<MKAbility>(Optional.empty())
                 .setRegistryName(MKNpc.MODID, "current_ability"));
+        evt.getRegistry().register(new MemoryModuleType<BlockPos>(Optional.empty())
+                .setRegistryName(MKNpc.MODID, "spawn_point"));
+        evt.getRegistry().register(new MemoryModuleType<Boolean>(Optional.empty())
+                .setRegistryName(MKNpc.MODID, "is_returning"));
     }
 
 
