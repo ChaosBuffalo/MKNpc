@@ -2,6 +2,7 @@ package com.chaosbuffalo.mknpc.entity.ai.sensor;
 
 import com.chaosbuffalo.mknpc.entity.ai.memory.MKMemoryModuleTypes;
 import com.chaosbuffalo.mknpc.entity.ai.memory.ThreatMapEntry;
+import com.chaosbuffalo.mknpc.entity.attributes.NpcAttributes;
 import com.google.common.collect.ImmutableSet;
 import net.minecraft.entity.LivingEntity;
 import net.minecraft.entity.ai.brain.memory.MemoryModuleType;
@@ -12,10 +13,17 @@ import java.util.*;
 import java.util.stream.Collectors;
 
 public class ThreatSensor extends Sensor<LivingEntity> {
+    private static final float THREAT_FALLOFF_2 = 225.0f;
+    private static final float BONUS_THREAT_FIRST_SIGHT = 1000.0f;
+    private static final float MAX_THREAT_FROM_DISTANCE = 100.0f;
+    private static final float ADD_THREAT = 125.0f;
+    private static final float REMOVE_DIST_2 = 400.0f;
 
-    private static final float THREAT_DISTANCE_2 = 100.0f;
-    private static final float MAX_THREAT_FROM_CLOSENESS = 10.0f;
 
+    private float getAggroDistanceForEntity(LivingEntity entity){
+        double aggroDist = entity.getAttribute(NpcAttributes.AGGRO_RANGE).getValue();
+        return (float) (aggroDist * aggroDist);
+    }
 
     @Override
     protected void update(ServerWorld worldIn, LivingEntity entityIn) {
@@ -24,24 +32,37 @@ public class ThreatSensor extends Sensor<LivingEntity> {
                 MKMemoryModuleTypes.THREAT_MAP);
         Map<LivingEntity, ThreatMapEntry> threatMap = opt.orElse(new HashMap<>());
         Optional<LivingEntity> targetOpt = entityIn.getBrain().getMemory(MKMemoryModuleTypes.THREAT_TARGET);
-        if (targetOpt.isPresent() && !targetOpt.get().isAlive()) {
+        Optional<Boolean> isReturningOpt = entityIn.getBrain().getMemory(MKMemoryModuleTypes.IS_RETURNING);
+        if (targetOpt.isPresent() && (!targetOpt.get().isAlive() || isReturningOpt.isPresent())) {
             entityIn.getBrain().removeMemory(MKMemoryModuleTypes.THREAT_TARGET);
         }
-        if (enemyOpt.isPresent()) {
+        if (enemyOpt.isPresent() && !isReturningOpt.isPresent()) {
             List<LivingEntity> enemies = enemyOpt.get();
-            Map<LivingEntity, ThreatMapEntry> newThreatMap = new HashMap<>();
             for (LivingEntity enemy : enemies) {
-                float dist2 = (float) entityIn.getDistanceSq(enemy);
-                if (dist2 < THREAT_DISTANCE_2) {
-                    ThreatMapEntry entry = threatMap.getOrDefault(enemy, new ThreatMapEntry());
-                    newThreatMap.put(enemy, entry.addThreat(Math.round(
-                            (1.0f - dist2 / THREAT_DISTANCE_2) * MAX_THREAT_FROM_CLOSENESS)));
+                double dist2 = entityIn.getDistanceSq(enemy);
+                if (dist2 < getAggroDistanceForEntity(entityIn) && !threatMap.containsKey(enemy)) {
+                    float bonusThreat = ADD_THREAT;
+                    if (threatMap.isEmpty()) {
+                        bonusThreat = BONUS_THREAT_FIRST_SIGHT;
+                    }
+                    threatMap.put(enemy, new ThreatMapEntry().addThreat(bonusThreat));
                 }
             }
-            List<LivingEntity> sortedThreat = newThreatMap.entrySet().stream()
-                    .sorted(Comparator.comparingInt(entry -> -entry.getValue().getCurrentThreat()))
+            Set<LivingEntity> toRemove = new HashSet<>();
+            for (Map.Entry<LivingEntity, ThreatMapEntry> entry : threatMap.entrySet()){
+                float dist2 = (float) entityIn.getDistanceSq(entry.getKey());
+                ThreatMapEntry threat = entry.getValue().addThreat((1.0f - dist2 / THREAT_FALLOFF_2) * MAX_THREAT_FROM_DISTANCE);
+                if (threat.getCurrentThreat() < 0 || dist2 > REMOVE_DIST_2 || !entry.getKey().isAlive()){
+                    toRemove.add(entry.getKey());
+                }
+            }
+            for (LivingEntity entity : toRemove){
+                threatMap.remove(entity);
+            }
+            List<LivingEntity> sortedThreat = threatMap.entrySet().stream()
+                    .sorted(Comparator.comparingDouble(entry -> -entry.getValue().getCurrentThreat()))
                     .map(Map.Entry::getKey).collect(Collectors.toList());
-            entityIn.getBrain().setMemory(MKMemoryModuleTypes.THREAT_MAP, newThreatMap);
+            entityIn.getBrain().setMemory(MKMemoryModuleTypes.THREAT_MAP, threatMap);
             entityIn.getBrain().setMemory(MKMemoryModuleTypes.THREAT_LIST, sortedThreat);
             if (sortedThreat.size() > 0) {
                 entityIn.getBrain().setMemory(MKMemoryModuleTypes.THREAT_TARGET, sortedThreat.get(0));
@@ -54,6 +75,6 @@ public class ThreatSensor extends Sensor<LivingEntity> {
     @Override
     public Set<MemoryModuleType<?>> getUsedMemories() {
         return ImmutableSet.of(MKMemoryModuleTypes.THREAT_MAP, MKMemoryModuleTypes.VISIBLE_ENEMIES,
-                MKMemoryModuleTypes.THREAT_LIST);
+                MKMemoryModuleTypes.THREAT_LIST, MKMemoryModuleTypes.IS_RETURNING);
     }
 }

@@ -1,5 +1,6 @@
 package com.chaosbuffalo.mknpc.capabilities;
 
+import com.chaosbuffalo.mknpc.MKNpc;
 import com.chaosbuffalo.mknpc.npc.NpcDefinition;
 import com.chaosbuffalo.mknpc.npc.WorldPermanentSpawnConfiguration;
 import com.chaosbuffalo.mknpc.npc.option_entries.INpcOptionEntry;
@@ -32,23 +33,30 @@ public class WorldNpcDataHandler implements IWorldNpcData{
 
     @Override
     public boolean hasEntityOptionEntry(NpcDefinition definition, WorldPermanentOption attribute, Entity entity) {
-        return worldPermanentSpawnConfigurations.containsKey(entity.getUniqueID()) &&
-                worldPermanentSpawnConfigurations.get(entity.getUniqueID()).hasAttributeEntry(
+        UUID spawnId = getSpawnIdForEntity(entity);
+        return worldPermanentSpawnConfigurations.containsKey(spawnId) &&
+                worldPermanentSpawnConfigurations.get(spawnId).hasAttributeEntry(
                         definition.getDefinitionName(), attribute.getName());
+    }
+
+    private static UUID getSpawnIdForEntity(Entity entity){
+        return MKNpc.getNpcData(entity).map(IMKNpcData::getSpawnID).orElse(entity.getUniqueID());
     }
 
     @Override
     public INpcOptionEntry getEntityOptionEntry(NpcDefinition definition, WorldPermanentOption attribute, Entity entity) {
-        return worldPermanentSpawnConfigurations.get(entity.getUniqueID()).getOptionEntry(definition, attribute);
+        UUID spawnId = getSpawnIdForEntity(entity);
+        return worldPermanentSpawnConfigurations.get(spawnId).getOptionEntry(definition, attribute);
     }
 
     @Override
     public void addEntityOptionEntry(NpcDefinition definition, WorldPermanentOption attribute,
                                      Entity entity, INpcOptionEntry entry) {
-        if (!worldPermanentSpawnConfigurations.containsKey(entity.getUniqueID())){
-            worldPermanentSpawnConfigurations.put(entity.getUniqueID(), new WorldPermanentSpawnConfiguration());
+        UUID spawnId = getSpawnIdForEntity(entity);
+        if (!worldPermanentSpawnConfigurations.containsKey(spawnId)){
+            worldPermanentSpawnConfigurations.put(spawnId, new WorldPermanentSpawnConfiguration());
         }
-        worldPermanentSpawnConfigurations.get(entity.getUniqueID()).addAttributeEntry(definition, attribute, entry);
+        worldPermanentSpawnConfigurations.get(spawnId).addAttributeEntry(definition, attribute, entry);
     }
 
     @Override

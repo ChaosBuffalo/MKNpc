@@ -1,4 +1,4 @@
-package com.chaosbuffalo.mknpc.entity.ai;
+package com.chaosbuffalo.mknpc.entity.ai.goal;
 
 import com.chaosbuffalo.mkcore.CoreCapabilities;
 import com.chaosbuffalo.mkcore.MKCore;
@@ -74,8 +74,10 @@ public class UseAbilityGoal extends Goal {
 
     @Override
     public void startExecuting() {
-        entity.faceEntity(target, 360.0f, 360.0f);
-        entity.getLookController().setLookPositionWithEntity(target, 50.0f, 50.0f);
+        if (!target.isEntityEqual(entity)) {
+            entity.faceEntity(target, 360.0f, 360.0f);
+            entity.getLookController().setLookPositionWithEntity(target, 50.0f, 50.0f);
+        }
         AbilityContext context = new BrainAbilityContext(entity);
         MKCore.LOGGER.info("ai {} casting {} on {}", entity, currentAbility.getAbilityId(), target);
         entity.getCapability(CoreCapabilities.ENTITY_CAPABILITY).ifPresent(
@@ -84,15 +86,21 @@ public class UseAbilityGoal extends Goal {
 
     @Override
     public void tick() {
-        entity.faceEntity(target, 50.0f, 50.0f);
-        entity.getLookController().setLookPositionWithEntity(target, 50.0f, 50.0f);
+        if (!target.isEntityEqual(entity)){
+            entity.faceEntity(target, 50.0f, 50.0f);
+            entity.getLookController().setLookPositionWithEntity(target, 50.0f, 50.0f);
+        }
     }
 
     @Override
     public void resetTask() {
         super.resetTask();
         currentAbility = null;
+        entity.enterCombatMovementState(target);
         target = null;
         entity.getBrain().removeMemory(MKMemoryModuleTypes.CURRENT_ABILITY);
+        entity.getBrain().removeMemory(MKAbilityMemories.ABILITY_TARGET);
+        entity.returnToDefaultMovementState();
+
     }
 }

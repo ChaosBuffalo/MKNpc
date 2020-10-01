@@ -1,11 +1,9 @@
 package com.chaosbuffalo.mknpc.client.gui.widgets;
 
-import com.chaosbuffalo.mknpc.spawn.SpawnOption;
 import com.chaosbuffalo.mkwidgets.client.gui.widgets.MKText;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.gui.FontRenderer;
 
-import java.util.function.Consumer;
 
 public class HoverTextButton extends MKText {
     private boolean isClicked;

@@ -1,5 +1,6 @@
 package com.chaosbuffalo.mknpc.network;
 
+import com.chaosbuffalo.mknpc.entity.MKEntity;
 import com.chaosbuffalo.mknpc.spawn.MKSpawnerTileEntity;
 import com.chaosbuffalo.mknpc.spawn.SpawnList;
 import net.minecraft.entity.player.ServerPlayerEntity;
@@ -15,22 +16,26 @@ public class SetSpawnListPacket {
     protected final BlockPos tileEntityLoc;
     protected final SpawnList spawnList;
     protected final int spawnTime;
+    protected final MKEntity.NonCombatMoveType moveType;
 
     public SetSpawnListPacket(MKSpawnerTileEntity entity){
         tileEntityLoc = entity.getPos();
         spawnList = entity.getSpawnList();
         spawnTime = entity.getRespawnTime();
+        moveType = entity.getMoveType();
     }
 
     public void toBytes(PacketBuffer buffer){
         buffer.writeBlockPos(tileEntityLoc);
         buffer.writeInt(spawnTime);
+        buffer.writeEnumValue(moveType);
         buffer.writeCompoundTag(spawnList.serializeNBT());
     }
 
     public SetSpawnListPacket(PacketBuffer buffer){
         tileEntityLoc = buffer.readBlockPos();
         spawnTime = buffer.readInt();
+        moveType = buffer.readEnumValue(MKEntity.NonCombatMoveType.class);
         spawnList = new SpawnList();
         CompoundNBT tag = buffer.readCompoundTag();
         if (tag != null){
@@ -41,10 +46,10 @@ public class SetSpawnListPacket {
     protected void setSpawnerFromPacket(MKSpawnerTileEntity spawner){
         spawner.setSpawnList(spawnList);
         spawner.setRespawnTime(spawnTime);
+        spawner.setMoveType(moveType);
         spawner.clearSpawn();
 
     }
-
 
     public void handle(Supplier<NetworkEvent.Context> supplier){
         NetworkEvent.Context ctx = supplier.get();

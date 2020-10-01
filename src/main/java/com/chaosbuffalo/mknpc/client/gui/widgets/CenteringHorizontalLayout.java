@@ -15,6 +15,10 @@ public abstract class CenteringHorizontalLayout extends MKStackLayoutHorizontal 
         this.fontRenderer = fontRenderer;
     }
 
+    public FontRenderer getFontRenderer() {
+        return fontRenderer;
+    }
+
     @Override
     public boolean addWidget(IMKWidget widget) {
         super.addWidget(widget);

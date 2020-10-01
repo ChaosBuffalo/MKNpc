@@ -2,15 +2,20 @@ package com.chaosbuffalo.mknpc.spawn;
 
 import com.chaosbuffalo.mkcore.GameConstants;
 import com.chaosbuffalo.mknpc.MKNpc;
+import com.chaosbuffalo.mknpc.entity.MKEntity;
 import com.chaosbuffalo.mknpc.init.MKNpcTileEntityTypes;
 import com.chaosbuffalo.mknpc.npc.NpcDefinition;
 import com.chaosbuffalo.mknpc.utils.RandomCollection;
 import net.minecraft.entity.Entity;
+import net.minecraft.entity.LivingEntity;
+import net.minecraft.entity.MobEntity;
+import net.minecraft.entity.SpawnReason;
 import net.minecraft.entity.player.PlayerEntity;
 import net.minecraft.nbt.CompoundNBT;
 import net.minecraft.tileentity.ITickableTileEntity;
 import net.minecraft.tileentity.TileEntity;
 import net.minecraft.tileentity.TileEntityType;
+import net.minecraft.util.math.BlockPos;
 import net.minecraft.util.math.Vec3d;
 
 import java.util.UUID;
@@ -26,6 +31,7 @@ public class MKSpawnerTileEntity extends TileEntity implements ITickableTileEnti
     private final static double SPAWN_RANGE = 75.0;
     private static final int IDLE_TIME = GameConstants.TICKS_PER_SECOND * 10;
     private final RandomCollection<NpcDefinition> randomSpawns;
+    private MKEntity.NonCombatMoveType moveType;
 
     public MKSpawnerTileEntity(){
         this(MKNpcTileEntityTypes.MK_SPAWNER_TILE_ENTITY_TYPE.get());
@@ -40,8 +46,16 @@ public class MKSpawnerTileEntity extends TileEntity implements ITickableTileEnti
         this.ticksSincePlayer = 0;
         this.entity = null;
         this.wasAlive = false;
+        this.moveType = MKEntity.NonCombatMoveType.STATIONARY;
         this.randomSpawns = new RandomCollection<>();
-        MKNpc.LOGGER.info("creating tile entity");
+    }
+
+    public void setMoveType(MKEntity.NonCombatMoveType moveType) {
+        this.moveType = moveType;
+    }
+
+    public MKEntity.NonCombatMoveType getMoveType() {
+        return moveType;
     }
 
     public SpawnList getSpawnList() {
@@ -66,6 +80,7 @@ public class MKSpawnerTileEntity extends TileEntity implements ITickableTileEnti
         compound.put("spawnList", spawnList.serializeNBT());
         compound.putUniqueId("spawnId", spawnUUID);
         compound.putInt("ticksSinceDeath", ticksSinceDeath);
+        compound.putInt("moveType", moveType.ordinal());
         return super.write(compound);
     }
 
@@ -85,12 +100,19 @@ public class MKSpawnerTileEntity extends TileEntity implements ITickableTileEnti
         return SPAWN_RANGE;
     }
 
+    public void regenerateSpawnID(){
+        this.spawnUUID = UUID.randomUUID();
+    }
+
     @Override
     public void read(CompoundNBT compound) {
         super.read(compound);
         if (compound.contains("spawnList")){
             spawnList.deserializeNBT(compound.getCompound("spawnList"));
             populateRandomSpawns();
+        }
+        if (compound.contains("moveType")){
+            setMoveType(MKEntity.NonCombatMoveType.values()[compound.getInt("moveType")]);
         }
         ticksSinceDeath = compound.getInt("ticksSinceDeath");
         spawnUUID = compound.getUniqueId("spawnId");
@@ -99,13 +121,22 @@ public class MKSpawnerTileEntity extends TileEntity implements ITickableTileEnti
     public void spawnEntity(){
         if (getWorld() != null){
             NpcDefinition definition = randomSpawns.next();
-            Entity entity = definition.createEntity(getWorld(), new Vec3d(getPos()).add(0.5, 0.0, 0.5), spawnUUID);
+            Vec3d spawnPos = new Vec3d(getPos()).add(0.5, 0.0630, 0.5);
+            Entity entity = definition.createEntity(getWorld(), spawnPos, spawnUUID);
             this.entity = entity;
             if (entity != null){
                 getWorld().addEntity(entity);
                 MKNpc.getNpcData(entity).ifPresent((cap) -> {
                     cap.setMKSpawned(true);
+                    cap.setSpawnPos(new BlockPos(spawnPos).up());
                 });
+                if (entity instanceof MKEntity){
+                    ((MKEntity) entity).setNonCombatMoveType(getMoveType());
+                }
+                if (entity instanceof MobEntity){
+                    ((MobEntity) entity).onInitialSpawn(getWorld(), getWorld().getDifficultyForLocation(
+                            new BlockPos(entity)), SpawnReason.SPAWNER, null, null);
+                }
             }
         }
     }
@@ -126,8 +157,10 @@ public class MKSpawnerTileEntity extends TileEntity implements ITickableTileEnti
     public void clearSpawn(){
         if (entity != null){
             entity.remove();
-            ticksSinceDeath = 0;
+            entity = null;
         }
+        wasAlive = false;
+        ticksSinceDeath = 0;
     }
 
     @Override

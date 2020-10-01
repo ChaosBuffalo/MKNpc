@@ -1,9 +1,9 @@
 package com.chaosbuffalo.mknpc.entity.ai.movement_strategy;
 
+import com.chaosbuffalo.mknpc.entity.MKEntity;
+import com.chaosbuffalo.mknpc.entity.ai.MovementUtils;
 import com.chaosbuffalo.mknpc.entity.ai.memory.MKMemoryModuleTypes;
-import net.minecraft.entity.CreatureEntity;
 import net.minecraft.entity.LivingEntity;
-import net.minecraft.entity.ai.RandomPositionGenerator;
 import net.minecraft.entity.ai.brain.Brain;
 import net.minecraft.entity.ai.brain.memory.MemoryModuleType;
 import net.minecraft.entity.ai.brain.memory.WalkTarget;
@@ -21,7 +21,7 @@ public class KiteMovementStrategy extends MovementStrategy {
     }
 
     @Override
-    public void update(ServerWorld world, CreatureEntity entity) {
+    public void update(ServerWorld world, MKEntity entity) {
         Brain<?> brain = entity.getBrain();
         Optional<LivingEntity> targetOpt = brain.getMemory(MKMemoryModuleTypes.MOVEMENT_TARGET);
         Optional<WalkTarget> walkTargetOptional = brain.getMemory(MemoryModuleType.WALK_TARGET);
@@ -40,7 +40,7 @@ public class KiteMovementStrategy extends MovementStrategy {
             }
             double threeQuarterDist = .75 * dist;
             if (distanceTo < threeQuarterDist && distToWalkTarget < (threeQuarterDist * threeQuarterDist)) {
-                targetPos = RandomPositionGenerator.findRandomTargetBlockAwayFrom(
+                targetPos = MovementUtils.findRandomTargetBlockAwayFromNoWater(
                         entity, (int) Math.round(dist), 3, target.getPositionVec());
             } else if (distanceTo > 1.1 * dist) {
                 targetPos = target.getPositionVector();

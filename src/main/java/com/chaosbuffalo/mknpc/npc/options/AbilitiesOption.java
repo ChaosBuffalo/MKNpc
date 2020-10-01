@@ -49,7 +49,7 @@ public class AbilitiesOption extends WorldPermanentOption {
         for (JsonElement ability : abilityArray) {
             JsonObject abilityObj = ability.getAsJsonObject();
             ResourceLocation abilityName = new ResourceLocation(abilityObj.get("abilityName").getAsString());
-            double chance = abilityObj.has("chance") ? abilityObj.get("chance").getAsDouble() : 1.0;
+            double chance = abilityObj.has("chance") ? abilityObj.get("chance").getAsDouble() : 1.1;
             NpcAbilityEntry entry = new NpcAbilityEntry(abilityName, abilityObj.get("priority").getAsInt(), chance);
             addAbilityEntry(entry);
         }

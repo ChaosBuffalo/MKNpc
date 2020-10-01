@@ -52,7 +52,6 @@ public class AbilityUseSensor extends Sensor<MKEntity> {
                     return;
                 }
             }
-            entityIn.enterDefaultMovementState(context.getThreatTarget());
         });
     }
 

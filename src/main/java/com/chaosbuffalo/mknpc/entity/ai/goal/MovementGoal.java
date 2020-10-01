@@ -1,4 +1,4 @@
-package com.chaosbuffalo.mknpc.entity.ai;
+package com.chaosbuffalo.mknpc.entity.ai.goal;
 
 import net.minecraft.entity.CreatureEntity;
 import net.minecraft.entity.MobEntity;

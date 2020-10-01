@@ -19,7 +19,7 @@ public class LivingEntitiesSensor extends Sensor<LivingEntity> {
     }
 
     protected void update(ServerWorld worldIn, LivingEntity entityIn) {
-        List<LivingEntity> entities = worldIn.getEntitiesWithinAABB(LivingEntity.class,
+        List<LivingEntity> entities = worldIn.getLoadedEntitiesWithinAABB(LivingEntity.class,
                 entityIn.getBoundingBox().grow(16.0D, 16.0D, 16.0D),
                 (entity) -> entity != entityIn && entity.isAlive());
         entities.sort(Comparator.comparingDouble(entityIn::getDistanceSq));

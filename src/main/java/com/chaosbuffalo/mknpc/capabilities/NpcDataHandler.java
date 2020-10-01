@@ -7,19 +7,25 @@ import net.minecraft.nbt.CompoundNBT;
 import net.minecraft.nbt.INBT;
 import net.minecraft.util.Direction;
 import net.minecraft.util.ResourceLocation;
+import net.minecraft.util.math.BlockPos;
 import net.minecraftforge.common.capabilities.Capability;
 
+import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
+import java.util.UUID;
 
 public class NpcDataHandler implements IMKNpcData {
     private LivingEntity entity;
     private NpcDefinition definition;
     private boolean mkSpawned;
     private int bonusXp;
+    private UUID spawnID;
+    private BlockPos blockPos;
 
     public NpcDataHandler(){
         mkSpawned = false;
         bonusXp = 0;
+        spawnID = UUID.randomUUID();
     }
 
     @Override
@@ -55,6 +61,27 @@ public class NpcDataHandler implements IMKNpcData {
     @Override
     public boolean wasMKSpawned() {
         return mkSpawned;
+    }
+
+    @Override
+    public void setSpawnPos(BlockPos pos) {
+        this.blockPos = pos;
+    }
+
+    @Override
+    public BlockPos getSpawnPos() {
+        return blockPos;
+    }
+
+    @Override
+    public void setSpawnID(UUID id) {
+        spawnID = id;
+    }
+
+    @Nonnull
+    @Override
+    public UUID getSpawnID() {
+        return spawnID;
     }
 
     @Override

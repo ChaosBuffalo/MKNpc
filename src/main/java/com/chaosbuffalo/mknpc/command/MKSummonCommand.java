@@ -12,8 +12,11 @@ import net.minecraft.command.CommandSource;
 import net.minecraft.command.Commands;
 import net.minecraft.command.ISuggestionProvider;
 import net.minecraft.entity.Entity;
+import net.minecraft.entity.MobEntity;
+import net.minecraft.entity.SpawnReason;
 import net.minecraft.entity.player.ServerPlayerEntity;
 import net.minecraft.util.ResourceLocation;
+import net.minecraft.util.math.BlockPos;
 import net.minecraft.util.text.StringTextComponent;
 
 import java.util.concurrent.CompletableFuture;
@@ -41,6 +44,10 @@ public class MKSummonCommand {
             Entity entity = definition.createEntity(player.getServerWorld(), player.getPositionVec());
             if (entity != null){
                 player.getServerWorld().addEntity(entity);
+                if (entity instanceof MobEntity){
+                    ((MobEntity) entity).onInitialSpawn(player.getServerWorld(), player.getServerWorld().getDifficultyForLocation(
+                            new BlockPos(entity)), SpawnReason.SPAWNER, null, null);
+                }
             } else {
                 player.sendMessage(new StringTextComponent(String.format("Failed to summon: %s",
                         definition_id.toString())));
