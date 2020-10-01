@@ -28,6 +28,6 @@ public class MovementStrategyController {
     public static void enterRandomWander(LivingEntity entity){
         entity.getBrain().removeMemory(MKMemoryModuleTypes.MOVEMENT_TARGET);
         entity.getBrain().setMemory(MKMemoryModuleTypes.MOVEMENT_STRATEGY,
-                new RandomWanderMovementStrategy(120));
+                new RandomWanderMovementStrategy(1200));
     }
 }

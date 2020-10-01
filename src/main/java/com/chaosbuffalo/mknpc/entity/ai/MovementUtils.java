@@ -9,10 +9,18 @@ import javax.annotation.Nullable;
 public class MovementUtils {
 
     @Nullable
-    public static Vec3d findRandomTargetBlockAwayFromNoWater(CreatureEntity entitycreatureIn, int xz, int y, Vec3d targetVec3) {
-        Vec3d vec3d = entitycreatureIn.getPositionVec().subtract(targetVec3);
-        return RandomPositionGenerator.func_226339_a_(entitycreatureIn, xz, y, 0, vec3d, false,
-                ((float)Math.PI / 2F), entitycreatureIn::getBlockPathWeight, false, 0,
+    public static Vec3d findRandomTargetBlockAwayFromNoWater(CreatureEntity entity, int xz, int y, Vec3d targetPos) {
+        Vec3d vec3d = entity.getPositionVec().subtract(targetPos);
+        return RandomPositionGenerator.func_226339_a_(entity, xz, y, 0, vec3d, false,
+                ((float)Math.PI / 2F), entity::getBlockPathWeight, false, 0,
+                0, true);
+    }
+
+    @Nullable
+    public static Vec3d findRandomTargetBlockTowardsNoWater(CreatureEntity entity, int xz, int y, Vec3d targetPos){
+        Vec3d vec3d = targetPos.subtract(entity.getPositionVec());
+        return RandomPositionGenerator.func_226339_a_(entity, xz, y, 0, vec3d, false,
+                ((float)Math.PI / 2F), entity::getBlockPathWeight, false, 0,
                 0, true);
     }
 }

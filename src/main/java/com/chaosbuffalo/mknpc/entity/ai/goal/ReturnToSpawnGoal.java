@@ -60,7 +60,10 @@ public class ReturnToSpawnGoal extends Goal {
         if (targetOpt.isPresent()){
             return distFromSpawn > LEASH_RANGE;
         } else {
-            return distFromSpawn > entity.getWanderRange();
+            if (entity.getNonCombatMoveType() == MKEntity.NonCombatMoveType.RANDOM_WANDER){
+                return distFromSpawn > LEASH_RANGE;
+            }
+            return true;
         }
     }
 

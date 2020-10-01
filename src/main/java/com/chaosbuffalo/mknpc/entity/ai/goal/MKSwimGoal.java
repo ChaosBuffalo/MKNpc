@@ -39,7 +39,7 @@ public class MKSwimGoal extends SwimGoal {
 
     @Override
     public void tick() {
-        if (this.entity.getRNG().nextFloat() < 0.05F) {
+        if (this.entity.getRNG().nextFloat() < 0.01F) {
             this.entity.getJumpController().setJumping();
         }
         if (!walkOutPath || entity.getNavigator().noPath()){

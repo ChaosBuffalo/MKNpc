@@ -1,8 +1,10 @@
 package com.chaosbuffalo.mknpc.entity.ai.goal;
 
+import com.chaosbuffalo.mkcore.GameConstants;
 import com.chaosbuffalo.mknpc.entity.MKEntity;
 import com.chaosbuffalo.mknpc.entity.ai.memory.MKMemoryModuleTypes;
 import net.minecraft.entity.LivingEntity;
+import net.minecraft.entity.SharedMonsterAttributes;
 import net.minecraft.entity.ai.brain.Brain;
 import net.minecraft.entity.ai.goal.Goal;
 import net.minecraft.util.Hand;
@@ -13,7 +15,6 @@ import java.util.function.Supplier;
 
 public class MKMeleeAttackGoal extends Goal {
     private final MKEntity entity;
-    private Supplier<Double> speedSupplier;
     private LivingEntity target;
     private double delayCounter;
 
@@ -31,11 +32,10 @@ public class MKMeleeAttackGoal extends Goal {
         return false;
     }
 
-    public MKMeleeAttackGoal(MKEntity entity, Supplier<Double> speedIn) {
+    public MKMeleeAttackGoal(MKEntity entity) {
         this.entity = entity;
         this.delayCounter = 0;
         this.target = null;
-        this.speedSupplier = speedIn;
         this.setMutexFlags(EnumSet.of(Flag.MOVE, Flag.LOOK));
     }
 
@@ -47,7 +47,7 @@ public class MKMeleeAttackGoal extends Goal {
     @Override
     public void tick() {
         this.delayCounter = Math.max(delayCounter - 1, 0);
-        entity.getNavigator().tryMoveToEntityLiving(target, speedSupplier.get());
+        entity.getNavigator().tryMoveToEntityLiving(target, entity.getLungeSpeed());
         entity.getLookController().setLookPositionWithEntity(target, 30.0f, 30.0f);
         if (delayCounter == 0) {
             checkAndPerformAttack(target, entity.getDistanceSq(target));
@@ -55,10 +55,19 @@ public class MKMeleeAttackGoal extends Goal {
 
     }
 
+    private double getAttacksPerSecond(){
+        return entity.getAttribute(SharedMonsterAttributes.ATTACK_SPEED).getValue();
+    }
+
+    public int getAttackTicks(){
+        double attacksPerSec = getAttacksPerSecond();
+        return (int) Math.round(GameConstants.TICKS_PER_SECOND / attacksPerSec);
+    }
+
     protected void checkAndPerformAttack(LivingEntity enemy, double distToEnemySqr) {
         double d0 = this.getAttackReachSqr(enemy);
         if (distToEnemySqr <= d0 && this.delayCounter <= 0) {
-            this.delayCounter = 20;
+            this.delayCounter = getAttackTicks();
             this.entity.swingArm(Hand.MAIN_HAND);
             this.entity.attackEntityAsMob(enemy);
         }
@@ -70,7 +79,7 @@ public class MKMeleeAttackGoal extends Goal {
 
     public void resetTask() {
         this.entity.setAggroed(false);
-        this.delayCounter = 20;
+        this.delayCounter = getAttackTicks();
         this.target = null;
     }
 

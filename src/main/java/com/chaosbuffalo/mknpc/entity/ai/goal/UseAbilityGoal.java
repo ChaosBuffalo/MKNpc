@@ -99,6 +99,8 @@ public class UseAbilityGoal extends Goal {
         entity.enterCombatMovementState(target);
         target = null;
         entity.getBrain().removeMemory(MKMemoryModuleTypes.CURRENT_ABILITY);
+        entity.getBrain().removeMemory(MKAbilityMemories.ABILITY_TARGET);
+        entity.returnToDefaultMovementState();
 
     }
 }

@@ -31,6 +31,7 @@ public class MKSpawnerTileEntity extends TileEntity implements ITickableTileEnti
     private final static double SPAWN_RANGE = 75.0;
     private static final int IDLE_TIME = GameConstants.TICKS_PER_SECOND * 10;
     private final RandomCollection<NpcDefinition> randomSpawns;
+    private MKEntity.NonCombatMoveType moveType;
 
     public MKSpawnerTileEntity(){
         this(MKNpcTileEntityTypes.MK_SPAWNER_TILE_ENTITY_TYPE.get());
@@ -45,8 +46,16 @@ public class MKSpawnerTileEntity extends TileEntity implements ITickableTileEnti
         this.ticksSincePlayer = 0;
         this.entity = null;
         this.wasAlive = false;
+        this.moveType = MKEntity.NonCombatMoveType.STATIONARY;
         this.randomSpawns = new RandomCollection<>();
-        MKNpc.LOGGER.info("creating tile entity");
+    }
+
+    public void setMoveType(MKEntity.NonCombatMoveType moveType) {
+        this.moveType = moveType;
+    }
+
+    public MKEntity.NonCombatMoveType getMoveType() {
+        return moveType;
     }
 
     public SpawnList getSpawnList() {
@@ -71,6 +80,7 @@ public class MKSpawnerTileEntity extends TileEntity implements ITickableTileEnti
         compound.put("spawnList", spawnList.serializeNBT());
         compound.putUniqueId("spawnId", spawnUUID);
         compound.putInt("ticksSinceDeath", ticksSinceDeath);
+        compound.putInt("moveType", moveType.ordinal());
         return super.write(compound);
     }
 
@@ -90,12 +100,19 @@ public class MKSpawnerTileEntity extends TileEntity implements ITickableTileEnti
         return SPAWN_RANGE;
     }
 
+    public void regenerateSpawnID(){
+        this.spawnUUID = UUID.randomUUID();
+    }
+
     @Override
     public void read(CompoundNBT compound) {
         super.read(compound);
         if (compound.contains("spawnList")){
             spawnList.deserializeNBT(compound.getCompound("spawnList"));
             populateRandomSpawns();
+        }
+        if (compound.contains("moveType")){
+            setMoveType(MKEntity.NonCombatMoveType.values()[compound.getInt("moveType")]);
         }
         ticksSinceDeath = compound.getInt("ticksSinceDeath");
         spawnUUID = compound.getUniqueId("spawnId");
@@ -113,14 +130,13 @@ public class MKSpawnerTileEntity extends TileEntity implements ITickableTileEnti
                     cap.setMKSpawned(true);
                     cap.setSpawnPos(new BlockPos(spawnPos).up());
                 });
+                if (entity instanceof MKEntity){
+                    ((MKEntity) entity).setNonCombatMoveType(getMoveType());
+                }
                 if (entity instanceof MobEntity){
                     ((MobEntity) entity).onInitialSpawn(getWorld(), getWorld().getDifficultyForLocation(
                             new BlockPos(entity)), SpawnReason.SPAWNER, null, null);
                 }
-                if (entity instanceof MKEntity){
-                    ((MKEntity) entity).enterNonCombatMovementState();
-                }
-                // this is where we would set movement strategy
             }
         }
     }
@@ -141,8 +157,10 @@ public class MKSpawnerTileEntity extends TileEntity implements ITickableTileEnti
     public void clearSpawn(){
         if (entity != null){
             entity.remove();
-            ticksSinceDeath = 0;
+            entity = null;
         }
+        wasAlive = false;
+        ticksSinceDeath = 0;
     }
 
     @Override

@@ -1,10 +1,13 @@
 package com.chaosbuffalo.mknpc.entity.ai.movement_strategy;
 
 import com.chaosbuffalo.mknpc.entity.MKEntity;
+import com.chaosbuffalo.mknpc.entity.ai.MovementUtils;
+import com.chaosbuffalo.mknpc.entity.ai.memory.MKMemoryModuleTypes;
 import net.minecraft.entity.ai.RandomPositionGenerator;
 import net.minecraft.entity.ai.brain.Brain;
 import net.minecraft.entity.ai.brain.memory.MemoryModuleType;
 import net.minecraft.entity.ai.brain.memory.WalkTarget;
+import net.minecraft.util.math.BlockPos;
 import net.minecraft.util.math.Vec3d;
 import net.minecraft.world.server.ServerWorld;
 
@@ -21,10 +24,21 @@ public class RandomWanderMovementStrategy extends MovementStrategy{
     public void update(ServerWorld world, MKEntity entity) {
         Brain<?> brain = entity.getBrain();
         Optional<WalkTarget> walkTargetOptional = brain.getMemory(MemoryModuleType.WALK_TARGET);
-        if (!walkTargetOptional.isPresent() || entity.getRNG().nextInt(positionChance) == 0){
-            Vec3d vec3d = RandomPositionGenerator.getLandPos(entity, entity.getWanderRange() / 2, entity.getWanderRange() / 2);
-            if (vec3d != null){
-                brain.setMemory(MemoryModuleType.WALK_TARGET, new WalkTarget(vec3d, 1.0f, 1));
+        Optional<BlockPos> spawnPointOptional = brain.getMemory(MKMemoryModuleTypes.SPAWN_POINT);
+        if (!walkTargetOptional.isPresent() || entity.getRNG().nextInt(positionChance) == 0 || entity.getNavigator().noPath()){
+            Vec3d position = spawnPointOptional.map(blockPos -> {
+                Vec3d vecPos = new Vec3d(blockPos);
+                if (entity.getDistanceSq(vecPos) > entity.getWanderRange() * entity.getWanderRange()){
+                    return MovementUtils.findRandomTargetBlockTowardsNoWater(
+                            entity, entity.getWanderRange() /2, entity.getWanderRange() / 2, vecPos);
+                } else {
+                    return RandomPositionGenerator.getLandPos(entity, entity.getWanderRange() / 2,
+                            entity.getWanderRange() / 2);
+                }
+            }).orElse(RandomPositionGenerator.getLandPos(entity, entity.getWanderRange() / 2,
+                    entity.getWanderRange() / 2));
+            if (position != null){
+                brain.setMemory(MemoryModuleType.WALK_TARGET, new WalkTarget(position, 1.0f, 1));
             }
         }
     }

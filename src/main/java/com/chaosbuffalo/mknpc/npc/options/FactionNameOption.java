@@ -44,8 +44,12 @@ public class FactionNameOption extends WorldPermanentOption {
         return name;
     }
 
+    @Nullable
     private static <T> T getRandomEntry(LivingEntity entity, Set<T> set){
         List<T> list = new ArrayList<>(set);
+        if (list.size() <= 0){
+            return null;
+        }
         return list.get(entity.getRNG().nextInt(list.size()));
     }
 
@@ -60,10 +64,18 @@ public class FactionNameOption extends WorldPermanentOption {
                 MKFaction faction = MKFactionRegistry.getFaction(cap.getFactionName());
                 if (faction != null){
                     name += " ";
-                    name += getRandomEntry((LivingEntity) entity, faction.getFirstNames());
+                    String firstName = getRandomEntry((LivingEntity) entity, faction.getFirstNames());
+                    if (firstName == null){
+                        firstName = "No Name";
+                    }
+                    name += firstName;
                     if (hasLastName){
                         name += " ";
-                        name += getRandomEntry((LivingEntity) entity, faction.getLastNames());
+                        String lastName = getRandomEntry((LivingEntity) entity, faction.getLastNames());
+                        if (lastName == null){
+                            lastName = "Unknown";
+                        }
+                        name += lastName;
                     }
                 }
                 return new FactionNameOptionEntry(name);

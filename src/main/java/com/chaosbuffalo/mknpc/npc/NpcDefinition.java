@@ -189,9 +189,11 @@ public class NpcDefinition {
             if (entity == null){
                 return null;
             }
-            entity.setUniqueId(uuid);
             entity.setPosition(pos.getX(), pos.getY(), pos.getZ());
-            MKNpc.getNpcData(entity).ifPresent(cap -> cap.setDefinition(this));
+            MKNpc.getNpcData(entity).ifPresent(cap -> {
+                cap.setDefinition(this);
+                cap.setSpawnID(uuid);
+            });
             applyDefinition(entity);
             return entity;
         }

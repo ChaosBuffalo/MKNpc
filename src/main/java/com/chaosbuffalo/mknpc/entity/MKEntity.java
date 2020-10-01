@@ -6,6 +6,7 @@ import com.chaosbuffalo.mkcore.GameConstants;
 import com.chaosbuffalo.mkcore.abilities.MKAbility;
 import com.chaosbuffalo.mkcore.abilities.MKAbilityMemories;
 import com.chaosbuffalo.mkcore.abilities.ai.AbilityTargetingDecision;
+import com.chaosbuffalo.mkcore.utils.ItemUtils;
 import com.chaosbuffalo.mkfaction.capabilities.FactionCapabilities;
 import com.chaosbuffalo.mknpc.MKNpc;
 import com.chaosbuffalo.mknpc.capabilities.NpcCapabilities;
@@ -23,11 +24,15 @@ import com.chaosbuffalo.targeting_api.Targeting;
 import com.google.common.collect.ImmutableList;
 import com.mojang.datafixers.Dynamic;
 import net.minecraft.entity.*;
+import net.minecraft.entity.ai.attributes.AttributeModifier;
+import net.minecraft.entity.ai.attributes.IAttributeInstance;
 import net.minecraft.entity.ai.brain.Brain;
 import net.minecraft.entity.ai.brain.memory.MemoryModuleType;
 import net.minecraft.entity.ai.goal.SwimGoal;
 import net.minecraft.entity.player.PlayerEntity;
 import net.minecraft.entity.player.ServerPlayerEntity;
+import net.minecraft.inventory.EquipmentSlotType;
+import net.minecraft.item.ItemStack;
 import net.minecraft.nbt.CompoundNBT;
 import net.minecraft.util.ActionResultType;
 import net.minecraft.util.DamageSource;
@@ -41,6 +46,7 @@ import net.minecraft.world.World;
 import net.minecraft.world.server.ServerWorld;
 
 import javax.annotation.Nullable;
+import java.util.Collection;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.Optional;
@@ -73,7 +79,7 @@ public abstract class MKEntity extends CreatureEntity {
     }
 
     public double getLungeSpeed() {
-        return lungeSpeed;
+        return lungeSpeed * getAttackSpeedMultiplier();
     }
 
     public void setLungeSpeed(double lungeSpeed) {
@@ -86,7 +92,7 @@ public abstract class MKEntity extends CreatureEntity {
         this.targetSelector.addGoal(3, new MKTargetGoal(this, true, true));
         this.goalSelector.addGoal(0, new ReturnToSpawnGoal(this));
         this.goalSelector.addGoal(2, new MovementGoal(this));
-        this.goalSelector.addGoal(4, new MKMeleeAttackGoal(this, this::getLungeSpeed));
+        this.goalSelector.addGoal(4, new MKMeleeAttackGoal(this));
         this.goalSelector.addGoal(3, new UseAbilityGoal(this));
         this.goalSelector.addGoal(1, new SwimGoal(this));
     }
@@ -95,6 +101,29 @@ public abstract class MKEntity extends CreatureEntity {
         return true;
     }
 
+    private void handleCombatMovementDetect(ItemStack stack){
+        if (ItemUtils.isRangedWeapon(stack)){
+            setCombatMoveType(CombatMoveType.RANGE);
+        } else {
+            setCombatMoveType(CombatMoveType.MELEE);
+        }
+    }
+
+    @Override
+    public void setHeldItem(Hand hand, ItemStack stack) {
+        super.setHeldItem(hand, stack);
+        if (hand == Hand.MAIN_HAND){
+            handleCombatMovementDetect(stack);
+        }
+    }
+
+    @Override
+    public void setItemStackToSlot(EquipmentSlotType slotIn, ItemStack stack) {
+        super.setItemStackToSlot(slotIn, stack);
+        if (slotIn == EquipmentSlotType.MAINHAND){
+            handleCombatMovementDetect(stack);
+        }
+    }
 
     protected MKEntity(EntityType<? extends CreatureEntity> type, World worldIn) {
         super(type, worldIn);
@@ -191,6 +220,15 @@ public abstract class MKEntity extends CreatureEntity {
         castingAbility = ability;
     }
 
+    public void returnToDefaultMovementState(){
+        LivingEntity target = getBrain().getMemory(MKMemoryModuleTypes.THREAT_TARGET).orElse(null);
+        if (target != null){
+            enterCombatMovementState(target);
+        } else {
+            enterNonCombatMovementState();
+        }
+    }
+
     public void endCast(MKAbility ability) {
         castingAbility = ability;
         visualCastState = VisualCastState.RELEASE;
@@ -204,6 +242,7 @@ public abstract class MKEntity extends CreatureEntity {
     public void setNonCombatMoveType(NonCombatMoveType nonCombatMoveType) {
         this.nonCombatMoveType = nonCombatMoveType;
     }
+
 
     public NonCombatMoveType getNonCombatMoveType() {
         return nonCombatMoveType;
@@ -260,6 +299,11 @@ public abstract class MKEntity extends CreatureEntity {
         super.registerAttributes();
         this.getAttributes().registerAttribute(SharedMonsterAttributes.ATTACK_DAMAGE);
         this.getAttributes().registerAttribute(NpcAttributes.AGGRO_RANGE);
+        this.getAttributes().registerAttribute(SharedMonsterAttributes.ATTACK_SPEED);
+    }
+
+    public boolean hasThreatTarget(){
+        return getBrain().getMemory(MKMemoryModuleTypes.THREAT_TARGET).isPresent();
     }
 
     public void reduceThreat(LivingEntity entity, float value) {
@@ -272,6 +316,31 @@ public abstract class MKEntity extends CreatureEntity {
     @Override
     public void setAttackTarget(@Nullable LivingEntity entitylivingbaseIn) {
         super.setAttackTarget(entitylivingbaseIn);
+    }
+
+    public double getAttackSpeedMultiplier(){
+        IAttributeInstance attackSpeed = getAttribute(SharedMonsterAttributes.ATTACK_SPEED);
+        return attackSpeed.getValue() / getBaseAttackSpeedValueWithItem();
+    }
+
+    public double getBaseAttackSpeedValueWithItem(){
+        ItemStack itemInHand = getHeldItemMainhand();
+        double baseValue = getAttribute(SharedMonsterAttributes.ATTACK_SPEED).getBaseValue();
+        if (!itemInHand.equals(ItemStack.EMPTY)) {
+            if (itemInHand.getAttributeModifiers(EquipmentSlotType.MAINHAND).containsKey(
+                    SharedMonsterAttributes.ATTACK_SPEED.getName())) {
+                Collection<AttributeModifier> itemAttackSpeed = itemInHand.getAttributeModifiers(EquipmentSlotType.MAINHAND)
+                        .get(SharedMonsterAttributes.ATTACK_SPEED.getName());
+                double attackSpeed = 4.0;
+                for (AttributeModifier mod : itemAttackSpeed) {
+                    if (mod.getOperation().equals(AttributeModifier.Operation.ADDITION)) {
+                        attackSpeed += mod.getAmount();
+                    }
+                }
+                baseValue = attackSpeed;
+            }
+        }
+        return baseValue;
     }
 
     @Override
