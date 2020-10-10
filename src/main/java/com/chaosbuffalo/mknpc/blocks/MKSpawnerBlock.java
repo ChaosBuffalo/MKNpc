@@ -5,11 +5,13 @@ import com.chaosbuffalo.mknpc.network.PacketHandler;
 import com.chaosbuffalo.mknpc.spawn.MKSpawnerTileEntity;
 import net.minecraft.block.Block;
 import net.minecraft.block.BlockState;
+import net.minecraft.block.Blocks;
 import net.minecraft.block.material.Material;
 import net.minecraft.block.material.MaterialColor;
 import net.minecraft.block.material.PushReaction;
 import net.minecraft.entity.player.PlayerEntity;
 import net.minecraft.entity.player.ServerPlayerEntity;
+import net.minecraft.tileentity.StructureBlockTileEntity;
 import net.minecraft.tileentity.TileEntity;
 import net.minecraft.util.ActionResultType;
 import net.minecraft.util.Hand;
@@ -27,8 +29,8 @@ import javax.annotation.Nullable;
 public class MKSpawnerBlock extends Block {
     private final VoxelShape shape = Block.makeCuboidShape(0, 0, 0, 16.0, 1.0, 16.0);
     public static final Material SPAWNER_MATERIAL = new Material(MaterialColor.AIR, false,
-            false, false, false, true, false,
-            true, PushReaction.IGNORE);
+            false, false, false, false, false,
+            false, PushReaction.IGNORE);
 
     public MKSpawnerBlock(Properties properties) {
         super(properties);
@@ -49,10 +51,27 @@ public class MKSpawnerBlock extends Block {
                                              Hand handIn, BlockRayTraceResult hit) {
         if (handIn.equals(Hand.MAIN_HAND)){
             if (!worldIn.isRemote() && player.isCreative()){
-                ((ServerPlayerEntity) player).connection.sendPacket(
-                        PacketHandler.getNetworkChannel().toVanillaPacket(
-                                new OpenMKSpawnerPacket((MKSpawnerTileEntity) worldIn.getTileEntity(pos)),
-                                NetworkDirection.PLAY_TO_CLIENT));
+                if (player.isSneaking()){
+                    BlockState dataState = Blocks.STRUCTURE_BLOCK.getStateForPlacement(null);
+                    if (dataState != null){
+                        worldIn.setBlockState(pos.up(), dataState, 3);
+                        TileEntity tileEntity = worldIn.getTileEntity(pos.up());
+                        if (tileEntity instanceof StructureBlockTileEntity){
+                            ((StructureBlockTileEntity) tileEntity).setMetadata("mkspawner");
+                        }
+                        TileEntity spawner = worldIn.getTileEntity(pos);
+                        if (spawner instanceof MKSpawnerTileEntity){
+                            ((MKSpawnerTileEntity) spawner).clearSpawn();
+                        }
+                    }
+
+                } else {
+                    ((ServerPlayerEntity) player).connection.sendPacket(
+                            PacketHandler.getNetworkChannel().toVanillaPacket(
+                                    new OpenMKSpawnerPacket((MKSpawnerTileEntity) worldIn.getTileEntity(pos)),
+                                    NetworkDirection.PLAY_TO_CLIENT));
+                }
+
             }
             return ActionResultType.SUCCESS;
         } else {

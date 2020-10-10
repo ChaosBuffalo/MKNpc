@@ -24,7 +24,7 @@ public class SpawnOptionEntry extends CenteringHorizontalLayout {
                             FontRenderer fontRenderer, Consumer<SpawnOption> removeCallback) {
         super(x, y, height, fontRenderer);
         this.option = option;
-        String name = option.getDefinition().getName() != null ? option.getDefinition().getName() :
+        String name = option.getDefinition().getDisplayName() != null ? option.getDefinition().getDisplayName() :
                 option.getDefinition().getDefinitionName().toString();
         button = new MKButton(Math.max(fontRenderer.getStringWidth(name), 100), name);
         button.setPressedCallback(this::handleOpenNpcDefinitionList);
@@ -81,7 +81,7 @@ public class SpawnOptionEntry extends CenteringHorizontalLayout {
             NpcDefinitionList definitions = new NpcDefinitionList(xPos, yPos, POPUP_WIDTH, POPUP_HEIGHT,
                     fontRenderer, (client) -> {
                         option.setDefinition(client.getDefinitionName());
-                        String name = option.getDefinition().getName() != null ? option.getDefinition().getName() :
+                        String name = option.getDefinition().getDisplayName() != null ? option.getDefinition().getDisplayName() :
                             option.getDefinition().getDefinitionName().toString();
                         updateButtonText(name);
                         screen.closeModal(popup);

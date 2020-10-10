@@ -10,7 +10,7 @@ public class NpcDefinitionClient {
     private final ResourceLocation faction;
 
     public NpcDefinitionClient(NpcDefinition definition){
-        this(definition.getDefinitionName(), definition.getName(), definition.getFactionName());
+        this(definition.getDefinitionName(), definition.getDisplayName(), definition.getFactionName());
     }
 
     public NpcDefinitionClient(ResourceLocation defName, String name, ResourceLocation faction){

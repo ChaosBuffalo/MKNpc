@@ -58,7 +58,7 @@ public class MKSpawnerScreen extends MKScreen {
         root.addConstraintToWidget(new MarginConstraint(MarginConstraint.MarginType.TOP), spawnListLabel);
         root.addConstraintToWidget(new MarginConstraint(MarginConstraint.MarginType.LEFT), spawnListLabel);
         SpawnOptionList options = new SpawnOptionList(xPos + 40, yPos + 15, 240, 100, font,
-                spawnerTileEntity.getSpawnList());
+                getSpawnerTileEntity().getSpawnList());
         MKButton addOption = new MKButton(xPos + PANEL_WIDTH / 2 - 50,
                 options.getY() + options.getHeight() + 10, 100, 20,
                 "Add Spawn");
@@ -74,7 +74,7 @@ public class MKSpawnerScreen extends MKScreen {
                 NpcDefinitionList definitions = new NpcDefinitionList(popupX, popupY, POPUP_WIDTH, POPUP_HEIGHT,
                         font, (client) -> {
                     SpawnOption newOption = new SpawnOption(1.0, client.getDefinitionName());
-                    spawnerTileEntity.getSpawnList().addOption(newOption);
+                    getSpawnerTileEntity().getSpawnList().addOption(newOption);
                     options.populate();
                     closeModal(popup);
                 });
@@ -83,10 +83,10 @@ public class MKSpawnerScreen extends MKScreen {
            return true;
         });
         IncrementableField spawnTimeController = new IncrementableField(0, 0, 20, "Respawn Time",
-                (double) spawnerTileEntity.getRespawnTime() / GameConstants.TICKS_PER_SECOND, font,
+                (double) getSpawnerTileEntity().getRespawnTime() / GameConstants.TICKS_PER_SECOND, font,
                 (field, value) -> {
                     double boundedValue = Math.max(1.0, value);
-                    spawnerTileEntity.setRespawnTime((int) Math.round(boundedValue * GameConstants.TICKS_PER_SECOND));
+                    getSpawnerTileEntity().setRespawnTime((int) Math.round(boundedValue * GameConstants.TICKS_PER_SECOND));
                     field.setValue(boundedValue);
                 });
         root.addConstraintToWidget(new MarginConstraint(MarginConstraint.MarginType.LEFT), spawnTimeController);
@@ -99,8 +99,8 @@ public class MKSpawnerScreen extends MKScreen {
                         new RadioButtonList.RadioValue<>(MKEntity.NonCombatMoveType.STATIONARY, "Stationary"),
                         new RadioButtonList.RadioValue<>(MKEntity.NonCombatMoveType.RANDOM_WANDER, "Random Wander")
                         ),
-                spawnerTileEntity::setMoveType);
-        movementBehaviors.selectEntry(spawnerTileEntity.getMoveType());
+                getSpawnerTileEntity()::setMoveType);
+        movementBehaviors.selectEntry(getSpawnerTileEntity().getMoveType());
         root.addConstraintToWidget(new MarginConstraint(MarginConstraint.MarginType.LEFT), movementBehaviors);
         root.addConstraintToWidget(new VerticalStackConstraint(), movementBehaviors);
         root.addWidget(movementBehaviors);

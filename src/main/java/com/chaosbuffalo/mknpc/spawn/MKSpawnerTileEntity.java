@@ -6,6 +6,7 @@ import com.chaosbuffalo.mknpc.entity.MKEntity;
 import com.chaosbuffalo.mknpc.init.MKNpcTileEntityTypes;
 import com.chaosbuffalo.mknpc.npc.NpcDefinition;
 import com.chaosbuffalo.mknpc.utils.RandomCollection;
+import net.minecraft.block.Blocks;
 import net.minecraft.entity.Entity;
 import net.minecraft.entity.LivingEntity;
 import net.minecraft.entity.MobEntity;
@@ -166,6 +167,9 @@ public class MKSpawnerTileEntity extends TileEntity implements ITickableTileEnti
     @Override
     public void tick() {
         if (getWorld() != null && !getWorld().isRemote() && randomSpawns.size() >0){
+            if (!getWorld().getBlockState(getPos().up()).getBlock().equals(Blocks.AIR)){
+                return;
+            }
             boolean isAlive = isSpawnAlive();
             if (ticksSinceDeath > 0){
                 ticksSinceDeath--;

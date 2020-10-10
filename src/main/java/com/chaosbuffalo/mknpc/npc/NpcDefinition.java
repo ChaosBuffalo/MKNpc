@@ -1,9 +1,7 @@
 package com.chaosbuffalo.mknpc.npc;
 
 import com.chaosbuffalo.mknpc.MKNpc;
-import com.chaosbuffalo.mknpc.npc.options.FactionNameOption;
 import com.chaosbuffalo.mknpc.npc.options.FactionOption;
-import com.chaosbuffalo.mknpc.npc.options.NameOption;
 import com.chaosbuffalo.mknpc.npc.options.NpcDefinitionOption;
 import com.google.gson.Gson;
 import com.google.gson.JsonElement;
@@ -114,17 +112,19 @@ public class NpcDefinition {
     }
 
     @Nullable
-    public String getName() {
-        if (hasOption(FactionNameOption.NAME)){
-            FactionNameOption option = (FactionNameOption) getOption(FactionNameOption.NAME);
-            return option.getDisplayTitle();
+    public String getDisplayName(){
+        for (NpcDefinitionOption option : options.values()){
+            if (option.providesName()){
+                return option.getDisplayName();
+            }
         }
-        if (hasOption(NameOption.NAME)){
-            NameOption option = (NameOption) getOption(NameOption.NAME);
-            return option.getValue();
+        if (hasParent()){
+            return getParent().getDisplayName();
+        } else {
+            return null;
         }
-        return null;
     }
+
 
     public ResourceLocation getEntityType() {
         return entityType;

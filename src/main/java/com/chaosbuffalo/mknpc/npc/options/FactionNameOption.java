@@ -30,7 +30,14 @@ public class FactionNameOption extends WorldPermanentOption {
         hasLastName = false;
     }
 
-    public String getDisplayTitle(){
+    @Override
+    public boolean providesName() {
+        return true;
+    }
+
+    @Nullable
+    @Override
+    public String getDisplayName() {
         String name = "";
         if (title != null){
             name += title;
@@ -43,6 +50,7 @@ public class FactionNameOption extends WorldPermanentOption {
         }
         return name;
     }
+
 
     @Nullable
     private static <T> T getRandomEntry(LivingEntity entity, Set<T> set){
