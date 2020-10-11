@@ -7,7 +7,6 @@ import net.minecraft.util.math.BlockPos;
 import net.minecraft.util.math.MutableBoundingBox;
 import net.minecraft.world.biome.Biome;
 import net.minecraft.world.gen.ChunkGenerator;
-import net.minecraft.world.gen.feature.structure.IglooPieces;
 import net.minecraft.world.gen.feature.structure.Structure;
 import net.minecraft.world.gen.feature.structure.StructureStart;
 import net.minecraft.world.gen.feature.template.TemplateManager;
@@ -16,7 +15,7 @@ import java.util.function.Function;
 
 public class TestStructure extends SingleChunkStructure {
 
-    public TestStructure(Function<Dynamic<?>, ? extends SingleChunkConfig> configFactoryIn) {
+    public TestStructure(Function<Dynamic<?>, ? extends ChunkPosConfig> configFactoryIn) {
         super(configFactoryIn);
     }
 
@@ -32,7 +31,7 @@ public class TestStructure extends SingleChunkStructure {
 
     @Override
     public int getSize() {
-        return 3;
+        return 2;
     }
 
     public static class Start extends StructureStart {
@@ -45,7 +44,7 @@ public class TestStructure extends SingleChunkStructure {
         @Override
         public void init(ChunkGenerator<?> generator, TemplateManager templateManagerIn,
                          int chunkX, int chunkZ, Biome biomeIn) {
-            SingleChunkConfig config = generator.getStructureConfig(biomeIn, MKNpcWorldGen.TEST_STRUCTURE);
+            ChunkPosConfig config = generator.getStructureConfig(biomeIn, MKNpcWorldGen.TEST_STRUCTURE);
             BlockPos blockpos = new BlockPos(chunkX * 16, generator.getGroundHeight(), chunkZ * 16);
             Rotation rotation = Rotation.values()[this.rand.nextInt(Rotation.values().length)];
             TestStructurePieces.getPieces(templateManagerIn, blockpos, rotation, this.components, this.rand, config);

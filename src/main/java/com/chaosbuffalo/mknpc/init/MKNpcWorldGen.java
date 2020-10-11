@@ -1,7 +1,7 @@
 package com.chaosbuffalo.mknpc.init;
 
 import com.chaosbuffalo.mknpc.MKNpc;
-import com.chaosbuffalo.mknpc.world.gen.feature.structure.SingleChunkConfig;
+import com.chaosbuffalo.mknpc.world.gen.feature.structure.ChunkPosConfig;
 import com.chaosbuffalo.mknpc.world.gen.feature.structure.TestStructure;
 import com.chaosbuffalo.mknpc.world.gen.feature.structure.TestStructurePieces;
 import net.minecraft.util.ResourceLocation;
@@ -29,7 +29,7 @@ public class MKNpcWorldGen {
 
     @SubscribeEvent
     public static void registerFeatures(RegistryEvent.Register<Feature<?>> evt){
-        TEST_STRUCTURE = new TestStructure(SingleChunkConfig::deserialize);
+        TEST_STRUCTURE = new TestStructure(ChunkPosConfig::deserialize);
         TEST_STRUCTURE.setRegistryName(TEST_STRUCTURE_NAME);
         evt.getRegistry().register(TEST_STRUCTURE);
 
@@ -39,9 +39,9 @@ public class MKNpcWorldGen {
 
     public static void biomeSetup(){
         for (Biome biome : ForgeRegistries.BIOMES.getValues()){
-            biome.addStructure(TEST_STRUCTURE.withConfiguration(new SingleChunkConfig(0, 0)));
+            biome.addStructure(TEST_STRUCTURE.withConfiguration(new ChunkPosConfig(0, 0)));
             biome.addFeature(GenerationStage.Decoration.SURFACE_STRUCTURES,
-                    TEST_STRUCTURE.withConfiguration(new SingleChunkConfig(0, 0)));
+                    TEST_STRUCTURE.withConfiguration(new ChunkPosConfig(0, 0)));
         }
     }
 }

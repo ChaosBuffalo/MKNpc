@@ -7,11 +7,11 @@ import net.minecraft.world.gen.feature.IFeatureConfig;
 
 import java.util.stream.IntStream;
 
-public class SingleChunkConfig implements IFeatureConfig {
+public class ChunkPosConfig implements IFeatureConfig {
     public final int xChunk;
     public final int zChunk;
 
-    public SingleChunkConfig(int xChunk, int zChunk){
+    public ChunkPosConfig(int xChunk, int zChunk){
         this.xChunk = xChunk;
         this.zChunk = zChunk;
     }
@@ -22,9 +22,9 @@ public class SingleChunkConfig implements IFeatureConfig {
                 ops.createIntList(IntStream.of(xChunk, zChunk)))));
     }
 
-    public static SingleChunkConfig deserialize(Dynamic<?> p_214722_0_) {
+    public static ChunkPosConfig deserialize(Dynamic<?> p_214722_0_) {
         IntStream pos = p_214722_0_.get("xzChunkCoords").asIntStream();
         int[] arr = pos.toArray();
-        return new SingleChunkConfig(arr[0], arr[1]);
+        return new ChunkPosConfig(arr[0], arr[1]);
     }
 }

@@ -29,7 +29,7 @@ import javax.annotation.Nullable;
 public class MKSpawnerBlock extends Block {
     private final VoxelShape shape = Block.makeCuboidShape(0, 0, 0, 16.0, 1.0, 16.0);
     public static final Material SPAWNER_MATERIAL = new Material(MaterialColor.AIR, false,
-            false, false, false, false, false,
+            false, true, false, false, false,
             false, PushReaction.IGNORE);
 
     public MKSpawnerBlock(Properties properties) {
