@@ -8,6 +8,7 @@ import com.chaosbuffalo.mknpc.dialogue.NPCDialogueExtension;
 import com.chaosbuffalo.mknpc.init.MKNpcEntityTypes;
 import com.chaosbuffalo.mknpc.init.MKNpcBlocks;
 import com.chaosbuffalo.mknpc.init.MKNpcTileEntityTypes;
+import com.chaosbuffalo.mknpc.init.MKNpcWorldGen;
 import com.chaosbuffalo.mknpc.network.PacketHandler;
 import com.chaosbuffalo.mknpc.npc.INpcOptionExtension;
 import com.chaosbuffalo.mknpc.npc.NpcDefinitionManager;
@@ -43,6 +44,7 @@ public class MKNpc
         MKNpcEntityTypes.register();
         MKNpcBlocks.register();
         MKNpcTileEntityTypes.register();
+        MKNpcWorldGen.registerStructurePieces();
     }
 
     @SuppressWarnings("unused")
@@ -79,6 +81,7 @@ public class MKNpc
         NpcCapabilities.registerCapabilities();
         PacketHandler.setupHandler();
         NpcDefinitionManager.setupDeserializers();
+        MKNpcWorldGen.biomeSetup();
     }
 
     public static LazyOptional<? extends IMKNpcData> getNpcData(Entity entity){

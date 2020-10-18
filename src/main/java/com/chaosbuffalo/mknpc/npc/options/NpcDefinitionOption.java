@@ -6,6 +6,8 @@ import com.google.gson.JsonObject;
 import net.minecraft.entity.Entity;
 import net.minecraft.util.ResourceLocation;
 
+import javax.annotation.Nullable;
+
 public abstract class NpcDefinitionOption {
     private final ResourceLocation name;
     public enum ApplyOrder {
@@ -18,6 +20,15 @@ public abstract class NpcDefinitionOption {
     public NpcDefinitionOption(ResourceLocation name, ApplyOrder order){
         this.name = name;
         this.ordering = order;
+    }
+
+    public boolean providesName(){
+        return false;
+    }
+
+    @Nullable
+    public String getDisplayName(){
+        return null;
     }
 
     public ApplyOrder getOrdering() {

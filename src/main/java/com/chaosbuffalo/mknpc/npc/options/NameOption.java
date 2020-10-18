@@ -4,6 +4,8 @@ import com.chaosbuffalo.mknpc.MKNpc;
 import net.minecraft.util.ResourceLocation;
 import net.minecraft.util.text.StringTextComponent;
 
+import javax.annotation.Nullable;
+
 public class NameOption extends StringOption {
     public static final ResourceLocation NAME = new ResourceLocation(MKNpc.MODID, "name");
     public NameOption() {
@@ -12,5 +14,16 @@ public class NameOption extends StringOption {
                 entity.setCustomName(new StringTextComponent(name));
             }
         });
+    }
+
+    @Override
+    public boolean providesName() {
+        return true;
+    }
+
+    @Nullable
+    @Override
+    public String getDisplayName() {
+        return getValue();
     }
 }
