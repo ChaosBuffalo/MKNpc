@@ -42,4 +42,8 @@ public interface IEntityNpcData extends INBTSerializable<CompoundNBT> {
 
     void setNotable(boolean value);
 
+    boolean needsDefinitionApplied();
+
+    void applyDefinition();
+
 }

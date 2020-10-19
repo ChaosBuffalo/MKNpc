@@ -22,12 +22,25 @@ public class EntityNpcDataHandler implements IEntityNpcData {
     private UUID spawnID;
     private BlockPos blockPos;
     private boolean notable;
+    private boolean needsDefinitionApplied;
 
     public EntityNpcDataHandler(){
         mkSpawned = false;
         bonusXp = 0;
         notable = false;
         spawnID = UUID.randomUUID();
+        needsDefinitionApplied = false;
+    }
+
+    public boolean needsDefinitionApplied() {
+        return needsDefinitionApplied;
+    }
+
+    public void applyDefinition(){
+        if (definition != null){
+            definition.applyDefinition(getEntity());
+            needsDefinitionApplied = false;
+        }
     }
 
     @Override
@@ -124,9 +137,7 @@ public class EntityNpcDataHandler implements IEntityNpcData {
             ResourceLocation defName = new ResourceLocation(nbt.getString("npc_definition"));
             NpcDefinition def = NpcDefinitionManager.getDefinition(defName);
             this.definition = def;
-//            if (def != null){
-//                def.applyDefinition(getEntity());
-//            }
+            needsDefinitionApplied = true;
         }
     }
 
