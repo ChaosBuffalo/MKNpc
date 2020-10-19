@@ -7,6 +7,7 @@ import net.minecraft.entity.Entity;
 import net.minecraft.util.ResourceLocation;
 import org.apache.logging.log4j.util.TriConsumer;
 
+import java.util.UUID;
 import java.util.function.BiFunction;
 
 public class SimpleOption<T> extends NpcDefinitionOption {

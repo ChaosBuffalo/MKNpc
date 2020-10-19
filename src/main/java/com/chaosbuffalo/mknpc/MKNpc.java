@@ -1,6 +1,6 @@
 package com.chaosbuffalo.mknpc;
 
-import com.chaosbuffalo.mknpc.capabilities.IMKNpcData;
+import com.chaosbuffalo.mknpc.capabilities.IEntityNpcData;
 import com.chaosbuffalo.mknpc.capabilities.IWorldNpcData;
 import com.chaosbuffalo.mknpc.capabilities.NpcCapabilities;
 import com.chaosbuffalo.mknpc.command.NpcCommands;
@@ -84,8 +84,8 @@ public class MKNpc
         MKNpcWorldGen.biomeSetup();
     }
 
-    public static LazyOptional<? extends IMKNpcData> getNpcData(Entity entity){
-        return entity.getCapability(NpcCapabilities.NPC_DATA_CAPABILITY);
+    public static LazyOptional<? extends IEntityNpcData> getNpcData(Entity entity){
+        return entity.getCapability(NpcCapabilities.ENTITY_NPC_DATA_CAPABILITY);
     }
 
     public static LazyOptional<? extends IWorldNpcData> getWorldNpcData(World world){

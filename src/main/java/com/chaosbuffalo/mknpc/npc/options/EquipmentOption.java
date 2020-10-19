@@ -18,10 +18,7 @@ import net.minecraft.item.Items;
 import net.minecraft.util.ResourceLocation;
 import net.minecraftforge.registries.ForgeRegistries;
 
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
 
 public class EquipmentOption extends WorldPermanentOption {
     public static final ResourceLocation NAME = new ResourceLocation(MKNpc.MODID, "equipment");
@@ -33,7 +30,7 @@ public class EquipmentOption extends WorldPermanentOption {
     }
 
     @Override
-    protected INpcOptionEntry makeOptionEntry(NpcDefinition definition, Entity entity) {
+    protected INpcOptionEntry makeOptionEntry(NpcDefinition definition, Random random) {
         EquipmentOptionEntry equipmentEntry = new EquipmentOptionEntry();
         for (Map.Entry<EquipmentSlotType, List<NpcItemChoice>> entry : itemChoices.entrySet()){
             RandomCollection<NpcItemChoice> slotChoices = new RandomCollection<>();

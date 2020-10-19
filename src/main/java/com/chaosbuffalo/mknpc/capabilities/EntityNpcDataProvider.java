@@ -10,31 +10,31 @@ import net.minecraftforge.common.util.LazyOptional;
 import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
 
-public class NpcDataProvider implements ICapabilitySerializable<CompoundNBT> {
+public class EntityNpcDataProvider implements ICapabilitySerializable<CompoundNBT> {
 
-    private final NpcDataHandler data;
+    private final EntityNpcDataHandler data;
 
-    public NpcDataProvider(LivingEntity entity){
-        data = new NpcDataHandler();
+    public EntityNpcDataProvider(LivingEntity entity){
+        data = new EntityNpcDataHandler();
         data.attach(entity);
     }
 
     @Nonnull
     @Override
     public <T> LazyOptional<T> getCapability(@Nonnull Capability<T> cap, @Nullable Direction side) {
-        return NpcCapabilities.NPC_DATA_CAPABILITY.orEmpty(cap, LazyOptional.of(() -> data));
+        return NpcCapabilities.ENTITY_NPC_DATA_CAPABILITY.orEmpty(cap, LazyOptional.of(() -> data));
     }
 
     @Override
     public CompoundNBT serializeNBT() {
-        return (CompoundNBT) NpcCapabilities.NPC_DATA_CAPABILITY.getStorage().writeNBT(
-                NpcCapabilities.NPC_DATA_CAPABILITY, data, null);
+        return (CompoundNBT) NpcCapabilities.ENTITY_NPC_DATA_CAPABILITY.getStorage().writeNBT(
+                NpcCapabilities.ENTITY_NPC_DATA_CAPABILITY, data, null);
     }
 
     @Override
     public void deserializeNBT(CompoundNBT nbt) {
-        NpcCapabilities.NPC_DATA_CAPABILITY.getStorage().readNBT(
-                NpcCapabilities.NPC_DATA_CAPABILITY, data, null, nbt);
+        NpcCapabilities.ENTITY_NPC_DATA_CAPABILITY.getStorage().readNBT(
+                NpcCapabilities.ENTITY_NPC_DATA_CAPABILITY, data, null, nbt);
     }
 
 

@@ -3,5 +3,6 @@
   "mknpc:faction_name": {
       "title": "Chief",
       "hasLastName": true
-  }
+  },
+  "mknpc:notable": true
 }

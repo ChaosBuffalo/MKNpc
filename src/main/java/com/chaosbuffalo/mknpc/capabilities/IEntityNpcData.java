@@ -10,7 +10,7 @@ import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
 import java.util.UUID;
 
-public interface IMKNpcData extends INBTSerializable<CompoundNBT> {
+public interface IEntityNpcData extends INBTSerializable<CompoundNBT> {
 
     void attach(LivingEntity entity);
 
@@ -37,4 +37,9 @@ public interface IMKNpcData extends INBTSerializable<CompoundNBT> {
     UUID getSpawnID();
 
     void setMKSpawned(boolean value);
+
+    boolean isNotable();
+
+    void setNotable(boolean value);
+
 }

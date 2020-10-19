@@ -15,6 +15,7 @@ import net.minecraft.util.ResourceLocation;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Random;
 
 public class AbilitiesOption extends WorldPermanentOption {
     public static final ResourceLocation NAME = new ResourceLocation(MKNpc.MODID, "abilities");
@@ -30,14 +31,11 @@ public class AbilitiesOption extends WorldPermanentOption {
     }
 
     @Override
-    protected INpcOptionEntry makeOptionEntry(NpcDefinition definition, Entity entity) {
+    protected INpcOptionEntry makeOptionEntry(NpcDefinition definition, Random random) {
         List<NpcAbilityEntry> finalChoices = new ArrayList<>();
-        if (entity instanceof LivingEntity){
-            LivingEntity livingEntity = (LivingEntity) entity;
-            for (NpcAbilityEntry entry : abilities){
-                if (livingEntity.getRNG().nextDouble() <= entry.getChance()){
-                    finalChoices.add(entry);
-                }
+        for (NpcAbilityEntry entry : abilities){
+            if (random.nextDouble() <= entry.getChance()){
+                finalChoices.add(entry);
             }
         }
         return new AbilitiesOptionEntry(finalChoices);
