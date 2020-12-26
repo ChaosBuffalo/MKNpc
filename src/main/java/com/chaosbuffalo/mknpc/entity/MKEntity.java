@@ -170,7 +170,7 @@ public abstract class MKEntity extends CreatureEntity {
     public ILivingEntityData onInitialSpawn(IWorld worldIn, DifficultyInstance difficultyIn, SpawnReason reason, @Nullable ILivingEntityData spawnDataIn, @Nullable CompoundNBT dataTag) {
         MKNpc.LOGGER.info("In initial spawn for {}", this);
         ILivingEntityData entityData = super.onInitialSpawn(worldIn, difficultyIn, reason, spawnDataIn, dataTag);
-        this.getCapability(NpcCapabilities.NPC_DATA_CAPABILITY).ifPresent((cap) -> {
+        this.getCapability(NpcCapabilities.ENTITY_NPC_DATA_CAPABILITY).ifPresent((cap) -> {
             if (cap.wasMKSpawned()){
                 getBrain().setMemory(MKMemoryModuleTypes.SPAWN_POINT, cap.getSpawnPos());
             }

@@ -6,7 +6,7 @@ import net.minecraft.nbt.CompoundNBT;
 import net.minecraft.util.text.StringTextComponent;
 
 
-public class FactionNameOptionEntry implements INpcOptionEntry{
+public class FactionNameOptionEntry implements INpcOptionEntry, INameEntry{
     private String name;
 
     public FactionNameOptionEntry(){
@@ -17,11 +17,10 @@ public class FactionNameOptionEntry implements INpcOptionEntry{
         this.name = name;
     }
 
-
     @Override
     public void applyToEntity(Entity entity) {
         if (!name.equals("") && entity instanceof LivingEntity){
-            entity.setCustomName(new StringTextComponent(name));
+            entity.setCustomName(getName());
         }
     }
 
@@ -35,5 +34,10 @@ public class FactionNameOptionEntry implements INpcOptionEntry{
     @Override
     public void deserializeNBT(CompoundNBT nbt) {
         this.name = nbt.getString("name");
+    }
+
+    @Override
+    public StringTextComponent getName() {
+        return new StringTextComponent(name);
     }
 }

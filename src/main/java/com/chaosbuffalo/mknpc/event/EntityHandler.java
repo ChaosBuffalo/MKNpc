@@ -14,6 +14,10 @@ public class EntityHandler {
         MKNpc.getNpcData(event.getEntity()).ifPresent((cap) -> {
             if (cap.wasMKSpawned()){
                 event.setCanceled(true);
+            } else {
+                if (cap.needsDefinitionApplied()){
+                    cap.applyDefinition();
+                }
             }
         });
     }

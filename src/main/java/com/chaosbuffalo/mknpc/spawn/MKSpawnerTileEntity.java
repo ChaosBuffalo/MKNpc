@@ -2,13 +2,13 @@ package com.chaosbuffalo.mknpc.spawn;
 
 import com.chaosbuffalo.mkcore.GameConstants;
 import com.chaosbuffalo.mknpc.MKNpc;
+import com.chaosbuffalo.mknpc.capabilities.NpcCapabilities;
 import com.chaosbuffalo.mknpc.entity.MKEntity;
 import com.chaosbuffalo.mknpc.init.MKNpcTileEntityTypes;
 import com.chaosbuffalo.mknpc.npc.NpcDefinition;
 import com.chaosbuffalo.mknpc.utils.RandomCollection;
 import net.minecraft.block.Blocks;
 import net.minecraft.entity.Entity;
-import net.minecraft.entity.LivingEntity;
 import net.minecraft.entity.MobEntity;
 import net.minecraft.entity.SpawnReason;
 import net.minecraft.entity.player.PlayerEntity;
@@ -16,6 +16,7 @@ import net.minecraft.nbt.CompoundNBT;
 import net.minecraft.tileentity.ITickableTileEntity;
 import net.minecraft.tileentity.TileEntity;
 import net.minecraft.tileentity.TileEntityType;
+import net.minecraft.util.ResourceLocation;
 import net.minecraft.util.math.BlockPos;
 import net.minecraft.util.math.Vec3d;
 
@@ -33,6 +34,9 @@ public class MKSpawnerTileEntity extends TileEntity implements ITickableTileEnti
     private static final int IDLE_TIME = GameConstants.TICKS_PER_SECOND * 10;
     private final RandomCollection<NpcDefinition> randomSpawns;
     private MKEntity.NonCombatMoveType moveType;
+    private ResourceLocation structureName;
+    private UUID structureId;
+    private boolean needsUploadToWorld;
 
     public MKSpawnerTileEntity(){
         this(MKNpcTileEntityTypes.MK_SPAWNER_TILE_ENTITY_TYPE.get());
@@ -42,6 +46,9 @@ public class MKSpawnerTileEntity extends TileEntity implements ITickableTileEnti
         super(tileEntityTypeIn);
         this.spawnList = new SpawnList();
         this.spawnUUID = UUID.randomUUID();
+        this.structureName = null;
+        this.structureId = null;
+        this.needsUploadToWorld = false;
         this.respawnTime = GameConstants.TICKS_PER_SECOND * 25;
         this.ticksSinceDeath = 0;
         this.ticksSincePlayer = 0;
@@ -49,6 +56,26 @@ public class MKSpawnerTileEntity extends TileEntity implements ITickableTileEnti
         this.wasAlive = false;
         this.moveType = MKEntity.NonCombatMoveType.STATIONARY;
         this.randomSpawns = new RandomCollection<>();
+    }
+
+    public boolean isInsideStructure(){
+        return structureName != null && structureId != null;
+    }
+
+    public void setStructureName(ResourceLocation structureName) {
+        this.structureName = structureName;
+    }
+
+    public ResourceLocation getStructureName() {
+        return structureName;
+    }
+
+    public UUID getStructureId() {
+        return structureId;
+    }
+
+    public void setStructureId(UUID structureId) {
+        this.structureId = structureId;
     }
 
     public void setMoveType(MKEntity.NonCombatMoveType moveType) {
@@ -82,7 +109,16 @@ public class MKSpawnerTileEntity extends TileEntity implements ITickableTileEnti
         compound.putUniqueId("spawnId", spawnUUID);
         compound.putInt("ticksSinceDeath", ticksSinceDeath);
         compound.putInt("moveType", moveType.ordinal());
+        compound.putBoolean("hasUploadedToWorld", needsUploadToWorld);
+        if (isInsideStructure()){
+            compound.putString("structureName", structureName.toString());
+            compound.putString("structureId", structureId.toString());
+        }
         return super.write(compound);
+    }
+
+    public UUID getSpawnUUID() {
+        return spawnUUID;
     }
 
     public void setRespawnTime(int respawnTime) {
@@ -103,6 +139,7 @@ public class MKSpawnerTileEntity extends TileEntity implements ITickableTileEnti
 
     public void regenerateSpawnID(){
         this.spawnUUID = UUID.randomUUID();
+        this.needsUploadToWorld = true;
     }
 
     @Override
@@ -114,6 +151,15 @@ public class MKSpawnerTileEntity extends TileEntity implements ITickableTileEnti
         }
         if (compound.contains("moveType")){
             setMoveType(MKEntity.NonCombatMoveType.values()[compound.getInt("moveType")]);
+        }
+        if (compound.contains("structureName")){
+            setStructureName(new ResourceLocation(compound.getString("structureName")));
+        }
+        if (compound.contains("structureId")){
+            setStructureId(UUID.fromString(compound.getString("structureId")));
+        }
+        if (compound.contains("hasUploadedToWorld")){
+            needsUploadToWorld = compound.getBoolean("hasUploadedToWorld");
         }
         ticksSinceDeath = compound.getInt("ticksSinceDeath");
         spawnUUID = compound.getUniqueId("spawnId");
@@ -167,6 +213,11 @@ public class MKSpawnerTileEntity extends TileEntity implements ITickableTileEnti
     @Override
     public void tick() {
         if (getWorld() != null && !getWorld().isRemote() && randomSpawns.size() >0){
+            if (needsUploadToWorld){
+                getWorld().getCapability(NpcCapabilities.WORLD_NPC_DATA_CAPABILITY)
+                        .ifPresent(cap -> cap.addSpawner(this));
+                needsUploadToWorld = false;
+            }
             if (!getWorld().getBlockState(getPos().up()).getBlock().equals(Blocks.AIR)){
                 return;
             }
@@ -179,7 +230,6 @@ public class MKSpawnerTileEntity extends TileEntity implements ITickableTileEnti
                 if (!isAlive){
                     if (wasAlive){
                         ticksSinceDeath = getRespawnTime();
-                        MKNpc.LOGGER.info("Detected death, setting respawn time {}", ticksSinceDeath);
                     }
                     if (ticksSinceDeath <= 0){
                         spawnEntity();

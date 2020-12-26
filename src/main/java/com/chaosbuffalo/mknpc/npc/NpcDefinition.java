@@ -1,8 +1,8 @@
 package com.chaosbuffalo.mknpc.npc;
 
+import com.chaosbuffalo.mkfaction.faction.MKFaction;
 import com.chaosbuffalo.mknpc.MKNpc;
-import com.chaosbuffalo.mknpc.npc.options.FactionOption;
-import com.chaosbuffalo.mknpc.npc.options.NpcDefinitionOption;
+import com.chaosbuffalo.mknpc.npc.options.*;
 import com.google.gson.Gson;
 import com.google.gson.JsonElement;
 import com.google.gson.JsonObject;
@@ -11,6 +11,7 @@ import net.minecraft.entity.EntityType;
 import net.minecraft.entity.LivingEntity;
 import net.minecraft.util.ResourceLocation;
 import net.minecraft.util.math.Vec3d;
+import net.minecraft.util.text.StringTextComponent;
 import net.minecraft.world.World;
 import net.minecraftforge.registries.ForgeRegistries;
 
@@ -44,8 +45,28 @@ public class NpcDefinition {
         this.options = new HashMap<>();
     }
 
+    public boolean isNotable() {
+        if (hasOption(NotableOption.NAME)){
+            NotableOption option = (NotableOption) getOption(NotableOption.NAME);
+            return option.getValue();
+        }
+        return false;
+    }
+
     public boolean hasParent(){
         return parent != null;
+    }
+
+    public boolean isWorldPermanent(){
+        for (NpcDefinitionOption option : options.values()){
+            if (option instanceof WorldPermanentOption){
+                return true;
+            }
+        }
+        if (hasParent()){
+            return getParent().isWorldPermanent();
+        }
+        return false;
     }
 
     public NpcDefinition getParent() {
@@ -102,20 +123,19 @@ public class NpcDefinition {
         options.put(option.getName(), option);
     }
 
-    @Nullable
     public ResourceLocation getFactionName(){
         if (hasOption(FactionOption.NAME)){
             FactionOption option = (FactionOption) getOption(FactionOption.NAME);
             return option.getValue();
         }
-        return null;
+        return MKFaction.INVALID_FACTION;
     }
 
     @Nullable
     public String getDisplayName(){
         for (NpcDefinitionOption option : options.values()){
-            if (option.providesName()){
-                return option.getDisplayName();
+            if (option instanceof INameProvider){
+                return ((INameProvider) option).getDisplayName();
             }
         }
         if (hasParent()){
@@ -128,6 +148,19 @@ public class NpcDefinition {
 
     public ResourceLocation getEntityType() {
         return entityType;
+    }
+
+    public StringTextComponent getNameForEntity(World world, UUID spawnId){
+        for (NpcDefinitionOption option : options.values()){
+            if (option instanceof INameProvider){
+                return ((INameProvider) option).getEntityName(this, world, spawnId);
+            }
+        }
+        if (hasParent()){
+            return getParent().getNameForEntity(world, spawnId);
+        } else {
+            return new StringTextComponent("Name Error");
+        }
     }
 
     public void applyDefinition(Entity entity){

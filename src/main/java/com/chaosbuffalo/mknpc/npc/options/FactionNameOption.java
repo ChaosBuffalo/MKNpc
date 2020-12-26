@@ -4,21 +4,23 @@ import com.chaosbuffalo.mkfaction.capabilities.FactionCapabilities;
 import com.chaosbuffalo.mkfaction.event.MKFactionRegistry;
 import com.chaosbuffalo.mkfaction.faction.MKFaction;
 import com.chaosbuffalo.mknpc.MKNpc;
+import com.chaosbuffalo.mknpc.capabilities.NpcCapabilities;
 import com.chaosbuffalo.mknpc.npc.NpcDefinition;
 import com.chaosbuffalo.mknpc.npc.option_entries.FactionNameOptionEntry;
+import com.chaosbuffalo.mknpc.npc.option_entries.INameEntry;
 import com.chaosbuffalo.mknpc.npc.option_entries.INpcOptionEntry;
 import com.google.gson.Gson;
 import com.google.gson.JsonObject;
 import net.minecraft.entity.Entity;
 import net.minecraft.entity.LivingEntity;
 import net.minecraft.util.ResourceLocation;
+import net.minecraft.util.text.StringTextComponent;
+import net.minecraft.world.World;
 
 import javax.annotation.Nullable;
-import java.util.ArrayList;
-import java.util.List;
-import java.util.Set;
+import java.util.*;
 
-public class FactionNameOption extends WorldPermanentOption {
+public class FactionNameOption extends WorldPermanentOption implements INameProvider {
     public static final ResourceLocation NAME = new ResourceLocation(MKNpc.MODID, "faction_name");
 
     @Nullable
@@ -30,9 +32,19 @@ public class FactionNameOption extends WorldPermanentOption {
         hasLastName = false;
     }
 
+
     @Override
-    public boolean providesName() {
-        return true;
+    @Nullable
+    public StringTextComponent getEntityName(NpcDefinition definition, World world, UUID spawnId) {
+        return world.getCapability(NpcCapabilities.WORLD_NPC_DATA_CAPABILITY).map(
+                cap->{
+                    INpcOptionEntry entry = cap.getEntityOptionEntry(definition, this, spawnId);
+                    if (entry instanceof INameEntry){
+                        return ((INameEntry) entry).getName();
+                    } else {
+                        return new StringTextComponent("Name Error");
+                    }
+                }).orElse(new StringTextComponent("Name Error"));
     }
 
     @Nullable
@@ -53,45 +65,41 @@ public class FactionNameOption extends WorldPermanentOption {
 
 
     @Nullable
-    private static <T> T getRandomEntry(LivingEntity entity, Set<T> set){
+    private static <T> T getRandomEntry(Random random, Set<T> set){
         List<T> list = new ArrayList<>(set);
         if (list.size() <= 0){
             return null;
         }
-        return list.get(entity.getRNG().nextInt(list.size()));
+        return list.get(random.nextInt(list.size()));
     }
 
     @Override
-    protected INpcOptionEntry makeOptionEntry(NpcDefinition definition, Entity entity) {
-        if (entity instanceof LivingEntity){
-            return entity.getCapability(FactionCapabilities.MOB_FACTION_CAPABILITY).map((cap) -> {
-                String name = "";
-                if (title != null){
-                    name += title;
-                }
-                MKFaction faction = MKFactionRegistry.getFaction(cap.getFactionName());
-                if (faction != null){
-                    name += " ";
-                    String firstName = getRandomEntry((LivingEntity) entity, faction.getFirstNames());
-                    if (firstName == null){
-                        firstName = "No Name";
-                    }
-                    name += firstName;
-                    if (hasLastName){
-                        name += " ";
-                        String lastName = getRandomEntry((LivingEntity) entity, faction.getLastNames());
-                        if (lastName == null){
-                            lastName = "Unknown";
-                        }
-                        name += lastName;
-                    }
-                }
-                return new FactionNameOptionEntry(name);
-            }).orElse(new FactionNameOptionEntry(""));
-        } else {
-            return new FactionNameOptionEntry("");
+    protected INpcOptionEntry makeOptionEntry(NpcDefinition definition, Random random) {
+        String name = "";
+        if (title != null){
+            name += title;
         }
+        MKFaction faction = MKFactionRegistry.getFaction(definition.getFactionName());
+        if (faction != null){
+            name += " ";
+            String firstName = getRandomEntry(random, faction.getFirstNames());
+            if (firstName == null){
+                firstName = "No Name";
+            }
+            name += firstName;
+            if (hasLastName){
+                name += " ";
+                String lastName = getRandomEntry(random, faction.getLastNames());
+                if (lastName == null){
+                    lastName = "Unknown";
+                }
+                name += lastName;
+            }
+        }
+        return new FactionNameOptionEntry(name);
     }
+
+
 
     @Override
     public void fromJson(Gson gson, JsonObject object) {

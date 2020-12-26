@@ -6,7 +6,7 @@ import com.google.gson.JsonObject;
 import net.minecraft.entity.Entity;
 import net.minecraft.util.ResourceLocation;
 
-import javax.annotation.Nullable;
+import java.util.UUID;
 
 public abstract class NpcDefinitionOption {
     private final ResourceLocation name;
@@ -22,14 +22,6 @@ public abstract class NpcDefinitionOption {
         this.ordering = order;
     }
 
-    public boolean providesName(){
-        return false;
-    }
-
-    @Nullable
-    public String getDisplayName(){
-        return null;
-    }
 
     public ApplyOrder getOrdering() {
         return ordering;
