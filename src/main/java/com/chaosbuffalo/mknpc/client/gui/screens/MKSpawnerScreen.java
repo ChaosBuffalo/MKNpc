@@ -18,6 +18,7 @@ import com.chaosbuffalo.mkwidgets.client.gui.widgets.MKImage;
 import com.chaosbuffalo.mkwidgets.client.gui.widgets.MKModal;
 import com.chaosbuffalo.mkwidgets.client.gui.widgets.MKText;
 import com.google.common.collect.Lists;
+import com.mojang.blaze3d.matrix.MatrixStack;
 import com.mojang.blaze3d.systems.RenderSystem;
 import net.minecraft.util.text.StringTextComponent;
 
@@ -116,14 +117,14 @@ public class MKSpawnerScreen extends MKScreen {
     }
 
     @Override
-    public void render(int mouseX, int mouseY, float partialTicks) {
+    public void render(MatrixStack stack, int mouseX, int mouseY, float partialTicks) {
         int xPos = width / 2 - PANEL_WIDTH / 2;
         int yPos = height / 2 - PANEL_HEIGHT / 2;
         RenderSystem.color4f(1.0f, 1.0f, 1.0f, 1.0f);
         GuiTextures.CORE_TEXTURES.bind(getMinecraft());
         RenderSystem.disableLighting();
-        GuiTextures.CORE_TEXTURES.drawRegionAtPos(GuiTextures.BACKGROUND_320_240, xPos, yPos);
-        super.render(mouseX, mouseY, partialTicks);
+        GuiTextures.CORE_TEXTURES.drawRegionAtPos(stack, GuiTextures.BACKGROUND_320_240, xPos, yPos);
+        super.render(stack, mouseX, mouseY, partialTicks);
         RenderSystem.enableLighting();
     }
 }

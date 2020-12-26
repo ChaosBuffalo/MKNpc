@@ -32,7 +32,7 @@ public class AbilitiesOptionEntry implements INpcOptionEntry {
         if (entity instanceof LivingEntity) {
             LivingEntity livingEntity = (LivingEntity) entity;
             livingEntity.getCapability(CoreCapabilities.ENTITY_CAPABILITY).ifPresent((cap) -> {
-                for (MKAbilityInfo ability : cap.getKnowledge().getAbilities()) {
+                for (MKAbilityInfo ability : cap.getKnowledge().getAllAbilities()) {
                     cap.getKnowledge().unlearnAbility(ability.getId());
                 }
                 for (NpcAbilityEntry entry : abilities) {

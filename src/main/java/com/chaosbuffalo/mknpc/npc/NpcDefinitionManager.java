@@ -10,7 +10,10 @@ import com.chaosbuffalo.mknpc.npc.option_entries.INpcOptionEntry;
 import com.chaosbuffalo.mknpc.npc.options.*;
 import com.google.gson.Gson;
 import com.google.gson.GsonBuilder;
+import com.google.gson.JsonElement;
 import com.google.gson.JsonObject;
+import com.mojang.serialization.Dynamic;
+import com.mojang.serialization.JsonOps;
 import net.minecraft.client.resources.JsonReloadListener;
 import net.minecraft.entity.player.ServerPlayerEntity;
 import net.minecraft.profiler.IProfiler;
@@ -18,8 +21,11 @@ import net.minecraft.resources.IResourceManager;
 import net.minecraft.server.MinecraftServer;
 import net.minecraft.util.ResourceLocation;
 import net.minecraftforge.common.MinecraftForge;
+import net.minecraftforge.event.AddReloadListenerEvent;
 import net.minecraftforge.event.entity.player.PlayerEvent;
 import net.minecraftforge.eventbus.api.SubscribeEvent;
+import net.minecraftforge.fml.event.server.FMLServerAboutToStartEvent;
+import net.minecraftforge.fml.event.server.FMLServerStoppingEvent;
 import net.minecraftforge.fml.network.NetworkDirection;
 
 import javax.annotation.Nullable;
@@ -30,7 +36,8 @@ import java.util.Map;
 import java.util.function.Supplier;
 
 public class NpcDefinitionManager extends JsonReloadListener {
-    private final MinecraftServer server;
+    private MinecraftServer server;
+    private boolean serverStarted = false;
 
     public static final Gson GSON = (new GsonBuilder()).setPrettyPrinting().disableHtmlEscaping().create();
     public static final Map<ResourceLocation, NpcDefinition> DEFINITIONS = new HashMap<>();
@@ -38,14 +45,26 @@ public class NpcDefinitionManager extends JsonReloadListener {
     public static final Map<ResourceLocation, Supplier<INpcOptionEntry>> ENTRY_DESERIALIZERS = new HashMap<>();
     public static final Map<ResourceLocation, Supplier<NpcDefinitionOption>> OPTION_DESERIALIZERS = new HashMap<>();
 
-    public NpcDefinitionManager(MinecraftServer server) {
+    public NpcDefinitionManager() {
         super(GSON, "mknpcs");
         MinecraftForge.EVENT_BUS.register(this);
-        this.server = server;
     }
 
-    public NpcDefinitionManager(){
-        this(null);
+    @SubscribeEvent
+    public void serverStop(FMLServerStoppingEvent event) {
+        serverStarted = false;
+        server = null;
+    }
+
+    @SubscribeEvent
+    public void subscribeEvent(AddReloadListenerEvent event){
+        event.addListener(this);
+    }
+
+    @SubscribeEvent
+    public void serverStart(FMLServerAboutToStartEvent event) {
+        server = event.getServer();
+        serverStarted = true;
     }
 
     public static void setupDeserializers(){
@@ -93,22 +112,20 @@ public class NpcDefinitionManager extends JsonReloadListener {
     }
 
     @Override
-    protected void apply(Map<ResourceLocation, JsonObject> objectIn,
-                         IResourceManager resourceManagerIn,
-                         IProfiler profilerIn) { ;
+    protected void apply(Map<ResourceLocation, JsonElement> objectIn, IResourceManager resourceManagerIn,
+                         IProfiler profilerIn) {
         DEFINITIONS.clear();
         CLIENT_DEFINITIONS.clear();
-        boolean wasChanged = false;
-        for(Map.Entry<ResourceLocation, JsonObject> entry : objectIn.entrySet()) {
+        for(Map.Entry<ResourceLocation, JsonElement> entry : objectIn.entrySet()) {
             ResourceLocation resourcelocation = entry.getKey();
             MKNpc.LOGGER.info("Found Npc Definition file: {}", resourcelocation);
             if (resourcelocation.getPath().startsWith("_")) continue; //Forge: filter anything beginning with "_" as it's used for metadata.
-            NpcDefinition def = NpcDefinition.deserializeJson(GSON, entry.getKey(), entry.getValue());
+            NpcDefinition def = NpcDefinition.deserializeDefinitionFromDynamic(entry.getKey(),
+                    new Dynamic<>(JsonOps.INSTANCE, entry.getValue()));
             DEFINITIONS.put(def.getDefinitionName(), def);
-            wasChanged = true;
         }
-        if (wasChanged){
-            resolveDefinitions();
+        resolveDefinitions();
+        if (serverStarted){
             syncToPlayers();
         }
     }

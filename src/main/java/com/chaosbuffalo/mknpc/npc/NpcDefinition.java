@@ -3,25 +3,32 @@ package com.chaosbuffalo.mknpc.npc;
 import com.chaosbuffalo.mkfaction.faction.MKFaction;
 import com.chaosbuffalo.mknpc.MKNpc;
 import com.chaosbuffalo.mknpc.npc.options.*;
+import com.google.common.collect.ImmutableMap;
 import com.google.gson.Gson;
 import com.google.gson.JsonElement;
 import com.google.gson.JsonObject;
+import com.mojang.datafixers.util.Pair;
+import com.mojang.serialization.Dynamic;
+import com.mojang.serialization.DynamicOps;
 import net.minecraft.entity.Entity;
 import net.minecraft.entity.EntityType;
 import net.minecraft.entity.LivingEntity;
+import net.minecraft.inventory.EquipmentSlotType;
 import net.minecraft.util.ResourceLocation;
-import net.minecraft.util.math.Vec3d;
+import net.minecraft.util.math.vector.Vector3d;
 import net.minecraft.util.text.StringTextComponent;
 import net.minecraft.world.World;
 import net.minecraftforge.registries.ForgeRegistries;
 
 import javax.annotation.Nullable;
 import java.util.*;
+import java.util.stream.Collectors;
 
 public class NpcDefinition {
     private ResourceLocation entityType;
     private final ResourceLocation definitionName;
     private final ResourceLocation parentName;
+    public static final NpcDefinitionOption INVALID_OPTION = new InvalidOption();
     private NpcDefinition parent;
     private final Map<ResourceLocation, NpcDefinitionOption> options;
     private static final Set<String> toSkip = new HashSet<>();
@@ -44,6 +51,7 @@ public class NpcDefinition {
         this.parentName = parentName;
         this.options = new HashMap<>();
     }
+
 
     public boolean isNotable() {
         if (hasOption(NotableOption.NAME)){
@@ -141,7 +149,7 @@ public class NpcDefinition {
         if (hasParent()){
             return getParent().getDisplayName();
         } else {
-            return null;
+            return getEntityType().toString();
         }
     }
 
@@ -186,8 +194,61 @@ public class NpcDefinition {
     }
 
     @Nullable
-    public Entity createEntity(World world, Vec3d pos){
+    public Entity createEntity(World world, Vector3d pos){
         return createEntity(world, pos, UUID.randomUUID());
+    }
+
+    protected <D> D getDynamicType(DynamicOps<D> ops){
+        if (hasParentName()){
+            return ops.createMap(ImmutableMap.of(
+                    ops.createString("parent"), ops.createString(getParentName().toString())
+            ));
+        } else {
+            return ops.createMap(ImmutableMap.of(
+                    ops.createString("entityType"), ops.createString(getEntityType().toString())
+            ));
+        }
+    }
+
+    public <D> D serialize(DynamicOps<D> ops){
+        D type = getDynamicType(ops);
+        return ops.mergeToMap(type, ImmutableMap.of(
+                ops.createString("options"),
+                ops.createMap(options.entrySet().stream().map(entry -> Pair.of(
+                        ops.createString(entry.getKey().toString()),
+                        entry.getValue().serialize(ops)))
+                        .collect(Collectors.toMap(Pair::getFirst, Pair::getSecond))
+                ))
+        ).result().orElse(type);
+
+    }
+
+    public <D> void deserialize(Dynamic<D> dynamic){
+        Map<ResourceLocation, NpcDefinitionOption> newOptions = dynamic.get("options")
+                .asMap(keyD -> keyD.asString().result().map(ResourceLocation::new)
+                        .orElse(NpcDefinitionOption.INVALID_OPTION),
+                        valueD -> {
+                            ResourceLocation type = NpcDefinitionOption.getType(valueD);
+                            NpcDefinitionOption opt = NpcDefinitionManager.getNpcOption(type);
+                            if (opt != null){
+                                opt.deserialize(valueD);
+                            }
+                            return opt != null ? opt : INVALID_OPTION;
+                        });
+        options.clear();
+        for (Map.Entry<ResourceLocation, NpcDefinitionOption> option : newOptions.entrySet()){
+            if (!option.getKey().equals(NpcDefinitionOption.INVALID_OPTION) && !option.getValue().equals(INVALID_OPTION)){
+                options.put(option.getKey(), option.getValue());
+            }
+        }
+    }
+
+    public static <D> NpcDefinition deserializeDefinitionFromDynamic(ResourceLocation name, Dynamic<D> dynamic){
+        ResourceLocation parentName = dynamic.get("parent").asString().result().map(ResourceLocation::new).orElse(null);
+        ResourceLocation typeName = dynamic.get("entityType").asString().result().map(ResourceLocation::new).orElse(null);
+        NpcDefinition def = new NpcDefinition(name, typeName, parentName);
+        def.deserialize(dynamic);
+        return def;
     }
 
     public static NpcDefinition deserializeJson(Gson gson, ResourceLocation name, JsonObject obj){
@@ -215,7 +276,7 @@ public class NpcDefinition {
     }
 
     @Nullable
-    public Entity createEntity(World world, Vec3d pos, UUID uuid){
+    public Entity createEntity(World world, Vector3d pos, UUID uuid){
         EntityType<?> type = ForgeRegistries.ENTITIES.getValue(getEntityType());
         if (type != null){
             Entity entity = type.create(world);

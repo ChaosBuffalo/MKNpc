@@ -4,6 +4,7 @@ import net.minecraft.nbt.CompoundNBT;
 import net.minecraft.util.Rotation;
 import net.minecraft.util.math.BlockPos;
 import net.minecraft.util.math.MutableBoundingBox;
+import net.minecraft.util.registry.DynamicRegistries;
 import net.minecraft.world.biome.Biome;
 import net.minecraft.world.gen.ChunkGenerator;
 import net.minecraft.world.gen.feature.IFeatureConfig;
@@ -13,10 +14,10 @@ import net.minecraft.world.gen.feature.template.TemplateManager;
 
 import java.util.UUID;
 
-public abstract class MKStructureStart<C extends IFeatureConfig> extends StructureStart {
+public abstract class MKStructureStart<C extends IFeatureConfig> extends StructureStart<C> {
     private final UUID instanceId;
 
-    public MKStructureStart(Structure<?> structure, int chunkX, int chunkY,
+    public MKStructureStart(Structure<C> structure, int chunkX, int chunkY,
                             MutableBoundingBox boundingBox, int refCount, long seed) {
         super(structure, chunkX, chunkY, boundingBox, refCount, seed);
         instanceId = UUID.randomUUID();
@@ -36,17 +37,14 @@ public abstract class MKStructureStart<C extends IFeatureConfig> extends Structu
         return instanceId;
     }
 
-    protected C getConfig(ChunkGenerator<?> generator, Biome biomeIn){
-        return (C) generator.getStructureConfig(biomeIn, getStructure());
-    }
 
-    protected BlockPos getStructurePos(ChunkGenerator<?> generator,
+    protected BlockPos getStructurePos(ChunkGenerator generator,
                                        TemplateManager templateManagerIn,
                                        int chunkX, int chunkZ, Biome biomeIn){
         return new BlockPos(chunkX * 16, generator.getGroundHeight(), chunkZ * 16);
     }
 
-    protected Rotation getStructureRotation(ChunkGenerator<?> generator,
+    protected Rotation getStructureRotation(ChunkGenerator generator,
                                             TemplateManager templateManagerIn,
                                             int chunkX, int chunkZ, Biome biomeIn){
         return Rotation.values()[this.rand.nextInt(Rotation.values().length)];
@@ -55,13 +53,26 @@ public abstract class MKStructureStart<C extends IFeatureConfig> extends Structu
     public abstract void getComponents(MKStructurePieceArgs args, C config);
 
     @Override
-    public void init(ChunkGenerator<?> generator, TemplateManager templateManagerIn,
-                     int chunkX, int chunkZ, Biome biomeIn) {
-        MKStructurePieceArgs args = new MKStructurePieceArgs(getStructure(), templateManagerIn,
-                getStructurePos(generator, templateManagerIn, chunkX, chunkZ, biomeIn),
-                getStructureRotation(generator, templateManagerIn, chunkX, chunkZ, biomeIn),
+    public void func_230364_a_(DynamicRegistries registries, ChunkGenerator chunkGenerator,
+                               TemplateManager templateManager, int chunkX, int chunkZ,
+                               Biome biome, C config) {
+        MKStructurePieceArgs args = new MKStructurePieceArgs(chunkGenerator, getStructure(), templateManager,
+                getStructurePos(chunkGenerator, templateManager, chunkX, chunkZ, biome),
+                getStructureRotation(chunkGenerator, templateManager, chunkX, chunkZ, biome),
                 rand, getInstanceId(), components);
-        getComponents(args, getConfig(generator, biomeIn));
+        getComponents(args, config);
         recalculateStructureSize();
+
     }
+
+//    @Override
+//    public void init(ChunkGenerator generator, TemplateManager templateManagerIn,
+//                     int chunkX, int chunkZ, Biome biomeIn) {
+//        MKStructurePieceArgs args = new MKStructurePieceArgs(generator, getStructure(), templateManagerIn,
+//                getStructurePos(generator, templateManagerIn, chunkX, chunkZ, biomeIn),
+//                getStructureRotation(generator, templateManagerIn, chunkX, chunkZ, biomeIn),
+//                rand, getInstanceId(), components);
+//        getComponents(args, getConfig(generator, biomeIn));
+//        recalculateStructureSize();
+//    }
 }

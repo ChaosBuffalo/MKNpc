@@ -3,6 +3,7 @@ package com.chaosbuffalo.mknpc.client.gui.widgets;
 import com.chaosbuffalo.mknpc.spawn.SpawnList;
 import com.chaosbuffalo.mknpc.spawn.SpawnOption;
 import com.chaosbuffalo.mkwidgets.client.gui.layouts.MKStackLayoutVertical;
+import com.mojang.blaze3d.matrix.MatrixStack;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.gui.FontRenderer;
 
@@ -21,8 +22,8 @@ public class SpawnOptionList extends ScrollingList {
     }
 
     @Override
-    public void preDraw(Minecraft mc, int x, int y, int width, int height, int mouseX, int mouseY, float partialTicks) {
-        mkFill(x, y, x + width, y + height, 0x55aaaaaa);
+    public void preDraw(MatrixStack stack, Minecraft mc, int x, int y, int width, int height, int mouseX, int mouseY, float partialTicks) {
+        mkFill(stack, x, y, x + width, y + height, 0x55aaaaaa);
     }
 
     @Override

@@ -1,22 +1,29 @@
 package com.chaosbuffalo.mknpc.entity.ai.goal;
 
-import com.chaosbuffalo.mkcore.GameConstants;
+import com.chaosbuffalo.mkcore.MKCore;
+import com.chaosbuffalo.mkcore.core.CombatExtensionModule;
+import com.chaosbuffalo.mkcore.core.IMKEntityData;
+import com.chaosbuffalo.mkcore.core.MKAttributes;
+import com.chaosbuffalo.mkcore.events.PostAttackEvent;
+import com.chaosbuffalo.mkcore.utils.EntityUtils;
 import com.chaosbuffalo.mknpc.entity.MKEntity;
 import com.chaosbuffalo.mknpc.entity.ai.memory.MKMemoryModuleTypes;
 import net.minecraft.entity.LivingEntity;
-import net.minecraft.entity.SharedMonsterAttributes;
 import net.minecraft.entity.ai.brain.Brain;
 import net.minecraft.entity.ai.goal.Goal;
+import net.minecraft.item.ItemStack;
 import net.minecraft.util.Hand;
+import net.minecraftforge.common.MinecraftForge;
+import net.minecraftforge.common.util.LazyOptional;
 
 import java.util.EnumSet;
 import java.util.Optional;
-import java.util.function.Supplier;
 
 public class MKMeleeAttackGoal extends Goal {
     private final MKEntity entity;
     private LivingEntity target;
-    private double delayCounter;
+    private int comboCount;
+    private int comboDelay;
 
     @Override
     public boolean shouldExecute() {
@@ -32,45 +39,71 @@ public class MKMeleeAttackGoal extends Goal {
         return false;
     }
 
-    public MKMeleeAttackGoal(MKEntity entity) {
+    public void setComboCount(int comboCount) {
+        this.comboCount = comboCount;
+    }
+
+    public void setComboDelay(int comboDelay) {
+        this.comboDelay = comboDelay;
+    }
+
+    public MKMeleeAttackGoal(MKEntity entity, int comboCount, int comboDelay) {
         this.entity = entity;
-        this.delayCounter = 0;
         this.target = null;
+        this.comboCount = comboCount;
+        this.comboDelay = comboDelay;
         this.setMutexFlags(EnumSet.of(Flag.MOVE, Flag.LOOK));
+    }
+
+    public MKMeleeAttackGoal(MKEntity entity){
+        this(entity, 2, 10);
     }
 
     public void startExecuting() {
         this.entity.setAggroed(true);
-        this.delayCounter = 0;
+    }
+
+    public int getComboCount() {
+        return comboCount;
+    }
+
+    public int getComboDelay() {
+        return comboDelay;
     }
 
     @Override
     public void tick() {
-        this.delayCounter = Math.max(delayCounter - 1, 0);
         entity.getNavigator().tryMoveToEntityLiving(target, entity.getLungeSpeed());
         entity.getLookController().setLookPositionWithEntity(target, 30.0f, 30.0f);
-        if (delayCounter == 0) {
-            checkAndPerformAttack(target, entity.getDistanceSq(target));
+        double cooldownPeriod = EntityUtils.getCooldownPeriod(entity);
+        int ticksSinceSwing = entity.getTicksSinceLastSwing();
+        if (ticksSinceSwing >= cooldownPeriod && isInReach(target)) {
+            performAttack(target);
         }
 
     }
 
-    private double getAttacksPerSecond(){
-        return entity.getAttribute(SharedMonsterAttributes.ATTACK_SPEED).getValue();
-    }
-
-    public int getAttackTicks(){
-        double attacksPerSec = getAttacksPerSecond();
-        return (int) Math.round(GameConstants.TICKS_PER_SECOND / attacksPerSec);
-    }
-
-    protected void checkAndPerformAttack(LivingEntity enemy, double distToEnemySqr) {
-        double d0 = this.getAttackReachSqr(enemy);
-        if (distToEnemySqr <= d0 && this.delayCounter <= 0) {
-            this.delayCounter = getAttackTicks();
-            this.entity.swingArm(Hand.MAIN_HAND);
-            this.entity.attackEntityAsMob(enemy);
+    protected void performAttack(LivingEntity enemy) {
+        entity.swingArm(Hand.MAIN_HAND);
+        entity.attackEntityAsMob(enemy);
+        entity.resetSwing();
+        ItemStack mainHand = entity.getHeldItemMainhand();
+        if (!mainHand.isEmpty()){
+            mainHand.getItem().hitEntity(mainHand, enemy, entity);
         }
+        LazyOptional<? extends IMKEntityData> entityData = MKCore.getEntityData(entity);
+        entityData.ifPresent(cap -> {
+            cap.getCombatExtension().recordSwing();
+            MinecraftForge.EVENT_BUS.post(new PostAttackEvent(entity));
+            if (cap.getCombatExtension().getCurrentSwingCount() > 0 &&
+                    cap.getCombatExtension().getCurrentSwingCount() % getComboCount() == 0){
+                entity.subtractFromTicksSinceLastSwing(getComboDelay());
+            }
+        });
+    }
+
+    public boolean isInMeleeRange(LivingEntity target){
+        return entity.getDistanceSq(target) <= this.getAttackReachSqr(target) * 2.0;
     }
 
     public boolean isInReach(LivingEntity target) {
@@ -79,19 +112,19 @@ public class MKMeleeAttackGoal extends Goal {
 
     public void resetTask() {
         this.entity.setAggroed(false);
-        this.delayCounter = getAttackTicks();
         this.target = null;
     }
 
     protected double getAttackReachSqr(LivingEntity attackTarget) {
-        return entity.getWidth() * 2.0F * entity.getWidth() * 2.0F + attackTarget.getWidth();
+        double range = entity.getAttribute(MKAttributes.ATTACK_REACH).getValue();
+        return range * range;
     }
 
     @Override
     public boolean shouldContinueExecuting() {
         Brain<?> brain = entity.getBrain();
         Optional<LivingEntity> targetOpt = brain.getMemory(MKMemoryModuleTypes.THREAT_TARGET);
-        return target != null && targetOpt.map((ent) -> ent.isEntityEqual(target) && isInReach(ent)).orElse(false);
+        return target != null && targetOpt.map((ent) -> ent.isEntityEqual(target) && isInMeleeRange(ent)).orElse(false);
     }
 
 

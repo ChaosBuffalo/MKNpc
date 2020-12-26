@@ -57,7 +57,7 @@ public class UseAbilityGoal extends Goal {
     }
 
     protected boolean isInRange(MKAbility ability, LivingEntity target) {
-        float range = ability.getDistance();
+        float range = ability.getDistance(entity);
         return target.getDistanceSq(entity) <= range * range;
     }
 

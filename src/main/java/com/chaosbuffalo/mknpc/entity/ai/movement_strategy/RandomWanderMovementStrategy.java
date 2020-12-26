@@ -8,7 +8,7 @@ import net.minecraft.entity.ai.brain.Brain;
 import net.minecraft.entity.ai.brain.memory.MemoryModuleType;
 import net.minecraft.entity.ai.brain.memory.WalkTarget;
 import net.minecraft.util.math.BlockPos;
-import net.minecraft.util.math.Vec3d;
+import net.minecraft.util.math.vector.Vector3d;
 import net.minecraft.world.server.ServerWorld;
 
 import java.util.Optional;
@@ -26,8 +26,8 @@ public class RandomWanderMovementStrategy extends MovementStrategy{
         Optional<WalkTarget> walkTargetOptional = brain.getMemory(MemoryModuleType.WALK_TARGET);
         Optional<BlockPos> spawnPointOptional = brain.getMemory(MKMemoryModuleTypes.SPAWN_POINT);
         if (!walkTargetOptional.isPresent() || entity.getRNG().nextInt(positionChance) == 0 || entity.getNavigator().noPath()){
-            Vec3d position = spawnPointOptional.map(blockPos -> {
-                Vec3d vecPos = new Vec3d(blockPos);
+            Vector3d position = spawnPointOptional.map(blockPos -> {
+                Vector3d vecPos = Vector3d.copy(blockPos);
                 if (entity.getDistanceSq(vecPos) > entity.getWanderRange() * entity.getWanderRange()){
                     return MovementUtils.findRandomTargetBlockTowardsNoWater(
                             entity, entity.getWanderRange() /2, entity.getWanderRange() / 2, vecPos);

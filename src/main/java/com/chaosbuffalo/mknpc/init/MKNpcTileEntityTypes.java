@@ -10,7 +10,7 @@ import net.minecraftforge.registries.ForgeRegistries;
 
 public class MKNpcTileEntityTypes {
     public static final DeferredRegister<TileEntityType<?>> TILES =
-            new DeferredRegister<>(ForgeRegistries.TILE_ENTITIES, MKNpc.MODID);
+            DeferredRegister.create(ForgeRegistries.TILE_ENTITIES, MKNpc.MODID);
     public static final RegistryObject<TileEntityType<?>> MK_SPAWNER_TILE_ENTITY_TYPE =
             TILES.register("mk_spawner", () -> TileEntityType.Builder.create(
                     MKSpawnerTileEntity::new, MKNpcBlocks.MK_SPAWNER_BLOCK.get()).build(null));

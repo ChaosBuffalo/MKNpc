@@ -1,12 +1,25 @@
 package com.chaosbuffalo.mknpc.npc.options;
 
-import com.chaosbuffalo.mknpc.npc.NpcDefinition;
-import net.minecraft.entity.Entity;
+import com.google.common.collect.ImmutableMap;
+import com.mojang.serialization.Dynamic;
+import com.mojang.serialization.DynamicOps;
 import net.minecraft.util.ResourceLocation;
-import org.apache.logging.log4j.util.TriConsumer;
 
-public class BooleanOption extends SimpleOption<Boolean> {
-    public BooleanOption(ResourceLocation name, TriConsumer<NpcDefinition, Entity, Boolean> entityApplicator) {
-        super(name, (gson, object) -> object.get(name.toString()).getAsBoolean(), entityApplicator);
+public abstract class BooleanOption extends SimpleOption<Boolean> {
+    public BooleanOption(ResourceLocation name) {
+        super(name);
+    }
+
+    @Override
+    public <D> D serialize(DynamicOps<D> ops) {
+        D sup = super.serialize(ops);
+        return ops.mergeToMap(sup, ImmutableMap.of(
+                ops.createString("value"), ops.createBoolean(getValue())
+        )).result().orElse(sup);
+    }
+
+    @Override
+    public <D> void deserialize(Dynamic<D> dynamic) {
+        setValue(dynamic.get("value").asBoolean(false));
     }
 }

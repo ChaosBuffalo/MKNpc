@@ -6,6 +6,7 @@ import com.chaosbuffalo.mkcore.GameConstants;
 import com.chaosbuffalo.mkcore.abilities.MKAbility;
 import com.chaosbuffalo.mkcore.abilities.MKAbilityMemories;
 import com.chaosbuffalo.mkcore.abilities.ai.AbilityTargetingDecision;
+import com.chaosbuffalo.mkcore.core.MKAttributes;
 import com.chaosbuffalo.mkcore.utils.ItemUtils;
 import com.chaosbuffalo.mkfaction.capabilities.FactionCapabilities;
 import com.chaosbuffalo.mknpc.MKNpc;
@@ -22,13 +23,16 @@ import com.chaosbuffalo.mknpc.entity.ai.sensor.MKSensorTypes;
 import com.chaosbuffalo.mknpc.entity.attributes.NpcAttributes;
 import com.chaosbuffalo.targeting_api.Targeting;
 import com.google.common.collect.ImmutableList;
-import com.mojang.datafixers.Dynamic;
+import com.mojang.serialization.Dynamic;
 import net.minecraft.entity.*;
 import net.minecraft.entity.ai.attributes.AttributeModifier;
-import net.minecraft.entity.ai.attributes.IAttributeInstance;
+import net.minecraft.entity.ai.attributes.AttributeModifierMap;
+import net.minecraft.entity.ai.attributes.Attributes;
+import net.minecraft.entity.ai.attributes.ModifiableAttributeInstance;
 import net.minecraft.entity.ai.brain.Brain;
 import net.minecraft.entity.ai.brain.memory.MemoryModuleType;
 import net.minecraft.entity.ai.goal.SwimGoal;
+import net.minecraft.entity.monster.MonsterEntity;
 import net.minecraft.entity.player.PlayerEntity;
 import net.minecraft.entity.player.ServerPlayerEntity;
 import net.minecraft.inventory.EquipmentSlotType;
@@ -38,11 +42,8 @@ import net.minecraft.util.ActionResultType;
 import net.minecraft.util.DamageSource;
 import net.minecraft.util.Hand;
 import net.minecraft.util.math.BlockPos;
-import net.minecraft.util.math.Vec3d;
-import net.minecraft.world.DifficultyInstance;
-import net.minecraft.world.IWorld;
-import net.minecraft.world.IWorldReader;
-import net.minecraft.world.World;
+import net.minecraft.util.math.vector.Vector3d;
+import net.minecraft.world.*;
 import net.minecraft.world.server.ServerWorld;
 
 import javax.annotation.Nullable;
@@ -60,6 +61,9 @@ public abstract class MKEntity extends CreatureEntity {
     private int meleeRange;
     private NonCombatMoveType nonCombatMoveType;
     private CombatMoveType combatMoveType;
+    private MKMeleeAttackGoal meleeAttackGoal;
+    private int comboCountDefault;
+    private int comboCooldownDefault;
 
     public enum CombatMoveType {
         MELEE,
@@ -86,13 +90,23 @@ public abstract class MKEntity extends CreatureEntity {
         this.lungeSpeed = lungeSpeed;
     }
 
+    public static AttributeModifierMap.MutableAttribute registerAttributes(double attackDamage, double movementSpeed) {
+        return MonsterEntity.func_234295_eP_()
+                .createMutableAttribute(Attributes.ATTACK_DAMAGE, attackDamage)
+                .createMutableAttribute(Attributes.MOVEMENT_SPEED, movementSpeed)
+                .createMutableAttribute(NpcAttributes.AGGRO_RANGE, 5)
+                .createMutableAttribute(Attributes.ATTACK_SPEED)
+                .createMutableAttribute(Attributes.FOLLOW_RANGE, 32.0D);
+    }
+
     @Override
     protected void registerGoals() {
         this.goalSelector.addGoal(7, new LookAtThreatTargetGoal(this));
         this.targetSelector.addGoal(3, new MKTargetGoal(this, true, true));
         this.goalSelector.addGoal(0, new ReturnToSpawnGoal(this));
         this.goalSelector.addGoal(2, new MovementGoal(this));
-        this.goalSelector.addGoal(4, new MKMeleeAttackGoal(this));
+        this.meleeAttackGoal =  new MKMeleeAttackGoal(this);
+        this.goalSelector.addGoal(4, meleeAttackGoal);
         this.goalSelector.addGoal(3, new UseAbilityGoal(this));
         this.goalSelector.addGoal(1, new SwimGoal(this));
     }
@@ -125,8 +139,41 @@ public abstract class MKEntity extends CreatureEntity {
         }
     }
 
+    public MKMeleeAttackGoal getMeleeAttackGoal(){
+        return meleeAttackGoal;
+    }
+
+    public void setComboDefaults(int count, int cooldown){
+        comboCountDefault = count;
+        comboCooldownDefault = cooldown;
+    }
+
+    public void restoreComboDefaults(){
+        setMeleeComboCount(comboCountDefault);
+        setMeleeComboCooldown(comboCooldownDefault);
+    }
+
+    public void setMeleeComboCount(int count){
+        getMeleeAttackGoal().setComboCount(count);
+    }
+
+    public int getMeleeComboCount(){
+        return getMeleeAttackGoal().getComboCount();
+    }
+
+    public void setMeleeComboCooldown(int ticks){
+        getMeleeAttackGoal().setComboDelay(ticks);
+    }
+
+    public int getMeleeComboCooldown(){
+        return getMeleeAttackGoal().getComboDelay();
+    }
+
     protected MKEntity(EntityType<? extends CreatureEntity> type, World worldIn) {
         super(type, worldIn);
+        if (!worldIn.isRemote()){
+            setComboDefaults(getMeleeAttackGoal().getComboCount(), getMeleeAttackGoal().getComboDelay());
+        }
         castAnimTimer = 0;
         visualCastState = VisualCastState.NONE;
         castingAbility = null;
@@ -149,9 +196,9 @@ public abstract class MKEntity extends CreatureEntity {
         }
         switch (decision.getMovementSuggestion()){
             case KITE:
-                return new KiteMovementStrategy(Math.max(ability.getDistance() * .5, 8));
+                return new KiteMovementStrategy(Math.max(ability.getDistance(this) * .5, 8));
             case FOLLOW:
-                return new FollowMovementStrategy(1.0f, Math.round(ability.getDistance() / 2.0f));
+                return new FollowMovementStrategy(1.0f, Math.round(ability.getDistance(this) / 2.0f));
             case MELEE:
                 return new FollowMovementStrategy(1.0f, 1);
             case STATIONARY:
@@ -167,7 +214,7 @@ public abstract class MKEntity extends CreatureEntity {
 
     @Nullable
     @Override
-    public ILivingEntityData onInitialSpawn(IWorld worldIn, DifficultyInstance difficultyIn, SpawnReason reason, @Nullable ILivingEntityData spawnDataIn, @Nullable CompoundNBT dataTag) {
+    public ILivingEntityData onInitialSpawn(IServerWorld worldIn, DifficultyInstance difficultyIn, SpawnReason reason, @Nullable ILivingEntityData spawnDataIn, @Nullable CompoundNBT dataTag) {
         MKNpc.LOGGER.info("In initial spawn for {}", this);
         ILivingEntityData entityData = super.onInitialSpawn(worldIn, difficultyIn, reason, spawnDataIn, dataTag);
         this.getCapability(NpcCapabilities.ENTITY_NPC_DATA_CAPABILITY).ifPresent((cap) -> {
@@ -196,11 +243,25 @@ public abstract class MKEntity extends CreatureEntity {
         }
     }
 
+
     @Override
     public void livingTick() {
         updateArmSwingProgress();
         updateEntityCastState();
+        ticksSinceLastSwing++;
         super.livingTick();
+    }
+
+    public void resetSwing(){
+        ticksSinceLastSwing = 0;
+    }
+
+    public void subtractFromTicksSinceLastSwing(int toSubtract){
+        ticksSinceLastSwing -= toSubtract;
+    }
+
+    public int getTicksSinceLastSwing(){
+        return ticksSinceLastSwing;
     }
 
     public VisualCastState getVisualCastState() {
@@ -286,21 +347,14 @@ public abstract class MKEntity extends CreatureEntity {
 
     }
 
-    public void setMeleeRange(int meleeRange) {
-        this.meleeRange = meleeRange;
-    }
 
-    public int getMeleeRange() {
-        return meleeRange;
-    }
-
-    @Override
-    protected void registerAttributes() {
-        super.registerAttributes();
-        this.getAttributes().registerAttribute(SharedMonsterAttributes.ATTACK_DAMAGE);
-        this.getAttributes().registerAttribute(NpcAttributes.AGGRO_RANGE);
-        this.getAttributes().registerAttribute(SharedMonsterAttributes.ATTACK_SPEED);
-    }
+//    @Override
+//    protected void registerAttributes() {
+//        super.registerAttributes();
+//        this.getAttributes().registerAttribute(SharedMonsterAttributes.ATTACK_DAMAGE);
+//        this.getAttributes().registerAttribute(NpcAttributes.AGGRO_RANGE);
+//        this.getAttributes().registerAttribute(SharedMonsterAttributes.ATTACK_SPEED);
+//    }
 
     public boolean hasThreatTarget(){
         return getBrain().getMemory(MKMemoryModuleTypes.THREAT_TARGET).isPresent();
@@ -319,18 +373,18 @@ public abstract class MKEntity extends CreatureEntity {
     }
 
     public double getAttackSpeedMultiplier(){
-        IAttributeInstance attackSpeed = getAttribute(SharedMonsterAttributes.ATTACK_SPEED);
+        ModifiableAttributeInstance attackSpeed = getAttribute(Attributes.ATTACK_SPEED);
         return attackSpeed.getValue() / getBaseAttackSpeedValueWithItem();
     }
 
     public double getBaseAttackSpeedValueWithItem(){
         ItemStack itemInHand = getHeldItemMainhand();
-        double baseValue = getAttribute(SharedMonsterAttributes.ATTACK_SPEED).getBaseValue();
+        double baseValue = getAttribute(Attributes.ATTACK_SPEED).getBaseValue();
         if (!itemInHand.equals(ItemStack.EMPTY)) {
             if (itemInHand.getAttributeModifiers(EquipmentSlotType.MAINHAND).containsKey(
-                    SharedMonsterAttributes.ATTACK_SPEED.getName())) {
+                    Attributes.ATTACK_SPEED)) {
                 Collection<AttributeModifier> itemAttackSpeed = itemInHand.getAttributeModifiers(EquipmentSlotType.MAINHAND)
-                        .get(SharedMonsterAttributes.ATTACK_SPEED.getName());
+                        .get(Attributes.ATTACK_SPEED);
                 double attackSpeed = 4.0;
                 for (AttributeModifier mod : itemAttackSpeed) {
                     if (mod.getOperation().equals(AttributeModifier.Operation.ADDITION)) {
@@ -379,7 +433,7 @@ public abstract class MKEntity extends CreatureEntity {
     }
 
     @Override
-    public ActionResultType applyPlayerInteraction(PlayerEntity player, Vec3d vec, Hand hand) {
+    public ActionResultType applyPlayerInteraction(PlayerEntity player, Vector3d vec, Hand hand) {
         if (hand.equals(Hand.MAIN_HAND) && getCapability(FactionCapabilities.MOB_FACTION_CAPABILITY)
                 .map((cap) -> cap.getRelationToEntity(player) != Targeting.TargetRelation.ENEMY).orElse(false)){
             if (!player.world.isRemote()){
@@ -398,8 +452,8 @@ public abstract class MKEntity extends CreatureEntity {
     }
 
     @Override
-    protected Brain<MKEntity> createBrain(Dynamic<?> dynamicIn) {
-        return new Brain<>(
+    protected Brain.BrainCodec<?> getBrainCodec() {
+        return Brain.createCodec(
                 ImmutableList.of(
                         MKMemoryModuleTypes.ALLIES,
                         MKMemoryModuleTypes.ENEMIES,
@@ -413,13 +467,14 @@ public abstract class MKEntity extends CreatureEntity {
                         MKMemoryModuleTypes.CURRENT_ABILITY,
                         MKAbilityMemories.ABILITY_TARGET,
                         MKMemoryModuleTypes.SPAWN_POINT,
-                        MKMemoryModuleTypes.IS_RETURNING),
+                        MKMemoryModuleTypes.IS_RETURNING
+                ),
                 ImmutableList.of(
                         MKSensorTypes.ENTITIES_SENSOR,
                         MKSensorTypes.THREAT_SENSOR,
                         MKSensorTypes.DESTINATION_SENSOR,
-                        MKSensorTypes.ABILITY_SENSOR),
-                dynamicIn);
+                        MKSensorTypes.ABILITY_SENSOR
+                ));
     }
 
 }

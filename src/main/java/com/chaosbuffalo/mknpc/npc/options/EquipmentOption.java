@@ -6,10 +6,14 @@ import com.chaosbuffalo.mknpc.npc.NpcItemChoice;
 import com.chaosbuffalo.mknpc.npc.option_entries.EquipmentOptionEntry;
 import com.chaosbuffalo.mknpc.npc.option_entries.INpcOptionEntry;
 import com.chaosbuffalo.mknpc.utils.RandomCollection;
+import com.google.common.collect.ImmutableMap;
 import com.google.gson.Gson;
 import com.google.gson.JsonArray;
 import com.google.gson.JsonElement;
 import com.google.gson.JsonObject;
+import com.mojang.datafixers.util.Pair;
+import com.mojang.serialization.Dynamic;
+import com.mojang.serialization.DynamicOps;
 import net.minecraft.entity.Entity;
 import net.minecraft.inventory.EquipmentSlotType;
 import net.minecraft.item.Item;
@@ -19,6 +23,7 @@ import net.minecraft.util.ResourceLocation;
 import net.minecraftforge.registries.ForgeRegistries;
 
 import java.util.*;
+import java.util.stream.Collectors;
 
 public class EquipmentOption extends WorldPermanentOption {
     public static final ResourceLocation NAME = new ResourceLocation(MKNpc.MODID, "equipment");
@@ -42,11 +47,38 @@ public class EquipmentOption extends WorldPermanentOption {
         return equipmentEntry;
     }
 
-    private void addItemChoice(EquipmentSlotType slot, NpcItemChoice choice){
+    public EquipmentOption addItemChoice(EquipmentSlotType slot, NpcItemChoice choice){
         if (!itemChoices.containsKey(slot)){
             itemChoices.put(slot, new ArrayList<>());
         }
         itemChoices.get(slot).add(choice);
+        return this;
+    }
+
+    @Override
+    public <D> void deserialize(Dynamic<D> dynamic) {
+        Map<EquipmentSlotType, List<NpcItemChoice>> newSlots = dynamic.get("options")
+                .asMap(keyD -> EquipmentSlotType.fromString(keyD.asString("error")),
+                valueD -> valueD.asList(valD -> {
+                    NpcItemChoice newChoice = new NpcItemChoice();
+                    newChoice.deserialize(valD);
+                    return newChoice;
+                }));
+        itemChoices.clear();
+        itemChoices.putAll(newSlots);
+    }
+
+    @Override
+    public <D> D serialize(DynamicOps<D> ops) {
+        D sup = super.serialize(ops);
+        return ops.mergeToMap(sup,
+                ops.createString("options"),
+                ops.createMap(itemChoices.entrySet().stream().map(entry -> Pair.of(
+                        ops.createString(entry.getKey().getName()),
+                        ops.createList(entry.getValue().stream()
+                                .map(itemChoice -> itemChoice.serialize(ops)))))
+                        .collect(Collectors.toMap(Pair::getFirst, Pair::getSecond)))
+        ).result().orElse(sup);
     }
 
     @Override

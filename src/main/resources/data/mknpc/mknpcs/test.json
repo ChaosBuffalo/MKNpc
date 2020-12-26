@@ -1,32 +1,43 @@
 {
   "entityType": "mknpc:green_lady",
-  "mknpc:name": "Test Lady",
-  "mknpc:abilities": [
-    {
-      "abilityName": "mkcore:ability.whirlwind_blades",
-      "priority": 1
-    }
-  ],
-  "mknpc:attributes": [
-    {
-      "attributeName": "generic.maxHealth",
-      "value": 100
-    }
-  ],
-  "mknpc:faction": "mkfaction:villagers",
-  "mknpc:dialogue": "mkchat:test",
-  "mknpc:equipment": {
-    "mainhand": [
-      {
-        "dropChance": 1.1,
-        "item": "minecraft:golden_sword",
-        "weight": 5
-      },
-      {
-        "dropChance": 1.1,
-        "item": "minecraft:iron_sword",
-        "weight": 10
+  "options": {
+    "mknpc:dialogue": {
+      "optionType": "mknpc:dialogue",
+      "value": "mkchat:test"
+    },
+    "mknpc:faction": {
+      "optionType": "mknpc:faction",
+      "value": "mkfaction:villagers"
+    },
+    "mknpc:equipment": {
+      "optionType": "mknpc:equipment",
+      "options": {
+        "mainhand": [
+          {
+            "weight": 5.0,
+            "dropChance": 1.1,
+            "item": "{id: \"mkweapons:katana_iron\", Count: 1b, tag: {Damage: 0}}"
+          },
+          {
+            "weight": 10.0,
+            "dropChance": 1.1,
+            "item": "{id: \"mkweapons:dagger_iron\", Count: 1b, tag: {Damage: 0}}"
+          }
+        ]
       }
-    ]
+    },
+    "mknpc:name": {
+      "optionType": "mknpc:name",
+      "value": "Test Lady"
+    },
+    "mknpc:attributes": {
+      "optionType": "mknpc:attributes",
+      "options": [
+        {
+          "attributeName": "minecraft:generic.max_health",
+          "value": 100.0
+        }
+      ]
+    }
   }
 }

@@ -34,7 +34,7 @@ minecraft {
     // stable_#            Stables are built at the discretion of the MCP team.
     // Use non-default mappings at your own risk. they may not always work.
     // Simply re-run your setup task after changing the mappings to update your workspace.
-    mappings channel: 'snapshot', version: '20200514-1.15.1'
+    mappings channel: 'snapshot', version: "${forge_mappings}"
     accessTransformer = file('src/main/resources/META-INF/accesstransformer.cfg')
     // makeObfSourceJar = false // an Srg named sources jar is made by default. uncomment this to disable.
     
@@ -69,7 +69,7 @@ minecraft {
             property 'forge.logging.console.level', 'debug'
 
             mods {
-                examplemod {
+                mknpc {
                     source sourceSets.main
                 }
             }
@@ -84,10 +84,10 @@ minecraft {
             // Recommended logging level for the console
             property 'forge.logging.console.level', 'debug'
 
-            args '--mod', 'examplemod', '--all', '--output', file('src/generated/resources/')
+            args '--mod', 'mknpc', '--all', '--output', file('src/generated/resources/')
 
             mods {
-                examplemod {
+                mknpc {
                     source sourceSets.main
                 }
             }
@@ -100,16 +100,18 @@ dependencies {
     // that the dep is a ForgeGradle 'patcher' dependency. And it's patches will be applied.
     // The userdev artifact is a special name and will get all sorts of transformations applied to it.
     minecraft "net.minecraftforge:forge:${forge_version}"
-    compileOnly fg.deobf("com.chaosbuffalo.mkcore:MKCore:0.11")
-    runtimeOnly fg.deobf("com.chaosbuffalo.mkcore:MKCore:0.11")
-    compileOnly fg.deobf("com.chaosbuffalo.mkchat:MKChat:0.11")
-    runtimeOnly fg.deobf("com.chaosbuffalo.mkchat:MKChat:0.11")
-    compileOnly fg.deobf("com.chaosbuffalo.mkwidgets:MKWidgets:1.14")
-    runtimeOnly fg.deobf("com.chaosbuffalo.mkwidgets:MKWidgets:1.14")
-    compileOnly fg.deobf("com.chaosbuffalo.mkfaction:MKFaction:0.11")
-    runtimeOnly fg.deobf("com.chaosbuffalo.mkfaction:MKFaction:0.11")
-    compileOnly fg.deobf("com.chaosbuffalo.targeting_api:TargetingAPI:0.21")
-    runtimeOnly fg.deobf("com.chaosbuffalo.targeting_api:TargetingAPI:0.21")
+    compileOnly fg.deobf("com.chaosbuffalo.targeting_api:targeting_api-1.16.4:0.22")
+    runtimeOnly fg.deobf("com.chaosbuffalo.targeting_api:targeting_api-1.16.4:0.22")
+    compileOnly fg.deobf("com.chaosbuffalo.mkwidgets:mkwidgets-1.16.4:1.15")
+    runtimeOnly fg.deobf("com.chaosbuffalo.mkwidgets:mkwidgets-1.16.4:1.15")
+    compileOnly fg.deobf("com.chaosbuffalo.mkcore:mkcore-1.16.4:0.12")
+    runtimeOnly fg.deobf("com.chaosbuffalo.mkcore:mkcore-1.16.4:0.12")
+    compileOnly fg.deobf("com.chaosbuffalo.mkchat:mkchat-1.16.4:0.12")
+    runtimeOnly fg.deobf("com.chaosbuffalo.mkchat:mkchat-1.16.4:0.12")
+    compileOnly fg.deobf("com.chaosbuffalo.mkfaction:mkfaction-1.16.4:0.12")
+    runtimeOnly fg.deobf("com.chaosbuffalo.mkfaction:mkfaction-1.16.4:0.12")
+    compileOnly fg.deobf("com.chaosbuffalo.mkweapons:mkweapons-1.16.4:0.11")
+    runtimeOnly fg.deobf("com.chaosbuffalo.mkweapons:mkweapons-1.16.4:0.11")
 
 }
 
@@ -137,6 +139,7 @@ jar.finalizedBy('reobfJar')
 publishing {
     publications {
         mavenJava(MavenPublication) {
+            artifactId jar.baseName
             artifact jar
         }
     }
