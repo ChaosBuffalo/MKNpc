@@ -17,7 +17,7 @@ public class NpcItemChoice implements INBTSerializable<CompoundNBT> {
     public float dropChance;
 
     public NpcItemChoice(ItemStack item, double weight, float dropChance) {
-        this.item = item;
+        this.item = item.isEmpty() ? item : item.copy();
         this.weight = weight;
         this.dropChance = dropChance;
     }
@@ -39,7 +39,7 @@ public class NpcItemChoice implements INBTSerializable<CompoundNBT> {
     }
 
     public static void livingEquipmentAssign(LivingEntity entity, EquipmentSlotType slot, NpcItemChoice choice) {
-        entity.setItemStackToSlot(slot, choice.item);
+        entity.setItemStackToSlot(slot, choice.item.copy());
         if (entity instanceof MobEntity){
             MobEntity mobEntity = (MobEntity) entity;
             mobEntity.setDropChance(slot, choice.dropChance);

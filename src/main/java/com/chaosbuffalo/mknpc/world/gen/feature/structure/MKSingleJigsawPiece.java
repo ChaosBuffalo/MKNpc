@@ -1,46 +1,68 @@
-//package com.chaosbuffalo.mknpc.world.gen.feature.structure;
-//
-//import com.chaosbuffalo.mknpc.world.gen.StructureUtils;
-//import com.mojang.datafixers.Dynamic;
-//import net.minecraft.util.Rotation;
-//import net.minecraft.util.math.BlockPos;
-//import net.minecraft.util.math.MutableBoundingBox;
-//import net.minecraft.world.IWorld;
-//import net.minecraft.world.gen.ChunkGenerator;
-//import net.minecraft.world.gen.feature.jigsaw.JigsawPattern;
-//import net.minecraft.world.gen.feature.jigsaw.SingleJigsawPiece;
-//import net.minecraft.world.gen.feature.template.PlacementSettings;
-//import net.minecraft.world.gen.feature.template.StructureProcessor;
-//import net.minecraft.world.gen.feature.template.Template;
-//import net.minecraft.world.gen.feature.template.TemplateManager;
-//
-//import java.util.List;
-//import java.util.Random;
-//
-//public class MKSingleJigsawPiece extends SingleJigsawPiece implements IMKJigsawPiece{
-//    public MKSingleJigsawPiece(String location, List<StructureProcessor> processors,
-//                               JigsawPattern.PlacementBehaviour placementBehaviour) {
-//        super(location, processors, placementBehaviour);
-//    }
-//
-//    public MKSingleJigsawPiece(Dynamic<?> dynamic) {
-//        super(dynamic);
-//    }
-//
-//    @Override
-//    public boolean mkPlace(TemplateManager templateManager, IWorld world, ChunkGenerator<?> chunkGenerator,
-//                           BlockPos blockPos, Rotation rot, MutableBoundingBox boundingBox, Random rand,
-//                           MKAbstractJigsawPiece parent) {
-//        Template template = templateManager.getTemplateDefaulted(this.location);
-//        PlacementSettings placementsettings = this.createPlacementSettings(rot, boundingBox);
-//        if (!template.addBlocksToWorld(world, blockPos, placementsettings, 18)) {
-//            return false;
-//        } else {
-//            for(Template.BlockInfo blockInfo : Template.processBlockInfos(template, world, blockPos,
-//                    placementsettings, this.getDataMarkers(templateManager, blockPos, rot, false))) {
-//                mkHandleDataMarker(world, blockInfo, blockPos, rot, rand, boundingBox, parent);
-//            }
-//            return true;
-//        }
-//    }
-//}
+package com.chaosbuffalo.mknpc.world.gen.feature.structure;
+
+import com.mojang.datafixers.util.Either;
+import com.mojang.serialization.Codec;
+import com.mojang.serialization.codecs.RecordCodecBuilder;
+import net.minecraft.util.ResourceLocation;
+import net.minecraft.util.Rotation;
+import net.minecraft.util.math.BlockPos;
+import net.minecraft.util.math.MutableBoundingBox;
+import net.minecraft.world.ISeedReader;
+import net.minecraft.world.gen.ChunkGenerator;
+import net.minecraft.world.gen.feature.jigsaw.IJigsawDeserializer;
+import net.minecraft.world.gen.feature.jigsaw.JigsawPattern;
+import net.minecraft.world.gen.feature.jigsaw.SingleJigsawPiece;
+import net.minecraft.world.gen.feature.structure.StructureManager;
+import net.minecraft.world.gen.feature.template.*;
+
+import java.util.Random;
+import java.util.function.Function;
+import java.util.function.Supplier;
+
+import static com.chaosbuffalo.mknpc.world.gen.feature.structure.MKJigsawDeserializers.MK_SINGLE_JIGSAW_DESERIALIZER;
+
+public class MKSingleJigsawPiece extends SingleJigsawPiece implements IMKJigsawPiece{
+
+    public static final Codec<MKSingleJigsawPiece> codec = RecordCodecBuilder.create((builder) ->
+            builder.group(func_236846_c_(), func_236844_b_(), func_236848_d_())
+                    .apply(builder, MKSingleJigsawPiece::new));
+
+
+    protected MKSingleJigsawPiece(Either<ResourceLocation, Template> templateEither,
+                                  Supplier<StructureProcessorList> structureProcessor,
+                                  JigsawPattern.PlacementBehaviour placementBehaviour) {
+        super(templateEither, structureProcessor, placementBehaviour);
+    }
+
+    public MKSingleJigsawPiece(Template template) {
+        super(template);
+    }
+
+    @Override
+    public boolean mkPlace(TemplateManager templateManager, ISeedReader seedReader, StructureManager structureManager,
+                           ChunkGenerator chunkGenerator, BlockPos structurePos, BlockPos blockPos, Rotation rot,
+                           MutableBoundingBox boundingBox, Random rand, boolean keepJigsaw, MKAbstractJigsawPiece parent) {
+        Template template = this.func_236843_a_(templateManager);
+        PlacementSettings placementsettings = this.func_230379_a_(rot, boundingBox, keepJigsaw);
+        if (!template.func_237146_a_(seedReader, structurePos, blockPos, placementsettings, rand, 18)) {
+            return false;
+        } else {
+            for(Template.BlockInfo blockinfo : Template.processBlockInfos(
+                    seedReader, structurePos, blockPos, placementsettings,
+                    this.getDataMarkers(templateManager, structurePos, rot, false), template)) {
+                mkHandleDataMarker(seedReader, blockinfo, structurePos, rot, rand, boundingBox, parent);
+            }
+            return true;
+        }
+    }
+
+    @Override
+    public IJigsawDeserializer<?> getType() {
+        return MK_SINGLE_JIGSAW_DESERIALIZER;
+    }
+
+    public static Function<JigsawPattern.PlacementBehaviour, MKSingleJigsawPiece> getMKSingleJigsaw(ResourceLocation pieceName) {
+        return (placementBehaviour) -> new MKSingleJigsawPiece(Either.left(pieceName),
+                () -> ProcessorLists.field_244101_a, placementBehaviour);
+    }
+}

@@ -12,6 +12,7 @@ import com.chaosbuffalo.mknpc.init.MKNpcWorldGen;
 import com.chaosbuffalo.mknpc.network.PacketHandler;
 import com.chaosbuffalo.mknpc.npc.INpcOptionExtension;
 import com.chaosbuffalo.mknpc.npc.NpcDefinitionManager;
+import com.chaosbuffalo.mknpc.world.gen.feature.structure.TestJigsawStructurePools;
 import com.chaosbuffalo.mkweapons.command.WeaponsCommands;
 import net.minecraft.entity.Entity;
 import net.minecraft.world.World;
@@ -43,11 +44,11 @@ public class MKNpc
         FMLJavaModLoadingContext.get().getModEventBus().addListener(this::setup);
         FMLJavaModLoadingContext.get().getModEventBus().addListener(this::enqueueIMC);
         FMLJavaModLoadingContext.get().getModEventBus().addListener(this::processIMC);
-        MKNpcEntityTypes.register();
         MKNpcBlocks.register();
         MKNpcTileEntityTypes.register();
         npcDefinitionManager = new NpcDefinitionManager();
         MKNpcWorldGen.registerStructurePieces();
+        TestJigsawStructurePools.registerPatterns();
         MinecraftForge.EVENT_BUS.addListener(MKNpcWorldGen::biomeSetup);
         MinecraftForge.EVENT_BUS.addListener(MKNpcWorldGen::worldSetup);
     }
@@ -79,7 +80,6 @@ public class MKNpc
         NpcCapabilities.registerCapabilities();
         PacketHandler.setupHandler();
         NpcDefinitionManager.setupDeserializers();
-        MKNpcEntityTypes.registerAttributes();
     }
 
     public static LazyOptional<? extends IEntityNpcData> getNpcData(Entity entity){

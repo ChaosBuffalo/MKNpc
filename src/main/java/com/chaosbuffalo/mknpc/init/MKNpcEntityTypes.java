@@ -7,31 +7,27 @@ import net.minecraft.entity.EntityClassification;
 import net.minecraft.entity.EntityType;
 import net.minecraft.entity.ai.attributes.GlobalEntityTypeAttributes;
 import net.minecraft.util.ResourceLocation;
-import net.minecraftforge.fml.RegistryObject;
-import net.minecraftforge.fml.javafmlmod.FMLJavaModLoadingContext;
-import net.minecraftforge.registries.DeferredRegister;
-import net.minecraftforge.registries.ForgeRegistries;
+import net.minecraftforge.event.RegistryEvent;
+import net.minecraftforge.eventbus.api.SubscribeEvent;
+import net.minecraftforge.fml.common.Mod;
 
+@Mod.EventBusSubscriber(modid = MKNpc.MODID, bus = Mod.EventBusSubscriber.Bus.MOD)
 public class MKNpcEntityTypes {
-
-    public static final DeferredRegister<EntityType<?>> ENTITY_TYPES = DeferredRegister.create(ForgeRegistries.ENTITIES,
-            MKNpc.MODID);
 
     public static final String GREEN_LADY_NAME = "green_lady";
 
-    public static final RegistryObject<EntityType<GreenLadyEntity>> GREEN_LADY = ENTITY_TYPES.register(
-            GREEN_LADY_NAME, () ->
-                    EntityType.Builder.create(GreenLadyEntity::new, EntityClassification.CREATURE)
-                            .size(EntityType.ZOMBIE.getWidth(), EntityType.ZOMBIE.getHeight())
-                            .build(new ResourceLocation(MKNpc.MODID, GREEN_LADY_NAME).toString())
-    );
+    public static EntityType<GreenLadyEntity> GREEN_LADY_ENTITY_TYPE;
 
-    public static void register(){
-        ENTITY_TYPES.register(FMLJavaModLoadingContext.get().getModEventBus());
+    @SubscribeEvent
+    public static void registerEntities(RegistryEvent.Register<EntityType<?>> event){
+        EntityType<GreenLadyEntity> entityType = EntityType.Builder.create(
+                GreenLadyEntity::new, EntityClassification.CREATURE)
+                .size(EntityType.ZOMBIE.getWidth(), EntityType.ZOMBIE.getHeight())
+                .build(new ResourceLocation(MKNpc.MODID, GREEN_LADY_NAME).toString());
+        entityType.setRegistryName(MKNpc.MODID, GREEN_LADY_NAME);
+        GREEN_LADY_ENTITY_TYPE = entityType;
+        event.getRegistry().register(entityType);
+        GlobalEntityTypeAttributes.put(entityType, MKEntity.registerAttributes(1.0, 0.3).create());
     }
 
-    public static void registerAttributes(){
-        GlobalEntityTypeAttributes.put(GREEN_LADY.get(),
-                MKEntity.registerAttributes(1.0, 0.3).create());
-    }
 }
