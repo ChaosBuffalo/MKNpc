@@ -38,13 +38,13 @@ MKNpc adds new utilities, spawners, and data driven mob definitions to Minecraft
 [[dependencies.mknpc]]
     modId="mkcore"
     mandatory=true
-    versionRange="[0.11,)"
+    versionRange="[0.13,)"
     ordering="NONE"
     side="BOTH"
 [[dependencies.mknpc]]
     modId="mkchat"
     mandatory=true
-    versionRange="[0.11,)"
+    versionRange="[0.12,)"
     ordering="NONE"
     side="BOTH"
 [[dependencies.mknpc]]
@@ -56,6 +56,12 @@ MKNpc adds new utilities, spawners, and data driven mob definitions to Minecraft
 [[dependencies.mknpc]]
     modId="mkfaction"
     mandatory=true
-    versionRange="[0.11,)"
+    versionRange="[0.13,)"
     ordering="NONE"
+    side="BOTH"
+[[dependencies.mkcore]]
+    modId="mkwidgets"
+    mandatory=true
+    versionRange="[1.17,)"
+    ordering="AFTER"
     side="BOTH"

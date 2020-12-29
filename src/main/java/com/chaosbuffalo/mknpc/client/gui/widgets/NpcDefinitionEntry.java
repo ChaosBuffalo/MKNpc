@@ -38,8 +38,8 @@ public class NpcDefinitionEntry extends MKLayout {
         setMarginTop(6);
         nameText.setIsCentered(true);
         addWidget(nameText);
-        addConstraintToWidget(new MarginConstraint(MarginConstraint.MarginType.TOP), nameText);
-        addConstraintToWidget(new MarginConstraint(MarginConstraint.MarginType.LEFT), nameText);
+        addConstraintToWidget(MarginConstraint.TOP, nameText);
+        addConstraintToWidget(MarginConstraint.LEFT, nameText);
 //        MKText locText = new MKText(font, definition.getDefinitionName().toString());
 //        locText.setWidth(font.getStringWidth(definition.getDefinitionName().toString()));
 //        addWidget(locText);
@@ -52,8 +52,8 @@ public class NpcDefinitionEntry extends MKLayout {
 //        addConstraintToWidget(new HorizontalStackConstraint(), factionText);
         MKRectangle divider = new MKRectangle(0, 0, width, 1, 0xaaffffff);
         addWidget(divider);
-        addConstraintToWidget(new MarginConstraint(MarginConstraint.MarginType.BOTTOM), divider);
-        addConstraintToWidget(new MarginConstraint(MarginConstraint.MarginType.LEFT), divider);
+        addConstraintToWidget(MarginConstraint.BOTTOM, divider);
+        addConstraintToWidget(MarginConstraint.LEFT, divider);
     }
 
     @Override

@@ -9,7 +9,7 @@ import com.chaosbuffalo.mknpc.network.SetSpawnListPacket;
 import com.chaosbuffalo.mknpc.spawn.MKSpawnerTileEntity;
 import com.chaosbuffalo.mknpc.spawn.SpawnOption;
 import com.chaosbuffalo.mkwidgets.client.gui.constraints.MarginConstraint;
-import com.chaosbuffalo.mkwidgets.client.gui.constraints.VerticalStackConstraint;
+import com.chaosbuffalo.mkwidgets.client.gui.constraints.StackConstraint;
 import com.chaosbuffalo.mkwidgets.client.gui.layouts.MKLayout;
 import com.chaosbuffalo.mkwidgets.client.gui.layouts.MKStackLayoutHorizontal;
 import com.chaosbuffalo.mkwidgets.client.gui.screens.MKScreen;
@@ -56,8 +56,8 @@ public class MKSpawnerScreen extends MKScreen {
         MKLayout root = new MKLayout(xPos, yPos, PANEL_WIDTH, PANEL_HEIGHT);
         MKText spawnListLabel = new MKText(font, "Spawn List:");
         root.addWidget(spawnListLabel);
-        root.addConstraintToWidget(new MarginConstraint(MarginConstraint.MarginType.TOP), spawnListLabel);
-        root.addConstraintToWidget(new MarginConstraint(MarginConstraint.MarginType.LEFT), spawnListLabel);
+        root.addConstraintToWidget(MarginConstraint.TOP, spawnListLabel);
+        root.addConstraintToWidget(MarginConstraint.LEFT, spawnListLabel);
         SpawnOptionList options = new SpawnOptionList(xPos + 40, yPos + 15, 240, 100, font,
                 getSpawnerTileEntity().getSpawnList());
         MKButton addOption = new MKButton(xPos + PANEL_WIDTH / 2 - 50,
@@ -90,8 +90,8 @@ public class MKSpawnerScreen extends MKScreen {
                     getSpawnerTileEntity().setRespawnTime((int) Math.round(boundedValue * GameConstants.TICKS_PER_SECOND));
                     field.setValue(boundedValue);
                 });
-        root.addConstraintToWidget(new MarginConstraint(MarginConstraint.MarginType.LEFT), spawnTimeController);
-        root.addConstraintToWidget(new VerticalStackConstraint(), spawnTimeController);
+        root.addConstraintToWidget(MarginConstraint.LEFT, spawnTimeController);
+        root.addConstraintToWidget(StackConstraint.VERTICAL, spawnTimeController);
         root.addWidget(options);
         root.addWidget(addOption);
         root.addWidget(spawnTimeController);
@@ -102,8 +102,8 @@ public class MKSpawnerScreen extends MKScreen {
                         ),
                 getSpawnerTileEntity()::setMoveType);
         movementBehaviors.selectEntry(getSpawnerTileEntity().getMoveType());
-        root.addConstraintToWidget(new MarginConstraint(MarginConstraint.MarginType.LEFT), movementBehaviors);
-        root.addConstraintToWidget(new VerticalStackConstraint(), movementBehaviors);
+        root.addConstraintToWidget(MarginConstraint.LEFT, movementBehaviors);
+        root.addConstraintToWidget(StackConstraint.VERTICAL, movementBehaviors);
         root.addWidget(movementBehaviors);
         root.setMargins(6, 6, 6, 6);
         root.setPaddingTop(2).setPaddingBot(2);
