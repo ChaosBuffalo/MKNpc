@@ -7,10 +7,12 @@ import net.minecraft.util.SoundEvent;
 import net.minecraft.util.SoundEvents;
 import net.minecraft.world.World;
 
-public class MKSkeletonEntity extends MKEntity {
+public class MKSkeletonEntity extends MKEntity  {
+    public static final String DEFAULT = "default";
 
     public MKSkeletonEntity(EntityType<? extends MKEntity> type, World worldIn) {
         super(type, worldIn);
+        setCurrentRenderGroup(DEFAULT);
     }
 
     protected SoundEvent getAmbientSound() {
@@ -30,12 +32,8 @@ public class MKSkeletonEntity extends MKEntity {
     }
 
     @Override
-    public boolean isEntityUndead() {
-        return super.isEntityUndead();
-    }
-
-    @Override
     public CreatureAttribute getCreatureAttribute() {
         return CreatureAttribute.UNDEAD;
     }
+
 }

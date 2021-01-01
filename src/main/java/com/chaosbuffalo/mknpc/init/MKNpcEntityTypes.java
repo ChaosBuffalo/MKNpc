@@ -16,12 +16,10 @@ import net.minecraftforge.fml.common.Mod;
 public class MKNpcEntityTypes {
 
     public static final String GREEN_LADY_NAME = "green_lady";
-    public static final String SKELETON_ASSASSIN_NAME = "skeleton_assassin";
-    public static final String SKELETON_KING_NAME = "skeleton_king";
+    public static final String SKELETON_NAME = "skeleton";
 
     public static EntityType<GreenLadyEntity> GREEN_LADY_ENTITY_TYPE;
-    public static EntityType<MKSkeletonEntity> SKELETON_ASSASSIN_TYPE;
-    public static EntityType<MKSkeletonEntity> SKELETON_KING_TYPE;
+    public static EntityType<MKSkeletonEntity> SKELETON_TYPE;
 
     @SubscribeEvent
     public static void registerEntities(RegistryEvent.Register<EntityType<?>> event){
@@ -37,20 +35,12 @@ public class MKNpcEntityTypes {
         EntityType<MKSkeletonEntity> skel1 = EntityType.Builder.create(
                 MKSkeletonEntity::new, EntityClassification.MONSTER)
                 .size(EntityType.SKELETON.getWidth(), EntityType.SKELETON.getHeight())
-                .build(new ResourceLocation(MKNpc.MODID, SKELETON_ASSASSIN_NAME).toString());
-        skel1.setRegistryName(MKNpc.MODID, SKELETON_ASSASSIN_NAME);
-        SKELETON_ASSASSIN_TYPE = skel1;
+                .build(new ResourceLocation(MKNpc.MODID, SKELETON_NAME).toString());
+        skel1.setRegistryName(MKNpc.MODID, SKELETON_NAME);
+        SKELETON_TYPE = skel1;
         event.getRegistry().register(skel1);
-        GlobalEntityTypeAttributes.put(SKELETON_ASSASSIN_TYPE, MKEntity.registerAttributes(1.0, 0.3).create());
+        GlobalEntityTypeAttributes.put(SKELETON_TYPE, MKEntity.registerAttributes(1.0, 0.3).create());
 
-        EntityType<MKSkeletonEntity> skel2 = EntityType.Builder.create(
-                MKSkeletonEntity::new, EntityClassification.MONSTER)
-                .size(EntityType.SKELETON.getWidth(), EntityType.SKELETON.getHeight())
-                .build(new ResourceLocation(MKNpc.MODID, SKELETON_KING_NAME).toString());
-        skel2.setRegistryName(MKNpc.MODID, SKELETON_KING_NAME);
-        SKELETON_KING_TYPE = skel2;
-        event.getRegistry().register(skel2);
-        GlobalEntityTypeAttributes.put(SKELETON_KING_TYPE, MKEntity.registerAttributes(1.0, 0.3).create());
     }
 
 }

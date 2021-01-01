@@ -80,6 +80,8 @@ public class NpcDefinitionManager extends JsonReloadListener {
         putOptionDeserializer(FactionNameOption.NAME, FactionNameOption::new);
         putOptionEntryDeserializer(FactionNameOption.NAME, FactionNameOptionEntry::new);
         putOptionDeserializer(NotableOption.NAME, NotableOption::new);
+        putOptionDeserializer(RenderGroupOption.NAME, RenderGroupOption::new);
+        putOptionDeserializer(MKSizeOption.NAME, MKSizeOption::new);
     }
 
     public static void putOptionDeserializer(ResourceLocation optionName,

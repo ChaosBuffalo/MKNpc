@@ -1,0 +1,17 @@
+{
+  "entityType": "mknpc:skeleton",
+  "options": {
+    "mknpc:mk_size": {
+      "optionType": "mknpc:mk_size",
+      "value": 2.0
+    },
+    "mknpc:faction": {
+      "optionType": "mknpc:faction",
+      "value": "mkfaction:undead"
+    },
+    "mknpc:render_group": {
+      "optionType": "mknpc:render_group",
+      "value": "wither_king"
+    }
+  }
+}

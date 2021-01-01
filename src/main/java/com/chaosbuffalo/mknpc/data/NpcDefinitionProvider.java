@@ -40,6 +40,17 @@ public class NpcDefinitionProvider implements IDataProvider {
     public void act(@Nonnull DirectoryCache cache) {
         writeDefinition(generateTestLady(), cache);
         writeDefinition(generateTestLady2(), cache);
+        writeDefinition(generateTestSkeleton(), cache);
+
+    }
+
+    private NpcDefinition generateTestSkeleton(){
+        NpcDefinition def = new NpcDefinition(new ResourceLocation(MKNpc.MODID, "test_skeleton"),
+                new ResourceLocation(MKNpc.MODID, "skeleton"), null);
+        def.addOption(new FactionOption().setValue(Factions.UNDEAD_FACTION_NAME));
+        def.addOption(new MKSizeOption().setValue(0.25f));
+        def.addOption(new RenderGroupOption().setValue("wither_king"));
+        return def;
     }
 
     private NpcDefinition generateTestLady(){

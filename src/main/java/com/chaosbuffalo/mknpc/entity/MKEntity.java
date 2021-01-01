@@ -6,7 +6,6 @@ import com.chaosbuffalo.mkcore.GameConstants;
 import com.chaosbuffalo.mkcore.abilities.MKAbility;
 import com.chaosbuffalo.mkcore.abilities.MKAbilityMemories;
 import com.chaosbuffalo.mkcore.abilities.ai.AbilityTargetingDecision;
-import com.chaosbuffalo.mkcore.core.MKAttributes;
 import com.chaosbuffalo.mkcore.utils.ItemUtils;
 import com.chaosbuffalo.mkfaction.capabilities.FactionCapabilities;
 import com.chaosbuffalo.mknpc.MKNpc;
@@ -23,7 +22,6 @@ import com.chaosbuffalo.mknpc.entity.ai.sensor.MKSensorTypes;
 import com.chaosbuffalo.mknpc.entity.attributes.NpcAttributes;
 import com.chaosbuffalo.targeting_api.Targeting;
 import com.google.common.collect.ImmutableList;
-import com.mojang.serialization.Dynamic;
 import net.minecraft.entity.*;
 import net.minecraft.entity.ai.attributes.AttributeModifier;
 import net.minecraft.entity.ai.attributes.AttributeModifierMap;
@@ -38,9 +36,13 @@ import net.minecraft.entity.player.ServerPlayerEntity;
 import net.minecraft.inventory.EquipmentSlotType;
 import net.minecraft.item.ItemStack;
 import net.minecraft.nbt.CompoundNBT;
+import net.minecraft.network.datasync.DataParameter;
+import net.minecraft.network.datasync.DataSerializers;
+import net.minecraft.network.datasync.EntityDataManager;
 import net.minecraft.util.ActionResultType;
 import net.minecraft.util.DamageSource;
 import net.minecraft.util.Hand;
+import net.minecraft.util.math.AxisAlignedBB;
 import net.minecraft.util.math.BlockPos;
 import net.minecraft.util.math.vector.Vector3d;
 import net.minecraft.world.*;
@@ -53,8 +55,11 @@ import java.util.Map;
 import java.util.Optional;
 
 @SuppressWarnings("EntityConstructor")
-public abstract class MKEntity extends CreatureEntity {
+public abstract class MKEntity extends CreatureEntity implements IRenderGroupEntity {
+    private static final DataParameter<String> RENDER_GROUP = EntityDataManager.createKey(MKEntity.class, DataSerializers.STRING);
+    private static final DataParameter<Float> SCALE = EntityDataManager.createKey(MKEntity.class, DataSerializers.FLOAT);
     private int castAnimTimer;
+    private String renderGroup;
     private VisualCastState visualCastState;
     private MKAbility castingAbility;
     private double lungeSpeed;
@@ -97,6 +102,22 @@ public abstract class MKEntity extends CreatureEntity {
                 .createMutableAttribute(NpcAttributes.AGGRO_RANGE, 5)
                 .createMutableAttribute(Attributes.ATTACK_SPEED)
                 .createMutableAttribute(Attributes.FOLLOW_RANGE, 32.0D);
+    }
+
+    @Override
+    protected void registerData() {
+        super.registerData();
+        this.dataManager.register(RENDER_GROUP, "default");
+        this.dataManager.register(SCALE, 1.0f);
+    }
+
+    @Override
+    public float getRenderScale() {
+        return dataManager.get(SCALE);
+    }
+
+    public void setRenderScale(float newScale){
+        dataManager.set(SCALE, newScale);
     }
 
     @Override
@@ -187,7 +208,28 @@ public abstract class MKEntity extends CreatureEntity {
         }));
     }
 
+    @Override
+    public void notifyDataManagerChange(DataParameter<?> key) {
+        super.notifyDataManagerChange(key);
+        if (key.equals(SCALE)){
+            recalculateSize();
+        }
+    }
 
+    @Override
+    protected float getStandingEyeHeight(Pose poseIn, EntitySize sizeIn) {
+        return super.getStandingEyeHeight(poseIn, sizeIn) * dataManager.get(SCALE);
+    }
+
+    @Override
+    public String getCurrentRenderGroup() {
+        return dataManager.get(RENDER_GROUP);
+    }
+
+    @Override
+    public void setCurrentRenderGroup(String group) {
+        dataManager.set(RENDER_GROUP, group);
+    }
 
     public MovementStrategy getMovementStrategy(AbilityTargetingDecision decision){
         MKAbility ability = decision.getAbility();
@@ -346,15 +388,6 @@ public abstract class MKEntity extends CreatureEntity {
         }
 
     }
-
-
-//    @Override
-//    protected void registerAttributes() {
-//        super.registerAttributes();
-//        this.getAttributes().registerAttribute(SharedMonsterAttributes.ATTACK_DAMAGE);
-//        this.getAttributes().registerAttribute(NpcAttributes.AGGRO_RANGE);
-//        this.getAttributes().registerAttribute(SharedMonsterAttributes.ATTACK_SPEED);
-//    }
 
     public boolean hasThreatTarget(){
         return getBrain().getMemory(MKMemoryModuleTypes.THREAT_TARGET).isPresent();

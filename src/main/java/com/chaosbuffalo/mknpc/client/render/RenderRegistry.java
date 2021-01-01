@@ -2,7 +2,7 @@ package com.chaosbuffalo.mknpc.client.render;
 
 import com.chaosbuffalo.mknpc.MKNpc;
 import com.chaosbuffalo.mknpc.client.render.renderers.GreenLadyRenderer;
-import com.chaosbuffalo.mknpc.client.render.renderers.SkeletalRenderer;
+import com.chaosbuffalo.mknpc.client.render.renderers.SkeletalGroupRenderer;
 import com.chaosbuffalo.mknpc.init.MKNpcBlocks;
 import com.chaosbuffalo.mknpc.init.MKNpcEntityTypes;
 import net.minecraft.client.renderer.RenderType;
@@ -21,10 +21,7 @@ public class RenderRegistry {
         RenderingRegistry.registerEntityRenderingHandler(MKNpcEntityTypes.GREEN_LADY_ENTITY_TYPE, GreenLadyRenderer::new);
         RenderTypeLookup.setRenderLayer(MKNpcBlocks.MK_SPAWNER_BLOCK.get(), RenderType.getCutout());
 
-        RenderingRegistry.registerEntityRenderingHandler(MKNpcEntityTypes.SKELETON_ASSASSIN_TYPE, (renderManager) ->
-                new SkeletalRenderer(renderManager, SkeletalRenderer.ASSASSIN_MODEL_STYLE));
+        RenderingRegistry.registerEntityRenderingHandler(MKNpcEntityTypes.SKELETON_TYPE, SkeletalGroupRenderer::new);
 
-        RenderingRegistry.registerEntityRenderingHandler(MKNpcEntityTypes.SKELETON_KING_TYPE, (renderManager) ->
-                new SkeletalRenderer(renderManager, SkeletalRenderer.KING_MODEL_STYLE));
     }
 }
