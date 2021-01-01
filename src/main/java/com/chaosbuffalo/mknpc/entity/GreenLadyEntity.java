@@ -23,12 +23,10 @@ import javax.annotation.Nullable;
 
 @SuppressWarnings("EntityConstructor")
 public class GreenLadyEntity extends MKEntity implements IAbilityTrainingEntity {
-    private int timesDone;
     private final EntityAbilityTrainer abilityTrainer;
 
     public GreenLadyEntity(EntityType<? extends GreenLadyEntity> type, World worldIn) {
         super(type, worldIn);
-        timesDone = 0;
         abilityTrainer = new EntityAbilityTrainer(this);
         abilityTrainer.addTrainedAbility(EmberAbility.INSTANCE);
         abilityTrainer.addTrainedAbility(ClericHeal.INSTANCE);
@@ -58,7 +56,6 @@ public class GreenLadyEntity extends MKEntity implements IAbilityTrainingEntity 
                     mkEntityData.getKnowledge().learnAbility(ClericHeal.INSTANCE);
                     mkEntityData.getKnowledge().learnAbility(SkinLikeWoodAbility.INSTANCE);
                 });
-//        this.getAttribute(Attributes.MOVEMENT_SPEED).setBaseValue(.3);
         return entityData;
 
     }

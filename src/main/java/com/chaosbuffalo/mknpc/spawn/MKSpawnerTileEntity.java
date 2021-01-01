@@ -114,7 +114,7 @@ public class MKSpawnerTileEntity extends TileEntity implements ITickableTileEnti
         compound.putBoolean("hasUploadedToWorld", needsUploadToWorld);
         if (isInsideStructure()){
             compound.putString("structureName", structureName.toString());
-            compound.putString("structureId", structureId.toString());
+            compound.putUniqueId("structureId", structureId);
         }
         return super.write(compound);
     }
@@ -158,7 +158,7 @@ public class MKSpawnerTileEntity extends TileEntity implements ITickableTileEnti
             setStructureName(new ResourceLocation(compound.getString("structureName")));
         }
         if (compound.contains("structureId")){
-            setStructureId(UUID.fromString(compound.getString("structureId")));
+            setStructureId(compound.getUniqueId("structureId"));
         }
         if (compound.contains("hasUploadedToWorld")){
             needsUploadToWorld = compound.getBoolean("hasUploadedToWorld");
