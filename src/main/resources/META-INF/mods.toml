@@ -44,7 +44,7 @@ MKNpc adds new utilities, spawners, and data driven mob definitions to Minecraft
 [[dependencies.mknpc]]
     modId="mkchat"
     mandatory=true
-    versionRange="[0.12,)"
+    versionRange="[0.13,)"
     ordering="NONE"
     side="BOTH"
 [[dependencies.mknpc]]

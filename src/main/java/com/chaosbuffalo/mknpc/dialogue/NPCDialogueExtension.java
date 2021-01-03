@@ -21,6 +21,6 @@ public class NPCDialogueExtension implements IDialogueExtension {
     public void registerDialogueExtension() {
         MKNpc.LOGGER.info("Registering MKNpc Dialogue Extension");
         DialogueManager.putEffectDeserializer(OpenLearnAbilitiesEffect.effectTypeName,
-                SerializationUtils.deserialize(OpenLearnAbilitiesEffect.class));
+                OpenLearnAbilitiesEffect::new);
     }
 }

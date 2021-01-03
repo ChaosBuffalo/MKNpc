@@ -57,7 +57,7 @@ public class EquipmentOption extends WorldPermanentOption {
 
     @Override
     public <D> void deserialize(Dynamic<D> dynamic) {
-        Map<EquipmentSlotType, List<NpcItemChoice>> newSlots = dynamic.get("options")
+        Map<EquipmentSlotType, List<NpcItemChoice>> newSlots = dynamic.get("slotOptions")
                 .asMap(keyD -> EquipmentSlotType.fromString(keyD.asString("error")),
                 valueD -> valueD.asList(valD -> {
                     NpcItemChoice newChoice = new NpcItemChoice();
@@ -72,7 +72,7 @@ public class EquipmentOption extends WorldPermanentOption {
     public <D> D serialize(DynamicOps<D> ops) {
         D sup = super.serialize(ops);
         return ops.mergeToMap(sup,
-                ops.createString("options"),
+                ops.createString("slotOptions"),
                 ops.createMap(itemChoices.entrySet().stream().map(entry -> Pair.of(
                         ops.createString(entry.getKey().getName()),
                         ops.createList(entry.getValue().stream()

@@ -214,31 +214,25 @@ public class NpcDefinition {
         D type = getDynamicType(ops);
         return ops.mergeToMap(type, ImmutableMap.of(
                 ops.createString("options"),
-                ops.createMap(options.entrySet().stream().map(entry -> Pair.of(
-                        ops.createString(entry.getKey().toString()),
-                        entry.getValue().serialize(ops)))
-                        .collect(Collectors.toMap(Pair::getFirst, Pair::getSecond))
-                ))
+                ops.createList(options.values().stream().map(entry -> entry.serialize(ops)))
+                )
         ).result().orElse(type);
 
     }
 
     public <D> void deserialize(Dynamic<D> dynamic){
-        Map<ResourceLocation, NpcDefinitionOption> newOptions = dynamic.get("options")
-                .asMap(keyD -> keyD.asString().result().map(ResourceLocation::new)
-                        .orElse(NpcDefinitionOption.INVALID_OPTION),
-                        valueD -> {
-                            ResourceLocation type = NpcDefinitionOption.getType(valueD);
-                            NpcDefinitionOption opt = NpcDefinitionManager.getNpcOption(type);
-                            if (opt != null){
-                                opt.deserialize(valueD);
-                            }
-                            return opt != null ? opt : INVALID_OPTION;
-                        });
+        List<NpcDefinitionOption> newOptions = dynamic.get("options").asList(valueD -> {
+            ResourceLocation type = NpcDefinitionOption.getType(valueD);
+            NpcDefinitionOption opt = NpcDefinitionManager.getNpcOption(type);
+            if (opt != null){
+                opt.deserialize(valueD);
+            }
+            return opt != null ? opt : INVALID_OPTION;
+        });
         options.clear();
-        for (Map.Entry<ResourceLocation, NpcDefinitionOption> option : newOptions.entrySet()){
-            if (!option.getKey().equals(NpcDefinitionOption.INVALID_OPTION) && !option.getValue().equals(INVALID_OPTION)){
-                options.put(option.getKey(), option.getValue());
+        for (NpcDefinitionOption option : newOptions){
+            if (!option.getName().equals(NpcDefinitionOption.INVALID_OPTION) && !option.equals(INVALID_OPTION)){
+                options.put(option.getName(), option);
             }
         }
     }

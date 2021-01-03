@@ -2,7 +2,6 @@ package com.chaosbuffalo.mknpc.client.render.renderers;
 
 import com.chaosbuffalo.mknpc.MKNpc;
 import com.chaosbuffalo.mknpc.entity.IRenderGroupEntity;
-import com.chaosbuffalo.mknpc.entity.MKSkeletonEntity;
 import com.mojang.blaze3d.matrix.MatrixStack;
 import net.minecraft.client.renderer.IRenderTypeBuffer;
 import net.minecraft.client.renderer.entity.EntityRendererManager;

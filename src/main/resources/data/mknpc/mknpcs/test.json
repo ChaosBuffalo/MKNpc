@@ -1,17 +1,26 @@
 {
   "entityType": "mknpc:green_lady",
-  "options": {
-    "mknpc:dialogue": {
+  "options": [
+    {
+      "optionType": "mknpc:attributes",
+      "attributes": [
+        {
+          "attributeName": "minecraft:generic.max_health",
+          "value": 100.0
+        }
+      ]
+    },
+    {
       "optionType": "mknpc:dialogue",
       "value": "mkchat:test"
     },
-    "mknpc:faction": {
-      "optionType": "mknpc:faction",
-      "value": "mkfaction:villagers"
+    {
+      "optionType": "mknpc:name",
+      "value": "Test Lady"
     },
-    "mknpc:equipment": {
+    {
       "optionType": "mknpc:equipment",
-      "options": {
+      "slotOptions": {
         "mainhand": [
           {
             "weight": 5.0,
@@ -26,18 +35,9 @@
         ]
       }
     },
-    "mknpc:name": {
-      "optionType": "mknpc:name",
-      "value": "Test Lady"
-    },
-    "mknpc:attributes": {
-      "optionType": "mknpc:attributes",
-      "options": [
-        {
-          "attributeName": "minecraft:generic.max_health",
-          "value": 100.0
-        }
-      ]
+    {
+      "optionType": "mknpc:faction",
+      "value": "mkfaction:villagers"
     }
-  }
+  ]
 }

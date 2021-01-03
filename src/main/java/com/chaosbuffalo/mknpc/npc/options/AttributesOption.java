@@ -36,7 +36,7 @@ public class AttributesOption extends NpcDefinitionOption{
 
     @Override
     public <D> void deserialize(Dynamic<D> dynamic) {
-        List<NpcAttributeEntry> entries = dynamic.get("options").asList(d -> {
+        List<NpcAttributeEntry> entries = dynamic.get("attributes").asList(d -> {
             NpcAttributeEntry entry = new NpcAttributeEntry();
             entry.deserialize(d);
             return entry;
@@ -49,7 +49,7 @@ public class AttributesOption extends NpcDefinitionOption{
     public <D> D serialize(DynamicOps<D> ops) {
         D sup = super.serialize(ops);
         return ops.mergeToMap(sup,
-                ops.createString("options"),
+                ops.createString("attributes"),
                 ops.createList(attributes.stream().map(x -> x.serialize(ops)))
         ).result().orElse(sup);
     }
