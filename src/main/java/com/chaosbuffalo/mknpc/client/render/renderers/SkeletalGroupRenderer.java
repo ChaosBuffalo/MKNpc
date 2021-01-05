@@ -1,9 +1,9 @@
 package com.chaosbuffalo.mknpc.client.render.renderers;
 
 import com.chaosbuffalo.mknpc.client.render.models.MKSkeletalModel;
-import com.chaosbuffalo.mknpc.client.render.models.styling.ModelStyle;
+import com.chaosbuffalo.mknpc.client.render.models.styling.ModelLook;
+import com.chaosbuffalo.mknpc.client.render.models.styling.ModelStyles;
 import com.chaosbuffalo.mknpc.entity.MKSkeletonEntity;
-import com.mojang.blaze3d.matrix.MatrixStack;
 import net.minecraft.client.renderer.entity.EntityRendererManager;
 import net.minecraft.util.ResourceLocation;
 
@@ -11,12 +11,15 @@ import javax.annotation.Nonnull;
 import java.util.Map;
 
 
-public class SkeletalGroupRenderer extends LivingGroupRenderer<MKSkeletonEntity, MKSkeletalModel<MKSkeletonEntity>> {
+public class SkeletalGroupRenderer extends BipedGroupRenderer<MKSkeletonEntity, MKSkeletalModel<MKSkeletonEntity>> {
 
     public SkeletalGroupRenderer(EntityRendererManager rendererManager) {
         super(rendererManager);
-        for (Map.Entry<String, ModelStyle> entry : SkeletonStyles.SKELETON_STYLES.entrySet()){
-            putRenderer(entry.getKey(), new SkeletalRenderer(rendererManager, entry.getValue()));
+        putRenderer(ModelStyles.BASIC_NAME, new SkeletalRenderer(rendererManager, ModelStyles.BASIC_STYLE));
+        putRenderer(ModelStyles.CLOTHES_ONLY_NAME, new SkeletalRenderer(rendererManager, ModelStyles.CLOTHES_ONLY_STYLE));
+
+        for (Map.Entry<String, ModelLook> entry : SkeletonStyles.SKELETON_LOOKS.entrySet()){
+            putLook(entry.getKey(), entry.getValue());
         }
     }
 

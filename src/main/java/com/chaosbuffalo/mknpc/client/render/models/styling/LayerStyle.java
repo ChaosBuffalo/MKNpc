@@ -1,22 +1,20 @@
 package com.chaosbuffalo.mknpc.client.render.models.styling;
 
-import net.minecraft.util.ResourceLocation;
-
 public class LayerStyle {
 
-    private final ResourceLocation textureLoc;
     private final float layerSize;
-
-    public ResourceLocation getTextureLoc() {
-        return textureLoc;
-    }
+    private final String layerName;
 
     public float getLayerSize() {
         return layerSize;
     }
 
-    public LayerStyle(ResourceLocation textureLoc, float size){
+    public String getLayerName() {
+        return layerName;
+    }
+
+    public LayerStyle(String layerName, float size){
         this.layerSize = size;
-        this.textureLoc = textureLoc;
+        this.layerName = layerName;
     }
 }

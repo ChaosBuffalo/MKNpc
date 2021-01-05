@@ -22,8 +22,6 @@ import java.util.Optional;
 public class MKMeleeAttackGoal extends Goal {
     private final MKEntity entity;
     private LivingEntity target;
-    private int comboCount;
-    private int comboDelay;
 
     @Override
     public boolean shouldExecute() {
@@ -39,36 +37,23 @@ public class MKMeleeAttackGoal extends Goal {
         return false;
     }
 
-    public void setComboCount(int comboCount) {
-        this.comboCount = comboCount;
-    }
-
-    public void setComboDelay(int comboDelay) {
-        this.comboDelay = comboDelay;
-    }
-
-    public MKMeleeAttackGoal(MKEntity entity, int comboCount, int comboDelay) {
+    public MKMeleeAttackGoal(MKEntity entity) {
         this.entity = entity;
         this.target = null;
-        this.comboCount = comboCount;
-        this.comboDelay = comboDelay;
         this.setMutexFlags(EnumSet.of(Flag.MOVE, Flag.LOOK));
     }
 
-    public MKMeleeAttackGoal(MKEntity entity){
-        this(entity, 2, 10);
-    }
 
     public void startExecuting() {
         this.entity.setAggroed(true);
     }
 
     public int getComboCount() {
-        return comboCount;
+        return entity.getAttackComboCount();
     }
 
     public int getComboDelay() {
-        return comboDelay;
+        return entity.getAttackComboCooldown();
     }
 
     @Override
@@ -117,6 +102,7 @@ public class MKMeleeAttackGoal extends Goal {
 
     protected double getAttackReachSqr(LivingEntity attackTarget) {
         double range = entity.getAttribute(MKAttributes.ATTACK_REACH).getValue();
+        range *= entity.getRenderScale();
         return range * range;
     }
 

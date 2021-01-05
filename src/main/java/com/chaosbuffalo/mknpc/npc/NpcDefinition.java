@@ -245,30 +245,6 @@ public class NpcDefinition {
         return def;
     }
 
-    public static NpcDefinition deserializeJson(Gson gson, ResourceLocation name, JsonObject obj){
-        ResourceLocation parentName = null;
-        if (obj.has("parent")){
-            parentName = new ResourceLocation(obj.get("parent").getAsString());
-        }
-        ResourceLocation typeName = null;
-        if (parentName == null){
-            typeName = new ResourceLocation(obj.get("entityType").getAsString());
-        }
-        NpcDefinition def = new NpcDefinition(name, typeName, parentName);
-        for (Map.Entry<String, JsonElement> entry : obj.entrySet()){
-            if (toSkip.contains(entry.getKey())){
-                continue;
-            }
-            ResourceLocation attrLoc = new ResourceLocation(entry.getKey());
-            NpcDefinitionOption option = NpcDefinitionManager.getNpcOption(attrLoc);
-            if (option != null){
-                option.fromJson(gson, obj);
-                def.addOption(option);
-            }
-        }
-        return def;
-    }
-
     @Nullable
     public Entity createEntity(World world, Vector3d pos, UUID uuid){
         EntityType<?> type = ForgeRegistries.ENTITIES.getValue(getEntityType());

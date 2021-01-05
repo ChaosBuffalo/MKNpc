@@ -47,7 +47,5 @@ public abstract class NpcDefinitionOption {
         return name;
     }
 
-    public abstract void fromJson(Gson gson, JsonObject object);
-
     public abstract void applyToEntity(NpcDefinition definition, Entity entity);
 }

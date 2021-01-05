@@ -1,7 +1,7 @@
 package com.chaosbuffalo.mknpc.npc.options;
 
 import com.chaosbuffalo.mknpc.MKNpc;
-import com.chaosbuffalo.mknpc.entity.IRenderGroupEntity;
+import com.chaosbuffalo.mknpc.entity.IModelLookProvider;
 import com.chaosbuffalo.mknpc.npc.NpcDefinition;
 import net.minecraft.entity.Entity;
 import net.minecraft.util.ResourceLocation;
@@ -15,8 +15,8 @@ public class RenderGroupOption extends StringOption{
 
     @Override
     public void applyToEntity(NpcDefinition definition, Entity entity, String value) {
-        if (entity instanceof IRenderGroupEntity){
-            ((IRenderGroupEntity) entity).setCurrentRenderGroup(value);
+        if (entity instanceof IModelLookProvider){
+            ((IModelLookProvider) entity).setCurrentModelLook(value);
         }
     }
 }

@@ -9,8 +9,6 @@ import com.chaosbuffalo.mknpc.npc.option_entries.FactionNameOptionEntry;
 import com.chaosbuffalo.mknpc.npc.option_entries.INameEntry;
 import com.chaosbuffalo.mknpc.npc.option_entries.INpcOptionEntry;
 import com.google.common.collect.ImmutableMap;
-import com.google.gson.Gson;
-import com.google.gson.JsonObject;
 import com.mojang.serialization.Dynamic;
 import com.mojang.serialization.DynamicOps;
 import net.minecraft.util.ResourceLocation;
@@ -125,14 +123,4 @@ public class FactionNameOption extends WorldPermanentOption implements INameProv
         )).result().orElse(sup);
     }
 
-    @Override
-    public void fromJson(Gson gson, JsonObject object) {
-        JsonObject json = object.getAsJsonObject(NAME.toString());
-        if (json.has("title")){
-            this.title = json.get("title").getAsString();
-        }
-        if (json.has("hasLastName")){
-            this.hasLastName = json.get("hasLastName").getAsBoolean();
-        }
-    }
 }

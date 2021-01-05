@@ -2,18 +2,11 @@ package com.chaosbuffalo.mknpc.npc.options;
 
 import com.chaosbuffalo.mknpc.MKNpc;
 import com.chaosbuffalo.mknpc.npc.NpcAbilityEntry;
-import com.chaosbuffalo.mknpc.npc.NpcAttributeEntry;
 import com.chaosbuffalo.mknpc.npc.NpcDefinition;
 import com.chaosbuffalo.mknpc.npc.option_entries.AbilitiesOptionEntry;
 import com.chaosbuffalo.mknpc.npc.option_entries.INpcOptionEntry;
-import com.google.gson.Gson;
-import com.google.gson.JsonArray;
-import com.google.gson.JsonElement;
-import com.google.gson.JsonObject;
 import com.mojang.serialization.Dynamic;
 import com.mojang.serialization.DynamicOps;
-import net.minecraft.entity.Entity;
-import net.minecraft.entity.LivingEntity;
 import net.minecraft.util.ResourceLocation;
 
 import java.util.ArrayList;
@@ -64,15 +57,4 @@ public class AbilitiesOption extends WorldPermanentOption {
         abilities.addAll(entries);
     }
 
-    @Override
-    public void fromJson(Gson gson, JsonObject object) {
-        JsonArray abilityArray = object.getAsJsonArray(NAME.toString());
-        for (JsonElement ability : abilityArray) {
-            JsonObject abilityObj = ability.getAsJsonObject();
-            ResourceLocation abilityName = new ResourceLocation(abilityObj.get("abilityName").getAsString());
-            double chance = abilityObj.has("chance") ? abilityObj.get("chance").getAsDouble() : 1.1;
-            NpcAbilityEntry entry = new NpcAbilityEntry(abilityName, abilityObj.get("priority").getAsInt(), chance);
-            addAbilityEntry(entry);
-        }
-    }
 }

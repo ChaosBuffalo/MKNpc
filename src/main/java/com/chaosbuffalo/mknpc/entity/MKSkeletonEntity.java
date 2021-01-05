@@ -12,23 +12,33 @@ public class MKSkeletonEntity extends MKEntity  {
 
     public MKSkeletonEntity(EntityType<? extends MKEntity> type, World worldIn) {
         super(type, worldIn);
-        setCurrentRenderGroup(DEFAULT);
+        setCurrentModelLook(DEFAULT);
     }
 
+    @Override
     protected SoundEvent getAmbientSound() {
         return SoundEvents.ENTITY_SKELETON_AMBIENT;
     }
 
+    @Override
     protected SoundEvent getHurtSound(DamageSource damageSourceIn) {
         return SoundEvents.ENTITY_SKELETON_HURT;
     }
 
+    @Override
     protected SoundEvent getDeathSound() {
         return SoundEvents.ENTITY_SKELETON_DEATH;
     }
 
+
+    @Override
     protected SoundEvent getStepSound() {
         return SoundEvents.ENTITY_SKELETON_STEP;
+    }
+
+    @Override
+    protected SoundEvent getShootSound() {
+        return SoundEvents.ENTITY_SKELETON_SHOOT;
     }
 
     @Override
