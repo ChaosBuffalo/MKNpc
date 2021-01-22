@@ -1,8 +1,8 @@
 package com.chaosbuffalo.mknpc.client.render.renderers;
 
 import com.chaosbuffalo.mknpc.MKNpc;
-import com.chaosbuffalo.mknpc.client.render.models.styling.LayerStyle;
-import com.chaosbuffalo.mknpc.client.render.models.styling.ModelStyle;
+import com.chaosbuffalo.mknpc.client.render.models.styling.ModelLook;
+import com.chaosbuffalo.mknpc.client.render.models.styling.ModelStyles;
 import net.minecraft.util.ResourceLocation;
 
 import java.util.HashMap;
@@ -16,20 +16,21 @@ public class SkeletonStyles {
     private static final ResourceLocation WITHER_SKELETON_TEXTURES = new ResourceLocation(
             "textures/entity/skeleton/wither_skeleton.png");
 
-    private static final ResourceLocation ASSASSIN_CLOTHES = new ResourceLocation(MKNpc.MODID,
+    public static final ResourceLocation ASSASSIN_CLOTHES = new ResourceLocation(MKNpc.MODID,
             "textures/entity/skeleton/assassin.png");
-    private static final ResourceLocation KING_CLOTHES = new ResourceLocation(MKNpc.MODID,
+    public static final ResourceLocation KING_CLOTHES = new ResourceLocation(MKNpc.MODID,
             "textures/entity/skeleton/king.png");
-    private static final ResourceLocation STRAY_CLOTHES_TEXTURES = new ResourceLocation(
+    public static final ResourceLocation STRAY_CLOTHES_TEXTURES = new ResourceLocation(
             "textures/entity/skeleton/stray_overlay.png");
 
     private static final Map<String, ResourceLocation> TEXTURE_VARIANTS = new HashMap<>();
     private static final Map<String, ResourceLocation> CLOTHING_VARIANTS = new HashMap<>();
 
-    public static final Map<String, ModelStyle> SKELETON_STYLES = new HashMap<>();
+    public static final Map<String, ModelLook> SKELETON_LOOKS = new HashMap<>();
+    public static final ModelLook DEFAULT_LOOK = new ModelLook(ModelStyles.BASIC_STYLE, SKELETON_TEXTURES);
 
-    public static void putStyle(String name, ModelStyle style){
-        SKELETON_STYLES.put(name, style);
+    public static void putLook(String name, ModelLook style){
+        SKELETON_LOOKS.put(name, style);
     }
 
     static {
@@ -42,11 +43,10 @@ public class SkeletonStyles {
 
         for (Map.Entry<String, ResourceLocation> textureVariant : TEXTURE_VARIANTS.entrySet()){
             for (Map.Entry<String, ResourceLocation> clothingVariant : CLOTHING_VARIANTS.entrySet()){
-                putStyle(String.format("%s_%s", textureVariant.getKey(), clothingVariant.getKey()),
-                        new ModelStyle(textureVariant.getValue(), true,
-                                new LayerStyle(clothingVariant.getValue(), 0.25f)));
+                putLook(String.format("%s_%s", textureVariant.getKey(), clothingVariant.getKey()),
+                        new ModelLook(ModelStyles.CLOTHES_ONLY_STYLE, textureVariant.getValue(), clothingVariant.getValue()));
             }
-            putStyle(textureVariant.getKey(), new ModelStyle(textureVariant.getValue(), true));
+            putLook(textureVariant.getKey(), new ModelLook(ModelStyles.BASIC_STYLE, textureVariant.getValue()));
         }
 
     }

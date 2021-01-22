@@ -6,6 +6,7 @@ import com.chaosbuffalo.mkcore.GameConstants;
 import com.chaosbuffalo.mkcore.abilities.MKAbility;
 import com.chaosbuffalo.mkcore.abilities.MKAbilityMemories;
 import com.chaosbuffalo.mkcore.abilities.ai.AbilityTargetingDecision;
+import com.chaosbuffalo.mkcore.utils.EntityUtils;
 import com.chaosbuffalo.mkcore.utils.ItemUtils;
 import com.chaosbuffalo.mkfaction.capabilities.FactionCapabilities;
 import com.chaosbuffalo.mknpc.MKNpc;
@@ -22,6 +23,7 @@ import com.chaosbuffalo.mknpc.entity.ai.sensor.MKSensorTypes;
 import com.chaosbuffalo.mknpc.entity.attributes.NpcAttributes;
 import com.chaosbuffalo.targeting_api.Targeting;
 import com.google.common.collect.ImmutableList;
+import net.minecraft.block.BlockState;
 import net.minecraft.entity.*;
 import net.minecraft.entity.ai.attributes.AttributeModifier;
 import net.minecraft.entity.ai.attributes.AttributeModifierMap;
@@ -33,16 +35,18 @@ import net.minecraft.entity.ai.goal.SwimGoal;
 import net.minecraft.entity.monster.MonsterEntity;
 import net.minecraft.entity.player.PlayerEntity;
 import net.minecraft.entity.player.ServerPlayerEntity;
+import net.minecraft.entity.projectile.AbstractArrowEntity;
+import net.minecraft.entity.projectile.ProjectileHelper;
 import net.minecraft.inventory.EquipmentSlotType;
+import net.minecraft.item.BowItem;
 import net.minecraft.item.ItemStack;
+import net.minecraft.item.Items;
+import net.minecraft.item.ShootableItem;
 import net.minecraft.nbt.CompoundNBT;
 import net.minecraft.network.datasync.DataParameter;
 import net.minecraft.network.datasync.DataSerializers;
 import net.minecraft.network.datasync.EntityDataManager;
-import net.minecraft.util.ActionResultType;
-import net.minecraft.util.DamageSource;
-import net.minecraft.util.Hand;
-import net.minecraft.util.math.AxisAlignedBB;
+import net.minecraft.util.*;
 import net.minecraft.util.math.BlockPos;
 import net.minecraft.util.math.vector.Vector3d;
 import net.minecraft.world.*;
@@ -53,22 +57,23 @@ import java.util.Collection;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.Optional;
+import java.util.function.Predicate;
 
 @SuppressWarnings("EntityConstructor")
-public abstract class MKEntity extends CreatureEntity implements IRenderGroupEntity {
-    private static final DataParameter<String> RENDER_GROUP = EntityDataManager.createKey(MKEntity.class, DataSerializers.STRING);
+public abstract class MKEntity extends CreatureEntity implements IModelLookProvider, IRangedAttackMob {
+    private static final DataParameter<String> LOOK_STYLE = EntityDataManager.createKey(MKEntity.class, DataSerializers.STRING);
     private static final DataParameter<Float> SCALE = EntityDataManager.createKey(MKEntity.class, DataSerializers.FLOAT);
     private int castAnimTimer;
-    private String renderGroup;
     private VisualCastState visualCastState;
     private MKAbility castingAbility;
     private double lungeSpeed;
-    private int meleeRange;
     private NonCombatMoveType nonCombatMoveType;
     private CombatMoveType combatMoveType;
     private MKMeleeAttackGoal meleeAttackGoal;
     private int comboCountDefault;
     private int comboCooldownDefault;
+    private int comboCount;
+    private int comboCooldown;
 
     public enum CombatMoveType {
         MELEE,
@@ -107,8 +112,33 @@ public abstract class MKEntity extends CreatureEntity implements IRenderGroupEnt
     @Override
     protected void registerData() {
         super.registerData();
-        this.dataManager.register(RENDER_GROUP, "default");
+        this.dataManager.register(LOOK_STYLE, "default");
         this.dataManager.register(SCALE, 1.0f);
+    }
+
+    @Override
+    public void attackEntityWithRangedAttack(LivingEntity target, float distanceFactor) {
+        ItemStack arrowStack = this.findAmmo(this.getHeldItem(Hand.MAIN_HAND));
+        AbstractArrowEntity arrowEntity = ProjectileHelper.fireArrow(this, arrowStack, distanceFactor);
+        if (this.getHeldItemMainhand().getItem() instanceof BowItem){
+            arrowEntity = ((BowItem) this.getHeldItemMainhand().getItem()).customArrow(arrowEntity);
+        }
+        EntityUtils.shootArrow(this, arrowEntity, target);
+        this.playSound(getShootSound(), 1.0F, 1.0F / (this.getRNG().nextFloat() * 0.4F + 0.8F));
+        this.world.addEntity(arrowEntity);
+    }
+
+    protected SoundEvent getShootSound(){
+        return SoundEvents.ENTITY_ARROW_SHOOT;
+    }
+
+    @Override
+    protected void playStepSound(BlockPos pos, BlockState blockIn) {
+        this.playSound(this.getStepSound(), 0.15F, 1.0F);
+    }
+
+    protected SoundEvent getStepSound(){
+        return SoundEvents.ENTITY_ZOMBIE_VILLAGER_STEP;
     }
 
     @Override
@@ -127,7 +157,8 @@ public abstract class MKEntity extends CreatureEntity implements IRenderGroupEnt
         this.goalSelector.addGoal(0, new ReturnToSpawnGoal(this));
         this.goalSelector.addGoal(2, new MovementGoal(this));
         this.meleeAttackGoal =  new MKMeleeAttackGoal(this);
-        this.goalSelector.addGoal(4, meleeAttackGoal);
+        this.goalSelector.addGoal(4, new MKBowAttackGoal(this, 5, 15.0f));
+        this.goalSelector.addGoal(5, meleeAttackGoal);
         this.goalSelector.addGoal(3, new UseAbilityGoal(this));
         this.goalSelector.addGoal(1, new SwimGoal(this));
     }
@@ -169,37 +200,41 @@ public abstract class MKEntity extends CreatureEntity implements IRenderGroupEnt
         comboCooldownDefault = cooldown;
     }
 
+    public void setAttackComboStatsAndDefault(int count, int cooldown){
+        setComboDefaults(count, cooldown);
+        restoreComboDefaults();
+    }
+
     public void restoreComboDefaults(){
-        setMeleeComboCount(comboCountDefault);
-        setMeleeComboCooldown(comboCooldownDefault);
+        setAttackComboCount(comboCountDefault);
+        setAttackComboCooldown(comboCooldownDefault);
     }
 
-    public void setMeleeComboCount(int count){
-        getMeleeAttackGoal().setComboCount(count);
+    public void setAttackComboCount(int count){
+        comboCount = count;
     }
 
-    public int getMeleeComboCount(){
-        return getMeleeAttackGoal().getComboCount();
+    public int getAttackComboCount(){
+        return comboCount;
     }
 
-    public void setMeleeComboCooldown(int ticks){
-        getMeleeAttackGoal().setComboDelay(ticks);
+    public void setAttackComboCooldown(int ticks){
+        comboCooldown = ticks;
     }
 
-    public int getMeleeComboCooldown(){
-        return getMeleeAttackGoal().getComboDelay();
+    public int getAttackComboCooldown(){
+        return comboCooldown;
     }
 
     protected MKEntity(EntityType<? extends CreatureEntity> type, World worldIn) {
         super(type, worldIn);
         if (!worldIn.isRemote()){
-            setComboDefaults(getMeleeAttackGoal().getComboCount(), getMeleeAttackGoal().getComboDelay());
+            setAttackComboStatsAndDefault(1, GameConstants.TICKS_PER_SECOND);
         }
         castAnimTimer = 0;
         visualCastState = VisualCastState.NONE;
         castingAbility = null;
         lungeSpeed = .25;
-        meleeRange = 1;
         nonCombatMoveType = NonCombatMoveType.RANDOM_WANDER;
         combatMoveType = CombatMoveType.MELEE;
         getCapability(CoreCapabilities.ENTITY_CAPABILITY).ifPresent((mkEntityData -> {
@@ -222,13 +257,13 @@ public abstract class MKEntity extends CreatureEntity implements IRenderGroupEnt
     }
 
     @Override
-    public String getCurrentRenderGroup() {
-        return dataManager.get(RENDER_GROUP);
+    public String getCurrentModelLook() {
+        return dataManager.get(LOOK_STYLE);
     }
 
     @Override
-    public void setCurrentRenderGroup(String group) {
-        dataManager.set(RENDER_GROUP, group);
+    public void setCurrentModelLook(String group) {
+        dataManager.set(LOOK_STYLE, group);
     }
 
     public MovementStrategy getMovementStrategy(AbilityTargetingDecision decision){
@@ -508,6 +543,17 @@ public abstract class MKEntity extends CreatureEntity implements IRenderGroupEnt
                         MKSensorTypes.DESTINATION_SENSOR,
                         MKSensorTypes.ABILITY_SENSOR
                 ));
+    }
+
+    @Override
+    public ItemStack findAmmo(ItemStack shootable) {
+        if (shootable.getItem() instanceof ShootableItem) {
+            Predicate<ItemStack> predicate = ((ShootableItem)shootable.getItem()).getAmmoPredicate();
+            ItemStack itemstack = ShootableItem.getHeldAmmo(this, predicate);
+            return itemstack.isEmpty() ? new ItemStack(Items.ARROW) : itemstack;
+        } else {
+            return ItemStack.EMPTY;
+        }
     }
 
 }

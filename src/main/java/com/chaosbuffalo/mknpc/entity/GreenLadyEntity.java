@@ -3,19 +3,12 @@ package com.chaosbuffalo.mknpc.entity;
 import com.chaosbuffalo.mkcore.CoreCapabilities;
 import com.chaosbuffalo.mkcore.abilities.training.*;
 import com.chaosbuffalo.mkcore.mku.abilities.*;
-import com.chaosbuffalo.mknpc.entity.ai.controller.MovementStrategyController;
-import com.chaosbuffalo.mknpc.entity.ai.goal.*;
-import com.chaosbuffalo.mknpc.entity.ai.memory.MKMemoryModuleTypes;
 import net.minecraft.entity.*;
-import net.minecraft.entity.ai.attributes.Attributes;
-import net.minecraft.entity.ai.goal.SwimGoal;
-import net.minecraft.entity.monster.AbstractSkeletonEntity;
 import net.minecraft.item.Items;
 import net.minecraft.nbt.CompoundNBT;
 import net.minecraft.util.Hand;
 import net.minecraft.world.DifficultyInstance;
 import net.minecraft.world.IServerWorld;
-import net.minecraft.world.IWorld;
 import net.minecraft.world.World;
 
 import javax.annotation.Nullable;
@@ -35,8 +28,8 @@ public class GreenLadyEntity extends MKEntity implements IAbilityTrainingEntity 
                 .addRequirement(new ExperienceLevelRequirement(5));
         if (!worldIn.isRemote()){
             setComboDefaults(6, 20);
-            setMeleeComboCount(6);
-            setMeleeComboCooldown(20);
+            setAttackComboCount(6);
+            setAttackComboCooldown(20);
         }
         setLungeSpeed(2.0);
     }
