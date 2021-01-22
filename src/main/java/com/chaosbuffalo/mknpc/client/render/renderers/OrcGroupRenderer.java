@@ -18,7 +18,7 @@ public class OrcGroupRenderer extends BipedGroupRenderer<GreenLadyEntity, MKBipe
                 new OrcRenderer(rendererManager, ModelStyles.ARMORED_LONG_HAIR_STYLE));
         putRenderer(ModelStyles.BASIC_NAME, new OrcRenderer(rendererManager, ModelStyles.BASIC_STYLE));
 
-        putLook("default", OrcLooks.ORC_LOOK_1);
+        putLook("default", OrcLooks.GREEN_LADY_LOOK);
     }
 
     @Nonnull
