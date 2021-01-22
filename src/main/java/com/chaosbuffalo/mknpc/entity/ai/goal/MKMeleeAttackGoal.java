@@ -70,12 +70,12 @@ public class MKMeleeAttackGoal extends Goal {
 
     protected void performAttack(LivingEntity enemy) {
         entity.swingArm(Hand.MAIN_HAND);
-        entity.attackEntityAsMob(enemy);
-        entity.resetSwing();
+        boolean didAttack = entity.attackEntityAsMob(enemy);
         ItemStack mainHand = entity.getHeldItemMainhand();
-        if (!mainHand.isEmpty()){
+        if (didAttack && !mainHand.isEmpty()){
             mainHand.getItem().hitEntity(mainHand, enemy, entity);
         }
+        entity.resetSwing();
         LazyOptional<? extends IMKEntityData> entityData = MKCore.getEntityData(entity);
         entityData.ifPresent(cap -> {
             cap.getCombatExtension().recordSwing();
