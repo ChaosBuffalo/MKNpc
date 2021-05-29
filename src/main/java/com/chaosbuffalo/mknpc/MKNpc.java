@@ -12,10 +12,13 @@ import com.chaosbuffalo.mknpc.init.MKNpcWorldGen;
 import com.chaosbuffalo.mknpc.network.PacketHandler;
 import com.chaosbuffalo.mknpc.npc.INpcOptionExtension;
 import com.chaosbuffalo.mknpc.npc.NpcDefinitionManager;
+import com.chaosbuffalo.mknpc.world.gen.feature.structure.TestJigsawStructurePools;
+import com.chaosbuffalo.mkweapons.command.WeaponsCommands;
 import net.minecraft.entity.Entity;
 import net.minecraft.world.World;
 import net.minecraftforge.common.MinecraftForge;
 import net.minecraftforge.common.util.LazyOptional;
+import net.minecraftforge.event.RegisterCommandsEvent;
 import net.minecraftforge.eventbus.api.SubscribeEvent;
 import net.minecraftforge.fml.common.Mod;
 import net.minecraftforge.fml.event.lifecycle.FMLCommonSetupEvent;
@@ -41,17 +44,13 @@ public class MKNpc
         FMLJavaModLoadingContext.get().getModEventBus().addListener(this::setup);
         FMLJavaModLoadingContext.get().getModEventBus().addListener(this::enqueueIMC);
         FMLJavaModLoadingContext.get().getModEventBus().addListener(this::processIMC);
-        MKNpcEntityTypes.register();
         MKNpcBlocks.register();
         MKNpcTileEntityTypes.register();
+        npcDefinitionManager = new NpcDefinitionManager();
         MKNpcWorldGen.registerStructurePieces();
-    }
-
-    @SuppressWarnings("unused")
-    @SubscribeEvent
-    public void aboutToStart(FMLServerAboutToStartEvent event){
-        npcDefinitionManager = new NpcDefinitionManager(event.getServer());
-        event.getServer().getResourceManager().addReloadListener(npcDefinitionManager);
+        TestJigsawStructurePools.registerPatterns();
+        MinecraftForge.EVENT_BUS.addListener(MKNpcWorldGen::biomeSetup);
+        MinecraftForge.EVENT_BUS.addListener(MKNpcWorldGen::worldSetup);
     }
 
     private void enqueueIMC(final InterModEnqueueEvent event) {
@@ -71,17 +70,16 @@ public class MKNpc
         });
     }
 
-    @SuppressWarnings("unused")
     @SubscribeEvent
-    public void onServerStarting(FMLServerStartingEvent event) {
-        NpcCommands.register(event.getCommandDispatcher());
+    public void onRegisterCommands(RegisterCommandsEvent event){
+        NpcCommands.register(event.getDispatcher());
     }
+
 
     private void setup(final FMLCommonSetupEvent event){
         NpcCapabilities.registerCapabilities();
         PacketHandler.setupHandler();
         NpcDefinitionManager.setupDeserializers();
-        MKNpcWorldGen.biomeSetup();
     }
 
     public static LazyOptional<? extends IEntityNpcData> getNpcData(Entity entity){

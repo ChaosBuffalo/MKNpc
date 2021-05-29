@@ -1,5 +1,11 @@
 package com.chaosbuffalo.mknpc.npc;
 
+import com.chaosbuffalo.mkcore.MKCoreRegistry;
+import com.chaosbuffalo.mkcore.utils.SerializationUtils;
+import com.google.common.collect.ImmutableMap;
+import com.mojang.serialization.Dynamic;
+import com.mojang.serialization.DynamicOps;
+import net.minecraft.item.ItemStack;
 import net.minecraft.nbt.CompoundNBT;
 import net.minecraft.util.ResourceLocation;
 import net.minecraftforge.common.util.INBTSerializable;
@@ -20,6 +26,7 @@ public class NpcAbilityEntry implements INBTSerializable<CompoundNBT> {
         this.chance = chance;
     }
 
+
     public void setPriority(int priority) {
         this.priority = priority;
     }
@@ -38,6 +45,21 @@ public class NpcAbilityEntry implements INBTSerializable<CompoundNBT> {
 
     public ResourceLocation getAbilityName() {
         return abilityName;
+    }
+
+    public <D> void deserialize(Dynamic<D> dynamic) {
+        abilityName = dynamic.get("abilityName").asString().result().map(ResourceLocation::new)
+                .orElse(MKCoreRegistry.INVALID_ABILITY);
+        chance = dynamic.get("chance").asDouble(1.0);
+        priority = dynamic.get("priority").asInt(1);
+    }
+
+    public <D> D serialize(DynamicOps<D> ops) {
+        return ops.createMap(ImmutableMap.of(
+                ops.createString("priority"), ops.createInt(getPriority()),
+                ops.createString("chance"), ops.createDouble(getChance()),
+                ops.createString("abilityName"), ops.createString(getAbilityName().toString())
+        ));
     }
 
     @Override

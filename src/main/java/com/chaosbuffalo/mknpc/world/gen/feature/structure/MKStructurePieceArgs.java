@@ -3,6 +3,7 @@ package com.chaosbuffalo.mknpc.world.gen.feature.structure;
 import net.minecraft.util.Rotation;
 import net.minecraft.util.SharedSeedRandom;
 import net.minecraft.util.math.BlockPos;
+import net.minecraft.world.gen.ChunkGenerator;
 import net.minecraft.world.gen.feature.structure.Structure;
 import net.minecraft.world.gen.feature.structure.StructurePiece;
 import net.minecraft.world.gen.feature.template.TemplateManager;
@@ -18,10 +19,12 @@ public class MKStructurePieceArgs {
     public final SharedSeedRandom random;
     public final UUID structureId;
     public final List<StructurePiece> componentsOut;
+    public final ChunkGenerator generator;
 
-    public MKStructurePieceArgs(Structure<?> structure, TemplateManager templateManager,
+    public MKStructurePieceArgs(ChunkGenerator generator, Structure<?> structure, TemplateManager templateManager,
                                 BlockPos blockPos, Rotation rotation, SharedSeedRandom random,
                                 UUID structureId, List<StructurePiece> componentsOut){
+        this.generator = generator;
         this.structure = structure;
         this.templateManager = templateManager;
         this.blockPos = blockPos;

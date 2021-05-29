@@ -2,11 +2,10 @@ package com.chaosbuffalo.mknpc.entity.ai.goal;
 
 import com.chaosbuffalo.mknpc.entity.ai.MovementUtils;
 import net.minecraft.entity.CreatureEntity;
-import net.minecraft.entity.MobEntity;
 import net.minecraft.entity.ai.brain.memory.MemoryModuleType;
 import net.minecraft.entity.ai.brain.memory.WalkTarget;
 import net.minecraft.entity.ai.goal.SwimGoal;
-import net.minecraft.util.math.Vec3d;
+import net.minecraft.util.math.vector.Vector3d;
 
 public class MKSwimGoal extends SwimGoal {
     private CreatureEntity entity;
@@ -27,8 +26,8 @@ public class MKSwimGoal extends SwimGoal {
 
 
     private void setWalkTargetOut(){
-        Vec3d targetPos = MovementUtils.findRandomTargetBlockAwayFromNoWater(
-                entity, 5, 3, entity.getPositionVec());
+        Vector3d targetPos = MovementUtils.findRandomTargetBlockAwayFromNoWater(
+                entity, 8, 5, entity.getPositionVec());
         if (targetPos != null){
             entity.getBrain().setMemory(MemoryModuleType.WALK_TARGET, new WalkTarget(targetPos, 1.0f, 1));
             this.walkOutPath = true;

@@ -1,8 +1,8 @@
 package com.chaosbuffalo.mknpc.client.gui.widgets;
 
 import com.chaosbuffalo.mkwidgets.client.gui.constraints.CenterYConstraint;
-import com.chaosbuffalo.mkwidgets.client.gui.constraints.HorizontalStackConstraint;
 import com.chaosbuffalo.mkwidgets.client.gui.constraints.LayoutRelativeHeightConstraint;
+import com.chaosbuffalo.mkwidgets.client.gui.constraints.StackConstraint;
 import com.chaosbuffalo.mkwidgets.client.gui.layouts.MKStackLayoutHorizontal;
 import com.chaosbuffalo.mkwidgets.client.gui.widgets.IMKWidget;
 import net.minecraft.client.gui.FontRenderer;
@@ -24,7 +24,7 @@ public abstract class CenteringHorizontalLayout extends MKStackLayoutHorizontal 
         super.addWidget(widget);
         clearWidgetConstraints(widget);
         this.addConstraintToWidget(new CenterYConstraint(), widget);
-        this.addConstraintToWidget(new HorizontalStackConstraint(), widget);
+        this.addConstraintToWidget(StackConstraint.HORIZONTAL, widget);
         if (this.shouldSetChildHeight()) {
             this.addConstraintToWidget(new LayoutRelativeHeightConstraint(1.0F), widget);
         }

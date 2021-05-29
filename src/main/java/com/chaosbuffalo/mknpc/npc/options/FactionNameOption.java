@@ -1,6 +1,5 @@
 package com.chaosbuffalo.mknpc.npc.options;
 
-import com.chaosbuffalo.mkfaction.capabilities.FactionCapabilities;
 import com.chaosbuffalo.mkfaction.event.MKFactionRegistry;
 import com.chaosbuffalo.mkfaction.faction.MKFaction;
 import com.chaosbuffalo.mknpc.MKNpc;
@@ -9,10 +8,9 @@ import com.chaosbuffalo.mknpc.npc.NpcDefinition;
 import com.chaosbuffalo.mknpc.npc.option_entries.FactionNameOptionEntry;
 import com.chaosbuffalo.mknpc.npc.option_entries.INameEntry;
 import com.chaosbuffalo.mknpc.npc.option_entries.INpcOptionEntry;
-import com.google.gson.Gson;
-import com.google.gson.JsonObject;
-import net.minecraft.entity.Entity;
-import net.minecraft.entity.LivingEntity;
+import com.google.common.collect.ImmutableMap;
+import com.mojang.serialization.Dynamic;
+import com.mojang.serialization.DynamicOps;
 import net.minecraft.util.ResourceLocation;
 import net.minecraft.util.text.StringTextComponent;
 import net.minecraft.world.World;
@@ -30,6 +28,16 @@ public class FactionNameOption extends WorldPermanentOption implements INameProv
     public FactionNameOption() {
         super(NAME, ApplyOrder.LATE);
         hasLastName = false;
+    }
+
+    public FactionNameOption setTitle(String title){
+        this.title = title;
+        return this;
+    }
+
+    public FactionNameOption setHasLastName(boolean value){
+        this.hasLastName = value;
+        return this;
     }
 
 
@@ -100,15 +108,19 @@ public class FactionNameOption extends WorldPermanentOption implements INameProv
     }
 
 
+    @Override
+    public <D> void deserialize(Dynamic<D> dynamic) {
+        this.title = dynamic.get("title").asString(null);
+        this.hasLastName = dynamic.get("hasLastName").asBoolean(false);
+    }
 
     @Override
-    public void fromJson(Gson gson, JsonObject object) {
-        JsonObject json = object.getAsJsonObject(NAME.toString());
-        if (json.has("title")){
-            this.title = json.get("title").getAsString();
-        }
-        if (json.has("hasLastName")){
-            this.hasLastName = json.get("hasLastName").getAsBoolean();
-        }
+    public <D> D serialize(DynamicOps<D> ops) {
+        D sup = super.serialize(ops);
+        return ops.mergeToMap(sup, ImmutableMap.of(
+                ops.createString("title"), ops.createString(title),
+                ops.createString("hasLastName"), ops.createBoolean(hasLastName)
+        )).result().orElse(sup);
     }
+
 }

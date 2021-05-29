@@ -9,7 +9,7 @@ import com.chaosbuffalo.mknpc.network.SetSpawnListPacket;
 import com.chaosbuffalo.mknpc.spawn.MKSpawnerTileEntity;
 import com.chaosbuffalo.mknpc.spawn.SpawnOption;
 import com.chaosbuffalo.mkwidgets.client.gui.constraints.MarginConstraint;
-import com.chaosbuffalo.mkwidgets.client.gui.constraints.VerticalStackConstraint;
+import com.chaosbuffalo.mkwidgets.client.gui.constraints.StackConstraint;
 import com.chaosbuffalo.mkwidgets.client.gui.layouts.MKLayout;
 import com.chaosbuffalo.mkwidgets.client.gui.layouts.MKStackLayoutHorizontal;
 import com.chaosbuffalo.mkwidgets.client.gui.screens.MKScreen;
@@ -18,6 +18,7 @@ import com.chaosbuffalo.mkwidgets.client.gui.widgets.MKImage;
 import com.chaosbuffalo.mkwidgets.client.gui.widgets.MKModal;
 import com.chaosbuffalo.mkwidgets.client.gui.widgets.MKText;
 import com.google.common.collect.Lists;
+import com.mojang.blaze3d.matrix.MatrixStack;
 import com.mojang.blaze3d.systems.RenderSystem;
 import net.minecraft.util.text.StringTextComponent;
 
@@ -55,8 +56,8 @@ public class MKSpawnerScreen extends MKScreen {
         MKLayout root = new MKLayout(xPos, yPos, PANEL_WIDTH, PANEL_HEIGHT);
         MKText spawnListLabel = new MKText(font, "Spawn List:");
         root.addWidget(spawnListLabel);
-        root.addConstraintToWidget(new MarginConstraint(MarginConstraint.MarginType.TOP), spawnListLabel);
-        root.addConstraintToWidget(new MarginConstraint(MarginConstraint.MarginType.LEFT), spawnListLabel);
+        root.addConstraintToWidget(MarginConstraint.TOP, spawnListLabel);
+        root.addConstraintToWidget(MarginConstraint.LEFT, spawnListLabel);
         SpawnOptionList options = new SpawnOptionList(xPos + 40, yPos + 15, 240, 100, font,
                 getSpawnerTileEntity().getSpawnList());
         MKButton addOption = new MKButton(xPos + PANEL_WIDTH / 2 - 50,
@@ -89,8 +90,8 @@ public class MKSpawnerScreen extends MKScreen {
                     getSpawnerTileEntity().setRespawnTime((int) Math.round(boundedValue * GameConstants.TICKS_PER_SECOND));
                     field.setValue(boundedValue);
                 });
-        root.addConstraintToWidget(new MarginConstraint(MarginConstraint.MarginType.LEFT), spawnTimeController);
-        root.addConstraintToWidget(new VerticalStackConstraint(), spawnTimeController);
+        root.addConstraintToWidget(MarginConstraint.LEFT, spawnTimeController);
+        root.addConstraintToWidget(StackConstraint.VERTICAL, spawnTimeController);
         root.addWidget(options);
         root.addWidget(addOption);
         root.addWidget(spawnTimeController);
@@ -101,8 +102,8 @@ public class MKSpawnerScreen extends MKScreen {
                         ),
                 getSpawnerTileEntity()::setMoveType);
         movementBehaviors.selectEntry(getSpawnerTileEntity().getMoveType());
-        root.addConstraintToWidget(new MarginConstraint(MarginConstraint.MarginType.LEFT), movementBehaviors);
-        root.addConstraintToWidget(new VerticalStackConstraint(), movementBehaviors);
+        root.addConstraintToWidget(MarginConstraint.LEFT, movementBehaviors);
+        root.addConstraintToWidget(StackConstraint.VERTICAL, movementBehaviors);
         root.addWidget(movementBehaviors);
         root.setMargins(6, 6, 6, 6);
         root.setPaddingTop(2).setPaddingBot(2);
@@ -116,14 +117,14 @@ public class MKSpawnerScreen extends MKScreen {
     }
 
     @Override
-    public void render(int mouseX, int mouseY, float partialTicks) {
+    public void render(MatrixStack stack, int mouseX, int mouseY, float partialTicks) {
         int xPos = width / 2 - PANEL_WIDTH / 2;
         int yPos = height / 2 - PANEL_HEIGHT / 2;
         RenderSystem.color4f(1.0f, 1.0f, 1.0f, 1.0f);
         GuiTextures.CORE_TEXTURES.bind(getMinecraft());
         RenderSystem.disableLighting();
-        GuiTextures.CORE_TEXTURES.drawRegionAtPos(GuiTextures.BACKGROUND_320_240, xPos, yPos);
-        super.render(mouseX, mouseY, partialTicks);
+        GuiTextures.CORE_TEXTURES.drawRegionAtPos(stack, GuiTextures.BACKGROUND_320_240, xPos, yPos);
+        super.render(stack, mouseX, mouseY, partialTicks);
         RenderSystem.enableLighting();
     }
 }

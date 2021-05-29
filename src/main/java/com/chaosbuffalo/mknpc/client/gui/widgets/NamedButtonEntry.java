@@ -1,12 +1,9 @@
 package com.chaosbuffalo.mknpc.client.gui.widgets;
 
-import com.chaosbuffalo.mkwidgets.client.gui.constraints.CenterYConstraint;
-import com.chaosbuffalo.mkwidgets.client.gui.constraints.HorizontalStackConstraint;
-import com.chaosbuffalo.mkwidgets.client.gui.constraints.LayoutRelativeHeightConstraint;
-import com.chaosbuffalo.mkwidgets.client.gui.widgets.IMKWidget;
 import com.chaosbuffalo.mkwidgets.client.gui.widgets.MKButton;
 import com.chaosbuffalo.mkwidgets.client.gui.widgets.MKText;
 import net.minecraft.client.gui.FontRenderer;
+import net.minecraft.util.text.StringTextComponent;
 
 public class NamedButtonEntry extends CenteringHorizontalLayout {
     private final MKButton button;
@@ -25,7 +22,7 @@ public class NamedButtonEntry extends CenteringHorizontalLayout {
 
     public void updateButtonText(String newText){
         button.setWidth(Math.max(fontRenderer.getStringWidth(newText), 100));
-        button.buttonText = newText;
+        button.buttonText = new StringTextComponent(newText);
     }
 
     public MKButton getButton() {

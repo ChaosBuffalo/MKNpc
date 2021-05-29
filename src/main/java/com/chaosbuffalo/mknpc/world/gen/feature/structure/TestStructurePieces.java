@@ -9,10 +9,12 @@ import net.minecraft.util.Rotation;
 import net.minecraft.util.math.BlockPos;
 import net.minecraft.util.math.ChunkPos;
 import net.minecraft.util.math.MutableBoundingBox;
+import net.minecraft.world.ISeedReader;
 import net.minecraft.world.IWorld;
 import net.minecraft.world.biome.Biome;
 import net.minecraft.world.gen.ChunkGenerator;
 import net.minecraft.world.gen.Heightmap;
+import net.minecraft.world.gen.feature.structure.StructureManager;
 import net.minecraft.world.gen.feature.template.BlockIgnoreStructureProcessor;
 import net.minecraft.world.gen.feature.template.PlacementSettings;
 import net.minecraft.world.gen.feature.template.Template;
@@ -63,18 +65,18 @@ public class TestStructurePieces {
         }
 
 
-
         @Override
-        public boolean create(IWorld worldIn, ChunkGenerator<?> chunkGeneratorIn, Random randomIn,
-                              MutableBoundingBox mutableBoundingBoxIn, ChunkPos chunkPosIn) {
-            int x = chunkPosIn.x * 16;
-            int z = chunkPosIn.z * 16;
-            int y = worldIn.getHeight(Heightmap.Type.WORLD_SURFACE_WG,  x, z) - 8;
-            if (worldIn.getBiome(new BlockPos(x, y, z)).getCategory().equals(Biome.Category.OCEAN)){
+        public boolean func_230383_a_(ISeedReader seedReader, StructureManager structureManager, ChunkGenerator chunkGenerator,
+                                      Random random, MutableBoundingBox boundingBox, ChunkPos chunkPos, BlockPos blockPos) {
+
+            int x = chunkPos.x * 16;
+            int z = chunkPos.z * 16;
+            int y = seedReader.getHeight(Heightmap.Type.WORLD_SURFACE_WG,  x, z) - 8;
+            if (seedReader.getBiome(new BlockPos(x, y, z)).getCategory().equals(Biome.Category.OCEAN)){
                 y += 1;
             }
             this.templatePosition = new BlockPos(x, y, z).add(StructureUtils.getCorrectionForEvenRotation(rotation));
-            return super.create(worldIn, chunkGeneratorIn, randomIn, mutableBoundingBoxIn, chunkPosIn);
+            return super.func_230383_a_(seedReader, structureManager, chunkGenerator, random, boundingBox, chunkPos, blockPos);
         }
 
         private void setManager(TemplateManager manager) {

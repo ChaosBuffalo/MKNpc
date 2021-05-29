@@ -1,6 +1,8 @@
 package com.chaosbuffalo.mknpc.capabilities;
 
+import com.chaosbuffalo.mkcore.CoreCapabilities;
 import com.chaosbuffalo.mknpc.MKNpc;
+import com.chaosbuffalo.mknpc.entity.MKEntity;
 import net.minecraft.nbt.CompoundNBT;
 import net.minecraft.nbt.INBT;
 import net.minecraft.util.Direction;
@@ -37,6 +39,7 @@ public class NpcCapabilities {
     }
 
     public static void registerCapabilities() {
+        CoreCapabilities.registerLivingEntity(e -> e instanceof MKEntity);
         CapabilityManager.INSTANCE.register(IEntityNpcData.class, new EntityNpcDataHandler.Storage(), EntityNpcDataHandler::new);
         CapabilityManager.INSTANCE.register(IWorldNpcData.class, new WorldNpcDataHandler.Storage(),
                 WorldNpcDataHandler::new);

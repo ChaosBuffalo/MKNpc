@@ -16,6 +16,7 @@ import net.minecraft.entity.MobEntity;
 import net.minecraft.entity.SpawnReason;
 import net.minecraft.entity.player.ServerPlayerEntity;
 import net.minecraft.util.ResourceLocation;
+import net.minecraft.util.Util;
 import net.minecraft.util.math.BlockPos;
 import net.minecraft.util.text.StringTextComponent;
 
@@ -46,14 +47,14 @@ public class MKSummonCommand {
                 player.getServerWorld().addEntity(entity);
                 if (entity instanceof MobEntity){
                     ((MobEntity) entity).onInitialSpawn(player.getServerWorld(), player.getServerWorld().getDifficultyForLocation(
-                            new BlockPos(entity)), SpawnReason.SPAWNER, null, null);
+                            new BlockPos(entity.getPositionVec())), SpawnReason.SPAWNER, null, null);
                 }
             } else {
                 player.sendMessage(new StringTextComponent(String.format("Failed to summon: %s",
-                        definition_id.toString())));
+                        definition_id.toString())), Util.DUMMY_UUID);
             }
         } else {
-            player.sendMessage(new StringTextComponent("Definition not found."));
+            player.sendMessage(new StringTextComponent("Definition not found."), Util.DUMMY_UUID);
         }
         return Command.SINGLE_SUCCESS;
     }

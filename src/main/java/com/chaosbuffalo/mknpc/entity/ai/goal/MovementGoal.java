@@ -84,7 +84,7 @@ public class MovementGoal extends Goal {
 
 
     private boolean hasReachedTarget(WalkTarget target) {
-        return target.getTarget().getBlockPos().manhattanDistance(new BlockPos(entity)) <= target.getDistance();
+        return target.getTarget().getBlockPos().manhattanDistance(entity.getPosition()) <= target.getDistance();
     }
 
 
