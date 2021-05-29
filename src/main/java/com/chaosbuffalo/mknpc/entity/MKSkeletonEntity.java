@@ -1,7 +1,12 @@
 package com.chaosbuffalo.mknpc.entity;
 
+import com.chaosbuffalo.mkcore.core.MKAttributes;
+import com.chaosbuffalo.mknpc.entity.attributes.NpcAttributes;
 import net.minecraft.entity.CreatureAttribute;
 import net.minecraft.entity.EntityType;
+import net.minecraft.entity.ai.attributes.AttributeModifierMap;
+import net.minecraft.entity.ai.attributes.Attributes;
+import net.minecraft.entity.monster.MonsterEntity;
 import net.minecraft.util.DamageSource;
 import net.minecraft.util.SoundEvent;
 import net.minecraft.util.SoundEvents;
@@ -14,6 +19,13 @@ public class MKSkeletonEntity extends MKEntity  {
         super(type, worldIn);
         setCurrentModelLook(DEFAULT);
     }
+
+    public static AttributeModifierMap.MutableAttribute registerAttributes(double attackDamage, double movementSpeed) {
+        return MKEntity.registerAttributes(attackDamage, movementSpeed)
+                .createMutableAttribute(MKAttributes.SHADOW_RESISTANCE, 0.25)
+                .createMutableAttribute(MKAttributes.HOLY_RESISTANCE, -0.25);
+    }
+
 
     @Override
     protected SoundEvent getAmbientSound() {

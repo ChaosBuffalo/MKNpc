@@ -1,8 +1,8 @@
 package com.chaosbuffalo.mknpc.client.render;
 
 import com.chaosbuffalo.mknpc.MKNpc;
-import com.chaosbuffalo.mknpc.client.render.renderers.OrcGroupRenderer;
 import com.chaosbuffalo.mknpc.client.render.renderers.SkeletalGroupRenderer;
+import com.chaosbuffalo.mknpc.client.render.renderers.SkeletonStyles;
 import com.chaosbuffalo.mknpc.init.MKNpcBlocks;
 import com.chaosbuffalo.mknpc.init.MKNpcEntityTypes;
 import net.minecraft.client.renderer.RenderType;
@@ -18,10 +18,10 @@ public class RenderRegistry {
 
     @SubscribeEvent
     public static void registerModels(ModelRegistryEvent evt) {
-        RenderingRegistry.registerEntityRenderingHandler(MKNpcEntityTypes.GREEN_LADY_ENTITY_TYPE, OrcGroupRenderer::new);
         RenderTypeLookup.setRenderLayer(MKNpcBlocks.MK_SPAWNER_BLOCK.get(), RenderType.getCutout());
 
-        RenderingRegistry.registerEntityRenderingHandler(MKNpcEntityTypes.SKELETON_TYPE, SkeletalGroupRenderer::new);
+        RenderingRegistry.registerEntityRenderingHandler(MKNpcEntityTypes.SKELETON_TYPE, (rendererManager) ->
+                new SkeletalGroupRenderer(rendererManager, SkeletonStyles.SKELETON_LOOKS));
 
     }
 }

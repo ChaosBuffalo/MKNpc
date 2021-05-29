@@ -1,6 +1,5 @@
 package com.chaosbuffalo.mknpc.client.render.renderers;
 
-import com.chaosbuffalo.mknpc.MKNpc;
 import com.chaosbuffalo.mknpc.client.render.models.MKSkeletalModel;
 import com.chaosbuffalo.mknpc.client.render.models.styling.ModelStyle;
 import com.chaosbuffalo.mknpc.entity.MKSkeletonEntity;

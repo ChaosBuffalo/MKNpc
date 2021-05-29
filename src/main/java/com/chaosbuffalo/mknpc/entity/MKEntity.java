@@ -76,6 +76,7 @@ public abstract class MKEntity extends CreatureEntity implements IModelLookProvi
     private int comboCount;
     private int comboCooldown;
 
+
     public enum CombatMoveType {
         MELEE,
         RANGE,
@@ -93,6 +94,23 @@ public abstract class MKEntity extends CreatureEntity implements IModelLookProvi
         RELEASE,
     }
 
+    protected MKEntity(EntityType<? extends CreatureEntity> type, World worldIn) {
+        super(type, worldIn);
+        if (!worldIn.isRemote()){
+            setAttackComboStatsAndDefault(1, GameConstants.TICKS_PER_SECOND);
+        }
+        castAnimTimer = 0;
+        visualCastState = VisualCastState.NONE;
+        castingAbility = null;
+        lungeSpeed = .25;
+        nonCombatMoveType = NonCombatMoveType.RANDOM_WANDER;
+        combatMoveType = CombatMoveType.MELEE;
+        getCapability(CoreCapabilities.ENTITY_CAPABILITY).ifPresent((mkEntityData -> {
+            mkEntityData.getAbilityExecutor().setStartCastCallback(this::startCast);
+            mkEntityData.getAbilityExecutor().setCompleteAbilityCallback(this::endCast);
+        }));
+    }
+
     public double getLungeSpeed() {
         return lungeSpeed * getAttackSpeedMultiplier();
     }
@@ -105,7 +123,7 @@ public abstract class MKEntity extends CreatureEntity implements IModelLookProvi
         return MonsterEntity.func_234295_eP_()
                 .createMutableAttribute(Attributes.ATTACK_DAMAGE, attackDamage)
                 .createMutableAttribute(Attributes.MOVEMENT_SPEED, movementSpeed)
-                .createMutableAttribute(NpcAttributes.AGGRO_RANGE, 5)
+                .createMutableAttribute(NpcAttributes.AGGRO_RANGE, 6)
                 .createMutableAttribute(Attributes.ATTACK_SPEED)
                 .createMutableAttribute(Attributes.FOLLOW_RANGE, 32.0D);
     }
@@ -227,22 +245,7 @@ public abstract class MKEntity extends CreatureEntity implements IModelLookProvi
         return comboCooldown;
     }
 
-    protected MKEntity(EntityType<? extends CreatureEntity> type, World worldIn) {
-        super(type, worldIn);
-        if (!worldIn.isRemote()){
-            setAttackComboStatsAndDefault(1, GameConstants.TICKS_PER_SECOND);
-        }
-        castAnimTimer = 0;
-        visualCastState = VisualCastState.NONE;
-        castingAbility = null;
-        lungeSpeed = .25;
-        nonCombatMoveType = NonCombatMoveType.RANDOM_WANDER;
-        combatMoveType = CombatMoveType.MELEE;
-        getCapability(CoreCapabilities.ENTITY_CAPABILITY).ifPresent((mkEntityData -> {
-            mkEntityData.getAbilityExecutor().setStartCastCallback(this::startCast);
-            mkEntityData.getAbilityExecutor().setCompleteAbilityCallback(this::endCast);
-        }));
-    }
+
 
     @Override
     public void notifyDataManagerChange(DataParameter<?> key) {

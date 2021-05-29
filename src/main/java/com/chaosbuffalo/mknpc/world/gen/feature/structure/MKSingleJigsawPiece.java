@@ -72,6 +72,6 @@ public class MKSingleJigsawPiece extends SingleJigsawPiece implements IMKJigsawP
 
     public static Function<JigsawPattern.PlacementBehaviour, MKSingleJigsawPiece> getMKSingleJigsaw(ResourceLocation pieceName, boolean doWaterlog) {
         return (placementBehaviour) -> new MKSingleJigsawPiece(Either.left(pieceName),
-                () -> ProcessorLists.field_244101_a, placementBehaviour, doWaterlog);
+                () -> ProcessorLists.EMPTY, placementBehaviour, doWaterlog);
     }
 }

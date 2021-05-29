@@ -13,12 +13,12 @@ import java.util.Map;
 
 public class SkeletalGroupRenderer extends BipedGroupRenderer<MKSkeletonEntity, MKSkeletalModel<MKSkeletonEntity>> {
 
-    public SkeletalGroupRenderer(EntityRendererManager rendererManager) {
+    public SkeletalGroupRenderer(EntityRendererManager rendererManager, Map<String, ModelLook> styles) {
         super(rendererManager);
         putRenderer(ModelStyles.BASIC_NAME, new SkeletalRenderer(rendererManager, ModelStyles.BASIC_STYLE));
         putRenderer(ModelStyles.CLOTHES_ONLY_NAME, new SkeletalRenderer(rendererManager, ModelStyles.CLOTHES_ONLY_STYLE));
 
-        for (Map.Entry<String, ModelLook> entry : SkeletonStyles.SKELETON_LOOKS.entrySet()){
+        for (Map.Entry<String, ModelLook> entry : styles.entrySet()){
             putLook(entry.getKey(), entry.getValue());
         }
     }
