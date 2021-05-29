@@ -1,13 +1,12 @@
 package com.chaosbuffalo.mknpc.init;
 
 import com.chaosbuffalo.mknpc.MKNpc;
+import com.chaosbuffalo.mknpc.world.gen.feature.MKSpringFeature;
 import com.chaosbuffalo.mknpc.world.gen.feature.structure.*;
 import net.minecraft.util.ResourceLocation;
-import net.minecraft.util.registry.DynamicRegistries;
 import net.minecraft.util.registry.Registry;
-import net.minecraft.world.biome.Biome;
 import net.minecraft.world.gen.GenerationStage;
-import net.minecraft.world.gen.feature.StructureFeature;
+import net.minecraft.world.gen.feature.*;
 import net.minecraft.world.gen.feature.structure.IStructurePieceType;
 import net.minecraft.world.gen.feature.structure.Structure;
 import net.minecraft.world.gen.feature.structure.VillageConfig;
@@ -17,10 +16,9 @@ import net.minecraftforge.event.world.BiomeLoadingEvent;
 import net.minecraftforge.eventbus.api.SubscribeEvent;
 import net.minecraftforge.fml.common.Mod;
 import net.minecraftforge.fml.event.server.FMLServerAboutToStartEvent;
-import net.minecraftforge.fml.event.server.FMLServerStartingEvent;
-import net.minecraftforge.registries.ForgeRegistries;
 
-import java.util.Locale;
+import java.util.ArrayList;
+import java.util.List;
 
 @Mod.EventBusSubscriber(modid = MKNpc.MODID, bus = Mod.EventBusSubscriber.Bus.MOD)
 public class MKNpcWorldGen {
@@ -28,12 +26,15 @@ public class MKNpcWorldGen {
     public static IStructurePieceType TEST_PIECE_TYPE;
     public static IStructurePieceType TEST_JIGSAW_PIECE_TYPE;
     public static TestStructure TEST_STRUCTURE;
+    public static MKSpringFeature SPRING_REPLACEMENT;
+    public static ConfiguredFeature<?, ?> SPRING_WATER_REPLACEMENT;
     public static final ResourceLocation TEST_STRUCTURE_NAME = new ResourceLocation(MKNpc.MODID, "test");
     private static StructureFeature<?, ?> TEST_STRUCTURE_FEATURE;
 
     public static MKJigsawStructure TEST_JIGSAW;
     public static ResourceLocation TEST_JIG_SAW_NAME = new ResourceLocation(MKNpc.MODID, "test_jigsaw");
     private static StructureFeature<?, ?> TEST_JIGSAW_FEATURE;
+    public static List<Structure<?>> NO_WATER_STRUCTURES = new ArrayList<>();
 
     public static void registerStructurePieces(){
         TEST_PIECE_TYPE = Registry.register(Registry.STRUCTURE_PIECE, TEST_STRUCTURE_NAME.toString(),
@@ -57,6 +58,15 @@ public class MKNpcWorldGen {
                 () -> TestJigsawStructurePools.BASE_PATTERN, TestJigsawStructurePools.GEN_DEPTH));
         evt.getRegistry().register(TEST_JIGSAW);
 
+
+
+    }
+
+    @SubscribeEvent
+    public static void registerFeatures(RegistryEvent.Register<Feature<?>> evt){
+        SPRING_REPLACEMENT = new MKSpringFeature(LiquidsConfig.field_236649_a_);
+        SPRING_REPLACEMENT.setRegistryName(MKNpc.MODID, "spring_feature");
+        evt.getRegistry().register(SPRING_REPLACEMENT);
     }
 
     public static void worldSetup(FMLServerAboutToStartEvent event){

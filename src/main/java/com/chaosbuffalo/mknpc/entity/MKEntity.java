@@ -414,7 +414,6 @@ public abstract class MKEntity extends CreatureEntity implements IModelLookProvi
     public void enterNonCombatMovementState() {
         switch (getNonCombatMoveType()){
             case RANDOM_WANDER:
-                MKNpc.LOGGER.info("Entering random wander");
                 MovementStrategyController.enterRandomWander(this);
                 break;
             case STATIONARY:

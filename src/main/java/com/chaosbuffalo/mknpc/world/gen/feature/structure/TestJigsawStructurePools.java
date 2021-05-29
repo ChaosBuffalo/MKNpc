@@ -22,15 +22,15 @@ public class TestJigsawStructurePools {
     public static final JigsawPattern BASE_PATTERN = JigsawPatternRegistry.func_244094_a(
             new JigsawPattern(new ResourceLocation(MKNpc.MODID, "digger/diggerbase"),
                     new ResourceLocation("empty"), ImmutableList.of(
-                            Pair.of(MKSingleJigsawPiece.getMKSingleJigsaw(DIGGER_BIG_1), 1)), JigsawPattern.PlacementBehaviour.RIGID));
+                            Pair.of(MKSingleJigsawPiece.getMKSingleJigsaw(DIGGER_BIG_1, false), 1)), JigsawPattern.PlacementBehaviour.RIGID));
 
     public static void registerPatterns() {
         JigsawPatternRegistry.func_244094_a(new JigsawPattern(new ResourceLocation(MKNpc.MODID, "digger/diggerroad"), new ResourceLocation("empty"),
-                ImmutableList.of(Pair.of(MKSingleJigsawPiece.getMKSingleJigsaw(DIGGER_ROAD_1), 1)), JigsawPattern.PlacementBehaviour.RIGID));
+                ImmutableList.of(Pair.of(MKSingleJigsawPiece.getMKSingleJigsaw(DIGGER_ROAD_1, false), 1)), JigsawPattern.PlacementBehaviour.RIGID));
         JigsawPatternRegistry.func_244094_a(new JigsawPattern(new ResourceLocation(MKNpc.MODID, "digger/diggercamp"), new ResourceLocation("empty"),
                 ImmutableList.of(
-                        Pair.of(MKSingleJigsawPiece.getMKSingleJigsaw(DIGGER_TENT_DBL_1), 1),
-                        Pair.of(MKSingleJigsawPiece.getMKSingleJigsaw(DIGGER_TENT_SGL_1), 1),
+                        Pair.of(MKSingleJigsawPiece.getMKSingleJigsaw(DIGGER_TENT_DBL_1, false), 1),
+                        Pair.of(MKSingleJigsawPiece.getMKSingleJigsaw(DIGGER_TENT_SGL_1, false), 1),
                         Pair.of(JigsawPiece.func_242864_g(), 2)
                 ),
                 JigsawPattern.PlacementBehaviour.RIGID));

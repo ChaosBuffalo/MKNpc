@@ -27,7 +27,7 @@ public class MKSwimGoal extends SwimGoal {
 
     private void setWalkTargetOut(){
         Vector3d targetPos = MovementUtils.findRandomTargetBlockAwayFromNoWater(
-                entity, 5, 3, entity.getPositionVec());
+                entity, 8, 5, entity.getPositionVec());
         if (targetPos != null){
             entity.getBrain().setMemory(MemoryModuleType.WALK_TARGET, new WalkTarget(targetPos, 1.0f, 1));
             this.walkOutPath = true;
