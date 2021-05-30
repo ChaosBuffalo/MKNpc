@@ -11,6 +11,8 @@ import net.minecraft.world.IServerWorld;
 import net.minecraft.world.IWorld;
 import net.minecraft.world.gen.feature.structure.IStructurePieceType;
 import net.minecraft.world.gen.feature.structure.TemplateStructurePiece;
+import net.minecraft.world.gen.feature.template.PlacementSettings;
+import net.minecraft.world.gen.feature.template.Template;
 
 import java.util.Random;
 import java.util.UUID;
@@ -52,5 +54,11 @@ public abstract class MKTemplateStructurePiece extends TemplateStructurePiece im
     @Override
     protected void handleDataMarker(String function, BlockPos pos, IServerWorld worldIn, Random rand, MutableBoundingBox sbb) {
         handleMKDataMarker(function, pos, worldIn, rand, sbb);
+    }
+
+    @Override
+    protected void setup(Template templateIn, BlockPos pos, PlacementSettings settings) {
+        settings.field_204765_h = false;
+        super.setup(templateIn, pos, settings);
     }
 }

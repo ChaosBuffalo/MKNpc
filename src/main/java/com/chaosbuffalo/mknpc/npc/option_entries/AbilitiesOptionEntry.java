@@ -10,6 +10,7 @@ import net.minecraft.entity.LivingEntity;
 import net.minecraft.nbt.CompoundNBT;
 import net.minecraft.nbt.INBT;
 import net.minecraft.nbt.ListNBT;
+import net.minecraft.util.ResourceLocation;
 import net.minecraftforge.common.util.Constants;
 
 import java.util.ArrayList;
@@ -32,8 +33,12 @@ public class AbilitiesOptionEntry implements INpcOptionEntry {
         if (entity instanceof LivingEntity) {
             LivingEntity livingEntity = (LivingEntity) entity;
             livingEntity.getCapability(CoreCapabilities.ENTITY_CAPABILITY).ifPresent((cap) -> {
+                List<ResourceLocation> toUnlearn = new ArrayList<>();
                 for (MKAbilityInfo ability : cap.getKnowledge().getAllAbilities()) {
-                    cap.getKnowledge().unlearnAbility(ability.getId());
+                    toUnlearn.add(ability.getId());
+                }
+                for (ResourceLocation loc : toUnlearn){
+                    cap.getKnowledge().unlearnAbility(loc);
                 }
                 for (NpcAbilityEntry entry : abilities) {
                     MKAbility ability = MKCoreRegistry.getAbility(entry.getAbilityName());
