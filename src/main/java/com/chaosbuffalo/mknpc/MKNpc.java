@@ -76,6 +76,7 @@ public class MKNpc
         NpcCapabilities.registerCapabilities();
         PacketHandler.setupHandler();
         NpcDefinitionManager.setupDeserializers();
+        NpcCommands.registerArguments();
     }
 
     public static LazyOptional<? extends IEntityNpcData> getNpcData(Entity entity){

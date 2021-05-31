@@ -52,6 +52,9 @@ public class MKMemoryModuleTypes {
     @ObjectHolder("mknpc:is_returning")
     public static MemoryModuleType<Boolean> IS_RETURNING;
 
+    @ObjectHolder("mknpc:ability_timeout")
+    public static MemoryModuleType<Integer> ABILITY_TIMEOUT;
+
 
     @SubscribeEvent
     public static void registerModuleTypes(RegistryEvent.Register<MemoryModuleType<?>> evt) {
@@ -77,6 +80,8 @@ public class MKMemoryModuleTypes {
                 .setRegistryName(MKNpc.MODID, "spawn_point"));
         evt.getRegistry().register(new MemoryModuleType<Boolean>(Optional.empty())
                 .setRegistryName(MKNpc.MODID, "is_returning"));
+        evt.getRegistry().register(new MemoryModuleType<Integer>(Optional.empty())
+            .setRegistryName(MKNpc.MODID, "ability_timeout"));
     }
 
 

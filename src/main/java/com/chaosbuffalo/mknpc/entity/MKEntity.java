@@ -538,7 +538,8 @@ public abstract class MKEntity extends CreatureEntity implements IModelLookProvi
                         MKMemoryModuleTypes.CURRENT_ABILITY,
                         MKAbilityMemories.ABILITY_TARGET,
                         MKMemoryModuleTypes.SPAWN_POINT,
-                        MKMemoryModuleTypes.IS_RETURNING
+                        MKMemoryModuleTypes.IS_RETURNING,
+                        MKMemoryModuleTypes.ABILITY_TIMEOUT
                 ),
                 ImmutableList.of(
                         MKSensorTypes.ENTITIES_SENSOR,

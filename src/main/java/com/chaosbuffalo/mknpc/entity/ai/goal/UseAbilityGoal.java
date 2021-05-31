@@ -69,7 +69,10 @@ public class UseAbilityGoal extends Goal {
 
     public boolean shouldContinueExecuting() {
         return entity.getCapability(CoreCapabilities.ENTITY_CAPABILITY).map(
-                (entityData) -> entityData.getAbilityExecutor().isCasting()).orElse(false);
+                (entityData) -> entityData.getAbilityExecutor().isCasting()).orElse(false) && entity.getBrain()
+                .getMemory(MKAbilityMemories.ABILITY_TARGET).map(tar -> tar.isAlive()
+                        && tar.isEntityEqual(target)).orElse(false) && entity.getBrain().getMemory(MKMemoryModuleTypes.CURRENT_ABILITY)
+                .map(mkAbility -> mkAbility.equals(currentAbility)).orElse(false);
     }
 
     @Override
@@ -96,7 +99,6 @@ public class UseAbilityGoal extends Goal {
     public void resetTask() {
         super.resetTask();
         currentAbility = null;
-        entity.enterCombatMovementState(target);
         target = null;
         entity.getBrain().removeMemory(MKMemoryModuleTypes.CURRENT_ABILITY);
         entity.getBrain().removeMemory(MKAbilityMemories.ABILITY_TARGET);
