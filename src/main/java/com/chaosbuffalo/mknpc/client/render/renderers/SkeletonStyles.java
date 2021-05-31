@@ -1,6 +1,5 @@
 package com.chaosbuffalo.mknpc.client.render.renderers;
 
-import com.chaosbuffalo.mknpc.MKNpc;
 import com.chaosbuffalo.mknpc.client.render.models.styling.ModelLook;
 import com.chaosbuffalo.mknpc.client.render.models.styling.ModelStyles;
 import net.minecraft.util.ResourceLocation;
@@ -11,15 +10,11 @@ import java.util.Map;
 public class SkeletonStyles {
     public static final ResourceLocation SKELETON_TEXTURES = new ResourceLocation(
             "textures/entity/skeleton/skeleton.png");
-    private static final ResourceLocation STRAY_SKELETON_TEXTURES = new ResourceLocation(
+    public static final ResourceLocation STRAY_SKELETON_TEXTURES = new ResourceLocation(
             "textures/entity/skeleton/stray.png");
-    private static final ResourceLocation WITHER_SKELETON_TEXTURES = new ResourceLocation(
+    public static final ResourceLocation WITHER_SKELETON_TEXTURES = new ResourceLocation(
             "textures/entity/skeleton/wither_skeleton.png");
 
-    public static final ResourceLocation ASSASSIN_CLOTHES = new ResourceLocation(MKNpc.MODID,
-            "textures/entity/skeleton/assassin.png");
-    public static final ResourceLocation KING_CLOTHES = new ResourceLocation(MKNpc.MODID,
-            "textures/entity/skeleton/king.png");
     public static final ResourceLocation STRAY_CLOTHES_TEXTURES = new ResourceLocation(
             "textures/entity/skeleton/stray_overlay.png");
 
@@ -37,8 +32,6 @@ public class SkeletonStyles {
         TEXTURE_VARIANTS.put("wither", WITHER_SKELETON_TEXTURES);
         TEXTURE_VARIANTS.put("stray", STRAY_SKELETON_TEXTURES);
         TEXTURE_VARIANTS.put("default", SKELETON_TEXTURES);
-        CLOTHING_VARIANTS.put("assassin", ASSASSIN_CLOTHES);
-        CLOTHING_VARIANTS.put("king", KING_CLOTHES);
         CLOTHING_VARIANTS.put("stray", STRAY_CLOTHES_TEXTURES);
 
         for (Map.Entry<String, ResourceLocation> textureVariant : TEXTURE_VARIANTS.entrySet()){

@@ -58,26 +58,24 @@ public class MKNpcWorldGen {
                 () -> TestJigsawStructurePools.BASE_PATTERN, TestJigsawStructurePools.GEN_DEPTH));
         evt.getRegistry().register(TEST_JIGSAW);
 
-
-
     }
 
     @SubscribeEvent
     public static void registerFeatures(RegistryEvent.Register<Feature<?>> evt){
-        SPRING_REPLACEMENT = new MKSpringFeature(LiquidsConfig.field_236649_a_);
+        SPRING_REPLACEMENT = new MKSpringFeature(LiquidsConfig.CODEC);
         SPRING_REPLACEMENT.setRegistryName(MKNpc.MODID, "spring_feature");
         evt.getRegistry().register(SPRING_REPLACEMENT);
     }
 
     public static void worldSetup(FMLServerAboutToStartEvent event){
-        event.getServer().func_244267_aX().getRegistry(Registry.NOISE_SETTINGS_KEY).forEach(dimensionSettings -> {
-            dimensionSettings.getStructures().func_236195_a_().put(TEST_STRUCTURE, new StructureSeparationSettings(2, 1, 34222645));
-            dimensionSettings.getStructures().func_236195_a_().put(TEST_JIGSAW, new StructureSeparationSettings(10, 5, 32441244));
-        });
+//        event.getServer().func_244267_aX().getRegistry(Registry.NOISE_SETTINGS_KEY).forEach(dimensionSettings -> {
+//            dimensionSettings.getStructures().func_236195_a_().put(TEST_STRUCTURE, new StructureSeparationSettings(2, 1, 34222645));
+//            dimensionSettings.getStructures().func_236195_a_().put(TEST_JIGSAW, new StructureSeparationSettings(10, 5, 32441244));
+//        });
     }
 
     public static void biomeSetup(BiomeLoadingEvent event){
-        event.getGeneration().withStructure(TEST_STRUCTURE_FEATURE);
-        event.getGeneration().withStructure(TEST_JIGSAW_FEATURE);
+//        event.getGeneration().withStructure(TEST_STRUCTURE_FEATURE);
+//        event.getGeneration().withStructure(TEST_JIGSAW_FEATURE);
     }
 }

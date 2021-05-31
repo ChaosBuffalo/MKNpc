@@ -10,6 +10,7 @@ import com.chaosbuffalo.mknpc.utils.RandomCollection;
 import net.minecraft.block.BlockState;
 import net.minecraft.block.Blocks;
 import net.minecraft.entity.Entity;
+import net.minecraft.entity.LivingEntity;
 import net.minecraft.entity.MobEntity;
 import net.minecraft.entity.SpawnReason;
 import net.minecraft.entity.player.PlayerEntity;
@@ -22,6 +23,7 @@ import net.minecraft.util.ResourceLocation;
 import net.minecraft.util.math.BlockPos;
 import net.minecraft.util.math.vector.Vector3d;
 import net.minecraft.world.IServerWorld;
+import net.minecraft.world.World;
 import net.minecraftforge.common.capabilities.Capability;
 import net.minecraftforge.common.util.LazyOptional;
 
@@ -44,6 +46,7 @@ public class MKSpawnerTileEntity extends TileEntity implements ITickableTileEnti
     private ResourceLocation structureName;
     private UUID structureId;
     private boolean needsUploadToWorld;
+    private boolean placedByStructure;
 
     public MKSpawnerTileEntity(){
         this(MKNpcTileEntityTypes.MK_SPAWNER_TILE_ENTITY_TYPE.get());
@@ -56,13 +59,14 @@ public class MKSpawnerTileEntity extends TileEntity implements ITickableTileEnti
         this.structureName = null;
         this.structureId = null;
         this.needsUploadToWorld = false;
-        this.respawnTime = GameConstants.TICKS_PER_SECOND * 25;
+        this.respawnTime = GameConstants.TICKS_PER_SECOND * 300;
         this.ticksSinceDeath = 0;
         this.ticksSincePlayer = 0;
         this.entity = null;
         this.wasAlive = false;
         this.moveType = MKEntity.NonCombatMoveType.STATIONARY;
         this.randomSpawns = new RandomCollection<>();
+        this.placedByStructure = false;
     }
 
     public boolean isInsideStructure(){
@@ -129,6 +133,8 @@ public class MKSpawnerTileEntity extends TileEntity implements ITickableTileEnti
         compound.putInt("ticksSinceDeath", ticksSinceDeath);
         compound.putInt("moveType", moveType.ordinal());
         compound.putBoolean("hasUploadedToWorld", needsUploadToWorld);
+        compound.putBoolean("placedByStructure", placedByStructure);
+        compound.putInt("respawnTime", respawnTime);
         if (isInsideStructure()){
             compound.putString("structureName", structureName.toString());
             compound.putUniqueId("structureId", structureId);
@@ -152,6 +158,10 @@ public class MKSpawnerTileEntity extends TileEntity implements ITickableTileEnti
         return entity != null && entity.isAlive();
     }
 
+    private boolean isSpawnDead(){
+        return entity instanceof LivingEntity && ((LivingEntity) entity).getHealth() <= 0 && !entity.isAlive();
+    }
+
     public static double getSpawnRange() {
         return SPAWN_RANGE;
     }
@@ -159,6 +169,7 @@ public class MKSpawnerTileEntity extends TileEntity implements ITickableTileEnti
     public void regenerateSpawnID(){
         this.spawnUUID = UUID.randomUUID();
         this.needsUploadToWorld = true;
+        this.placedByStructure = true;
     }
 
     @Override
@@ -180,8 +191,19 @@ public class MKSpawnerTileEntity extends TileEntity implements ITickableTileEnti
         if (compound.contains("hasUploadedToWorld")){
             needsUploadToWorld = compound.getBoolean("hasUploadedToWorld");
         }
+        if (compound.contains("placedByStructure")){
+            placedByStructure = compound.getBoolean("placedByStructure");
+        }
         ticksSinceDeath = compound.getInt("ticksSinceDeath");
-        spawnUUID = compound.getUniqueId("spawnId");
+        if (compound.contains("spawnId")){
+            spawnUUID = compound.getUniqueId("spawnId");
+        } else {
+            spawnUUID = UUID.randomUUID();
+        }
+        if (compound.contains("respawnTime")){
+            setRespawnTime(compound.getInt("respawnTime"));
+        }
+
     }
 
     public void spawnEntity(){
@@ -229,16 +251,26 @@ public class MKSpawnerTileEntity extends TileEntity implements ITickableTileEnti
         ticksSinceDeath = 0;
     }
 
+    private boolean isAir(World world, BlockPos pos){
+        BlockState blockState = world.getBlockState(pos);
+        return blockState.getBlock().isAir(blockState, world, pos);
+    }
+
     @Override
     public void tick() {
-        if (getWorld() != null && !getWorld().isRemote() && randomSpawns.size() >0){
+        World world = getWorld();
+        if (world != null && !getWorld().isRemote() && randomSpawns.size() >0){
             if (needsUploadToWorld){
-                getWorld().getCapability(NpcCapabilities.WORLD_NPC_DATA_CAPABILITY)
+                world.getCapability(NpcCapabilities.WORLD_NPC_DATA_CAPABILITY)
                         .ifPresent(cap -> cap.addSpawner(this));
                 needsUploadToWorld = false;
             }
-            if (!getWorld().getBlockState(getPos().up()).getBlock().equals(Blocks.AIR)){
-                return;
+            if (!isAir(world, getPos().up())){
+                if (placedByStructure){
+                    world.setBlockState(getPos().up(), Blocks.AIR.getDefaultState(), 3);
+                } else {
+                    return;
+                }
             }
             boolean isAlive = isSpawnAlive();
             if (ticksSinceDeath > 0){
@@ -247,7 +279,7 @@ public class MKSpawnerTileEntity extends TileEntity implements ITickableTileEnti
 
             if (isPlayerInRange()){
                 if (!isAlive){
-                    if (wasAlive){
+                    if (wasAlive && isSpawnDead()){
                         ticksSinceDeath = getRespawnTime();
                     }
                     if (ticksSinceDeath <= 0){
@@ -262,7 +294,10 @@ public class MKSpawnerTileEntity extends TileEntity implements ITickableTileEnti
                     ticksSincePlayer++;
                     if (ticksSincePlayer > IDLE_TIME){
                         entity.remove();
+                        this.entity = null;
+                        ticksSinceDeath = 0;
                         wasAlive = false;
+                        ticksSincePlayer = 0;
                     }
                 }
             }

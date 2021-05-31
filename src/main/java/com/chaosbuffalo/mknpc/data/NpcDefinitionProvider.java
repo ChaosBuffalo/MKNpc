@@ -38,8 +38,8 @@ public class NpcDefinitionProvider implements IDataProvider {
 
     @Override
     public void act(@Nonnull DirectoryCache cache) {
-        writeDefinition(generateTestLady(), cache);
-        writeDefinition(generateTestLady2(), cache);
+//        writeDefinition(generateTestLady(), cache);
+//        writeDefinition(generateTestLady2(), cache);
         writeDefinition(generateTestSkeleton(), cache);
 
     }

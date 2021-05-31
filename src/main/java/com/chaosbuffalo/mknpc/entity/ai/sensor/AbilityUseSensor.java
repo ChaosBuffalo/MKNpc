@@ -1,6 +1,7 @@
 package com.chaosbuffalo.mknpc.entity.ai.sensor;
 
 import com.chaosbuffalo.mkcore.CoreCapabilities;
+import com.chaosbuffalo.mkcore.MKCore;
 import com.chaosbuffalo.mkcore.abilities.MKAbility;
 import com.chaosbuffalo.mkcore.abilities.MKAbilityInfo;
 import com.chaosbuffalo.mkcore.abilities.MKAbilityMemories;
@@ -29,9 +30,12 @@ public class AbilityUseSensor extends Sensor<MKEntity> {
     @Override
     protected void update(@Nonnull ServerWorld worldIn, MKEntity entityIn) {
         Optional<MKAbility> abilityOptional = entityIn.getBrain().getMemory(MKMemoryModuleTypes.CURRENT_ABILITY);
-        if (abilityOptional.isPresent())
+        int timeOut = entityIn.getBrain().getMemory(MKMemoryModuleTypes.ABILITY_TIMEOUT).orElse(0);
+        boolean isCasting = MKCore.getEntityData(entityIn).map(data -> data.getAbilityExecutor().isCasting()).orElse(false);
+        if (abilityOptional.isPresent() && !isCasting && timeOut <= 5){
+            entityIn.getBrain().setMemory(MKMemoryModuleTypes.ABILITY_TIMEOUT, timeOut + 1);
             return;
-
+        }
         entityIn.getCapability(CoreCapabilities.ENTITY_CAPABILITY).ifPresent(mkEntityData -> {
             AbilityDecisionContext context = createAbilityDecisionContext(entityIn);
             for (MKAbilityInfo ability : mkEntityData.getKnowledge().getAbilitiesPriorityOrder()) {
@@ -49,6 +53,7 @@ public class AbilityUseSensor extends Sensor<MKEntity> {
                     entityIn.getBrain().setMemory(MKMemoryModuleTypes.MOVEMENT_STRATEGY,
                             entityIn.getMovementStrategy(targetSelection));
                     entityIn.getBrain().setMemory(MKMemoryModuleTypes.MOVEMENT_TARGET, targetSelection.getTargetEntity());
+                    entityIn.getBrain().setMemory(MKMemoryModuleTypes.ABILITY_TIMEOUT, 0);
                     return;
                 }
             }
@@ -68,6 +73,6 @@ public class AbilityUseSensor extends Sensor<MKEntity> {
     public Set<MemoryModuleType<?>> getUsedMemories() {
         return ImmutableSet.of(MKMemoryModuleTypes.CURRENT_ABILITY, MKMemoryModuleTypes.THREAT_TARGET,
                 MKAbilityMemories.ABILITY_TARGET, MKMemoryModuleTypes.ALLIES, MKMemoryModuleTypes.ENEMIES,
-                MKMemoryModuleTypes.MOVEMENT_STRATEGY);
+                MKMemoryModuleTypes.MOVEMENT_STRATEGY, MKMemoryModuleTypes.ABILITY_TIMEOUT);
     }
 }

@@ -1,5 +1,6 @@
 package com.chaosbuffalo.mknpc.world.gen.feature.structure;
 
+import com.chaosbuffalo.mknpc.world.gen.StructureUtils;
 import net.minecraft.nbt.CompoundNBT;
 import net.minecraft.util.ResourceLocation;
 import net.minecraft.util.Rotation;

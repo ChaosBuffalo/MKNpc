@@ -16,6 +16,7 @@ import net.minecraft.world.gen.feature.jigsaw.SingleJigsawPiece;
 import net.minecraft.world.gen.feature.structure.StructureManager;
 import net.minecraft.world.gen.feature.template.*;
 
+import java.util.List;
 import java.util.Random;
 import java.util.function.Function;
 import java.util.function.Supplier;
@@ -46,20 +47,24 @@ public class MKSingleJigsawPiece extends SingleJigsawPiece implements IMKJigsawP
         return bWaterlogBlocks;
     }
 
+
+
     @Override
     public boolean mkPlace(TemplateManager templateManager, ISeedReader seedReader, StructureManager structureManager,
                            ChunkGenerator chunkGenerator, BlockPos structurePos, BlockPos blockPos, Rotation rot,
                            MutableBoundingBox boundingBox, Random rand, boolean keepJigsaw, MKAbstractJigsawPiece parent) {
         Template template = this.func_236843_a_(templateManager);
         PlacementSettings placementsettings = this.func_230379_a_(rot, boundingBox, keepJigsaw);
+        placementsettings.removeProcessor(BlockIgnoreStructureProcessor.STRUCTURE_BLOCK);
         placementsettings.field_204765_h = doWaterlog();
         if (!template.func_237146_a_(seedReader, structurePos, blockPos, placementsettings, rand, 18)) {
             return false;
         } else {
+            List<Template.BlockInfo> dataMarkers = this.getDataMarkers(templateManager, structurePos, rot, false);
             for(Template.BlockInfo blockinfo : Template.processBlockInfos(
                     seedReader, structurePos, blockPos, placementsettings,
-                    this.getDataMarkers(templateManager, structurePos, rot, false), template)) {
-                mkHandleDataMarker(seedReader, blockinfo, structurePos, rot, rand, boundingBox, parent);
+                    dataMarkers, template)) {
+                mkHandleDataMarker(seedReader, blockinfo, blockinfo.pos, rot, rand, boundingBox, parent);
             }
             return true;
         }
@@ -72,6 +77,6 @@ public class MKSingleJigsawPiece extends SingleJigsawPiece implements IMKJigsawP
 
     public static Function<JigsawPattern.PlacementBehaviour, MKSingleJigsawPiece> getMKSingleJigsaw(ResourceLocation pieceName, boolean doWaterlog) {
         return (placementBehaviour) -> new MKSingleJigsawPiece(Either.left(pieceName),
-                () -> ProcessorLists.field_244101_a, placementBehaviour, doWaterlog);
+                () -> ProcessorLists.EMPTY, placementBehaviour, doWaterlog);
     }
 }

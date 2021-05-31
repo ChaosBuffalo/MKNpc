@@ -37,6 +37,7 @@ public class MKMeleeAttackGoal extends Goal {
         return false;
     }
 
+
     public MKMeleeAttackGoal(MKEntity entity) {
         this.entity = entity;
         this.target = null;
