@@ -6,6 +6,7 @@ import com.chaosbuffalo.mkcore.core.IMKEntityData;
 import com.chaosbuffalo.mkcore.core.MKAttributes;
 import com.chaosbuffalo.mkcore.events.PostAttackEvent;
 import com.chaosbuffalo.mkcore.utils.EntityUtils;
+import com.chaosbuffalo.mknpc.MKNpc;
 import com.chaosbuffalo.mknpc.entity.MKEntity;
 import com.chaosbuffalo.mknpc.entity.ai.memory.MKMemoryModuleTypes;
 import net.minecraft.entity.LivingEntity;
@@ -29,7 +30,7 @@ public class MKMeleeAttackGoal extends Goal {
         Optional<LivingEntity> targetOpt = brain.getMemory(MKMemoryModuleTypes.THREAT_TARGET);
         if (targetOpt.isPresent()) {
             LivingEntity target = targetOpt.get();
-            if (isInReach(target)) {
+            if (isInMeleeRange(target)) {
                 this.target = target;
                 return true;
             }
@@ -89,11 +90,13 @@ public class MKMeleeAttackGoal extends Goal {
     }
 
     public boolean isInMeleeRange(LivingEntity target){
-        return entity.getDistanceSq(target) <= this.getAttackReachSqr(target) * 2.0;
+        return entity.getDistanceSq(target) <= this.getAttackReachSqr(target);
     }
 
+
+
     public boolean isInReach(LivingEntity target) {
-        return entity.getDistanceSq(target) <= this.getAttackReachSqr(target);
+        return entity.getDistanceSq(target) <= (this.getAttackReachSqr(target) * MKNpc.getDifficultyScale(target));
     }
 
     public void resetTask() {
