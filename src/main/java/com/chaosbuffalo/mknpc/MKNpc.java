@@ -13,6 +13,7 @@ import com.chaosbuffalo.mknpc.npc.INpcOptionExtension;
 import com.chaosbuffalo.mknpc.npc.NpcDefinitionManager;
 import com.chaosbuffalo.mknpc.world.gen.feature.structure.TestJigsawStructurePools;
 import net.minecraft.entity.Entity;
+import net.minecraft.entity.LivingEntity;
 import net.minecraft.world.World;
 import net.minecraftforge.common.MinecraftForge;
 import net.minecraftforge.common.util.LazyOptional;
@@ -77,6 +78,20 @@ public class MKNpc
         PacketHandler.setupHandler();
         NpcDefinitionManager.setupDeserializers();
         NpcCommands.registerArguments();
+    }
+
+    public static double getDifficultyScale(LivingEntity entity){
+        switch (entity.getEntityWorld().getDifficulty()){
+            case EASY:
+                return 0.5;
+            case NORMAL:
+                return 0.75;
+            case HARD:
+                return 1.0;
+            case PEACEFUL:
+            default:
+                return 0.25;
+        }
     }
 
     public static LazyOptional<? extends IEntityNpcData> getNpcData(Entity entity){
