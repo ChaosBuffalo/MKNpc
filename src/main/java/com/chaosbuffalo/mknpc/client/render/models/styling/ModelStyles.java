@@ -11,6 +11,8 @@ public class ModelStyles {
     public static final String SHORT_HAIR_NAME = "short_hair";
     public static final String CLOTHES_ONLY_NAME = "clothes_only";
     public static final String BASIC_NAME = "basic";
+    public static final String CLOTHES_ARMOR_NAME = "clothes_armor";
+    public static final String CLOTHES_ARMOR_TRANSLUCENT_NAME = "clothes_armor_translucent";
 
     public static final ModelStyle ARMORED_LONG_HAIR_STYLE = new ModelStyle(
             LONG_HAIR_ARMORED_NAME,
@@ -40,6 +42,18 @@ public class ModelStyles {
             true,
             false,
             new LayerStyle(CLOTHES,0.25f));
+
+    public static final ModelStyle CLOTHES_ARMOR_STYLE = new ModelStyle(
+            CLOTHES_ARMOR_NAME,
+            true,
+            false,
+            new LayerStyle(CLOTHES,0.75f));
+
+    public static final ModelStyle CLOTHES_ARMOR_TRANSLUCENT_STYLE = new ModelStyle(
+            CLOTHES_ARMOR_TRANSLUCENT_NAME,
+            true,
+            false,
+            new LayerStyle(CLOTHES,0.75f, true));
 
     public static final ModelStyle BASIC_STYLE = new ModelStyle(
             BASIC_NAME,

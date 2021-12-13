@@ -4,13 +4,17 @@ import com.chaosbuffalo.mkcore.client.rendering.animations.AdditionalBipedAnimat
 import com.chaosbuffalo.mkcore.client.rendering.animations.BipedCastAnimation;
 import com.chaosbuffalo.mknpc.client.render.animations.MKEntityCompleteCastAnimation;
 import com.chaosbuffalo.mknpc.entity.MKEntity;
+import net.minecraft.client.renderer.RenderType;
 import net.minecraft.client.renderer.entity.model.BipedModel;
 import net.minecraft.client.renderer.model.ModelHelper;
 import net.minecraft.item.BowItem;
 import net.minecraft.item.ItemStack;
 import net.minecraft.util.Hand;
 import net.minecraft.util.HandSide;
+import net.minecraft.util.ResourceLocation;
 import net.minecraft.util.math.MathHelper;
+
+import java.util.function.Function;
 
 
 public class MKBipedModel<T extends MKEntity> extends BipedModel<T> {
@@ -20,6 +24,10 @@ public class MKBipedModel<T extends MKEntity> extends BipedModel<T> {
 
     public MKBipedModel(float modelSize, float yOffsetIn, int textureWidthIn, int textureHeightIn) {
         super(modelSize, yOffsetIn, textureWidthIn, textureHeightIn);
+    }
+
+    public MKBipedModel(Function<ResourceLocation, RenderType> renderTypeIn, float modelSizeIn, float yOffsetIn, int textureWidthIn, int textureHeightIn){
+        super(renderTypeIn, modelSizeIn, yOffsetIn, textureWidthIn, textureHeightIn);
     }
 
     @Override
