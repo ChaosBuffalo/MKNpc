@@ -15,7 +15,7 @@ import net.minecraft.world.World;
 public class MKSkeletonEntity extends MKEntity  {
     public static final String DEFAULT = "default";
 
-    public MKSkeletonEntity(EntityType<? extends MKEntity> type, World worldIn) {
+    public MKSkeletonEntity(EntityType<? extends MKSkeletonEntity> type, World worldIn) {
         super(type, worldIn);
         setCurrentModelLook(DEFAULT);
     }

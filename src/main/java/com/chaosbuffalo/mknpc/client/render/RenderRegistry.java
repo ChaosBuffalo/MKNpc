@@ -1,8 +1,7 @@
 package com.chaosbuffalo.mknpc.client.render;
 
 import com.chaosbuffalo.mknpc.MKNpc;
-import com.chaosbuffalo.mknpc.client.render.renderers.SkeletalGroupRenderer;
-import com.chaosbuffalo.mknpc.client.render.renderers.SkeletonStyles;
+import com.chaosbuffalo.mknpc.client.render.renderers.*;
 import com.chaosbuffalo.mknpc.init.MKNpcBlocks;
 import com.chaosbuffalo.mknpc.init.MKNpcEntityTypes;
 import net.minecraft.client.renderer.RenderType;
@@ -22,6 +21,9 @@ public class RenderRegistry {
 
         RenderingRegistry.registerEntityRenderingHandler(MKNpcEntityTypes.SKELETON_TYPE, (rendererManager) ->
                 new SkeletalGroupRenderer(rendererManager, SkeletonStyles.SKELETON_LOOKS));
+
+        RenderingRegistry.registerEntityRenderingHandler(MKNpcEntityTypes.ZOMBIFIED_PIGLIN_TYPE, (renderManager) ->
+                new ZombifiedPiglinGroupRenderer(renderManager, PiglinStyles.ZOMBIFIED_PIGLIN_LOOKS));
 
     }
 }

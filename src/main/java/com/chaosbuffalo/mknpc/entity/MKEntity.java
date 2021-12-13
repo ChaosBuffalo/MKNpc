@@ -6,6 +6,11 @@ import com.chaosbuffalo.mkcore.GameConstants;
 import com.chaosbuffalo.mkcore.abilities.MKAbility;
 import com.chaosbuffalo.mkcore.abilities.MKAbilityMemories;
 import com.chaosbuffalo.mkcore.abilities.ai.AbilityTargetingDecision;
+import com.chaosbuffalo.mkcore.core.player.ParticleEffectInstanceTracker;
+import com.chaosbuffalo.mkcore.core.player.SyncComponent;
+import com.chaosbuffalo.mkcore.entities.IUpdateEngineProvider;
+import com.chaosbuffalo.mkcore.sync.EntityUpdateEngine;
+import com.chaosbuffalo.mkcore.sync.UpdateEngine;
 import com.chaosbuffalo.mkcore.utils.EntityUtils;
 import com.chaosbuffalo.mkcore.utils.ItemUtils;
 import com.chaosbuffalo.mkfaction.capabilities.FactionCapabilities;
@@ -61,9 +66,10 @@ import java.util.Optional;
 import java.util.function.Predicate;
 
 @SuppressWarnings("EntityConstructor")
-public abstract class MKEntity extends CreatureEntity implements IModelLookProvider, IRangedAttackMob {
+public abstract class MKEntity extends CreatureEntity implements IModelLookProvider, IRangedAttackMob, IUpdateEngineProvider {
     private static final DataParameter<String> LOOK_STYLE = EntityDataManager.createKey(MKEntity.class, DataSerializers.STRING);
     private static final DataParameter<Float> SCALE = EntityDataManager.createKey(MKEntity.class, DataSerializers.FLOAT);
+    private final SyncComponent animSync = new SyncComponent("anim");
     private int castAnimTimer;
     private VisualCastState visualCastState;
     private MKAbility castingAbility;
@@ -75,6 +81,8 @@ public abstract class MKEntity extends CreatureEntity implements IModelLookProvi
     private int comboCooldownDefault;
     private int comboCount;
     private int comboCooldown;
+    private final EntityUpdateEngine updateEngine;
+    private final ParticleEffectInstanceTracker particleEffectTracker;
 
 
     public enum CombatMoveType {
@@ -103,12 +111,25 @@ public abstract class MKEntity extends CreatureEntity implements IModelLookProvi
         visualCastState = VisualCastState.NONE;
         castingAbility = null;
         lungeSpeed = .25;
+        updateEngine = new EntityUpdateEngine(this);
+        animSync.attach(updateEngine);
+        particleEffectTracker = ParticleEffectInstanceTracker.getTracker(this);
+        animSync.addPublic(particleEffectTracker);
         nonCombatMoveType = NonCombatMoveType.RANDOM_WANDER;
         combatMoveType = CombatMoveType.MELEE;
         getCapability(CoreCapabilities.ENTITY_CAPABILITY).ifPresent((mkEntityData -> {
             mkEntityData.getAbilityExecutor().setStartCastCallback(this::startCast);
             mkEntityData.getAbilityExecutor().setCompleteAbilityCallback(this::endCast);
         }));
+    }
+
+    public ParticleEffectInstanceTracker getParticleEffectTracker() {
+        return particleEffectTracker;
+    }
+
+    @Override
+    public EntityUpdateEngine getUpdateEngine() {
+        return updateEngine;
     }
 
     public double getLungeSpeed() {

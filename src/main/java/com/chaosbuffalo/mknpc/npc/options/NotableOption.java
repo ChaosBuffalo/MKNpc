@@ -14,5 +14,6 @@ public class NotableOption extends BooleanOption {
     @Override
     public void applyToEntity(NpcDefinition definition, Entity entity, Boolean value) {
         MKNpc.getNpcData(entity).ifPresent(cap -> cap.setNotable(value));
+        entity.setCustomNameVisible(true);
     }
 }
