@@ -2,6 +2,7 @@ package com.chaosbuffalo.mknpc.spawn;
 
 import com.chaosbuffalo.mkcore.GameConstants;
 import com.chaosbuffalo.mknpc.MKNpc;
+import com.chaosbuffalo.mknpc.blocks.MKSpawnerBlock;
 import com.chaosbuffalo.mknpc.capabilities.NpcCapabilities;
 import com.chaosbuffalo.mknpc.entity.MKEntity;
 import com.chaosbuffalo.mknpc.init.MKNpcTileEntityTypes;
@@ -210,9 +211,18 @@ public class MKSpawnerTileEntity extends TileEntity implements ITickableTileEnti
         if (getWorld() != null){
             NpcDefinition definition = randomSpawns.next();
             Vector3d spawnPos = Vector3d.copy(getPos()).add(0.5, 0.0630, 0.5);
+
             Entity entity = definition.createEntity(getWorld(), spawnPos, spawnUUID);
             this.entity = entity;
             if (entity != null){
+                float rot = getBlockState().get(MKSpawnerBlock.ORIENTATION).getAngleInDegrees();
+                entity.setPositionAndRotation(
+                    entity.getPosX(),
+                    entity.getPosY(),
+                    entity.getPosZ(),
+                    rot,
+                    0.0f);
+                entity.setRotationYawHead(rot);
                 getWorld().addEntity(entity);
                 MKNpc.getNpcData(entity).ifPresent((cap) -> {
                     cap.setMKSpawned(true);
@@ -225,6 +235,7 @@ public class MKSpawnerTileEntity extends TileEntity implements ITickableTileEnti
                     ((MobEntity) entity).onInitialSpawn((IServerWorld) getWorld(), getWorld().getDifficultyForLocation(
                             entity.getPosition()), SpawnReason.SPAWNER, null, null);
                 }
+
             }
         }
     }

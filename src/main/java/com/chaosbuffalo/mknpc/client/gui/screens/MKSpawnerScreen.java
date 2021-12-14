@@ -4,6 +4,7 @@ import com.chaosbuffalo.mkcore.GameConstants;
 import com.chaosbuffalo.mkcore.client.gui.GuiTextures;
 import com.chaosbuffalo.mknpc.client.gui.widgets.*;
 import com.chaosbuffalo.mknpc.entity.MKEntity;
+import com.chaosbuffalo.mknpc.network.FinalizeMKSpawnerPacket;
 import com.chaosbuffalo.mknpc.network.PacketHandler;
 import com.chaosbuffalo.mknpc.network.SetSpawnListPacket;
 import com.chaosbuffalo.mknpc.spawn.MKSpawnerTileEntity;
@@ -20,6 +21,8 @@ import com.chaosbuffalo.mkwidgets.client.gui.widgets.MKText;
 import com.google.common.collect.Lists;
 import com.mojang.blaze3d.matrix.MatrixStack;
 import com.mojang.blaze3d.systems.RenderSystem;
+import net.minecraft.block.BlockState;
+import net.minecraft.block.Blocks;
 import net.minecraft.util.text.StringTextComponent;
 
 
@@ -61,7 +64,7 @@ public class MKSpawnerScreen extends MKScreen {
         SpawnOptionList options = new SpawnOptionList(xPos + 40, yPos + 15, 240, 100, font,
                 getSpawnerTileEntity().getSpawnList());
         MKButton addOption = new MKButton(xPos + PANEL_WIDTH / 2 - 50,
-                options.getY() + options.getHeight() + 10, 100, 20,
+                options.getY() + options.getHeight() + 5, 100, 20,
                 "Add Spawn");
         addOption.setPressedCallback((button, mouse) -> {
                 MKModal popup = new MKModal();
@@ -83,6 +86,12 @@ public class MKSpawnerScreen extends MKScreen {
                 addModal(popup);
            return true;
         });
+        MKButton finalize = new MKButton(xPos + PANEL_WIDTH / 2 - 50,
+                options.getY() + options.getHeight() + 25, 100, 20, "Finalize");
+        finalize.setPressedCallback((button, mouse) -> {
+            PacketHandler.getNetworkChannel().sendToServer(new FinalizeMKSpawnerPacket(getSpawnerTileEntity()));
+            return true;
+        });
         IncrementableField spawnTimeController = new IncrementableField(0, 0, 20, "Respawn Time",
                 (double) getSpawnerTileEntity().getRespawnTime() / GameConstants.TICKS_PER_SECOND, font,
                 (field, value) -> {
@@ -94,6 +103,7 @@ public class MKSpawnerScreen extends MKScreen {
         root.addConstraintToWidget(StackConstraint.VERTICAL, spawnTimeController);
         root.addWidget(options);
         root.addWidget(addOption);
+        root.addWidget(finalize);
         root.addWidget(spawnTimeController);
         RadioButtonList<MKEntity.NonCombatMoveType> movementBehaviors = new RadioButtonList<>(0, 0, 200, font, "Movement: ",
                 Lists.newArrayList(
