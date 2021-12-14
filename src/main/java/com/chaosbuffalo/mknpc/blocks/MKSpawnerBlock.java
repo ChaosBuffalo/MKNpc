@@ -66,8 +66,47 @@ public class MKSpawnerBlock extends Block {
                 case NORTH:
                     return 180;
             }
+        }
 
-
+        public MKSpawnerOrientation rotate(Rotation rot){
+            switch(rot){
+                case NONE:
+                    return this;
+                case CLOCKWISE_90:
+                    switch (this){
+                        case EAST:
+                            return SOUTH;
+                        case SOUTH:
+                            return WEST;
+                        case WEST:
+                            return NORTH;
+                        case NORTH:
+                            return EAST;
+                    }
+                case CLOCKWISE_180:
+                    switch (this){
+                        case EAST:
+                            return WEST;
+                        case SOUTH:
+                            return NORTH;
+                        case WEST:
+                            return EAST;
+                        case NORTH:
+                            return SOUTH;
+                    }
+                case COUNTERCLOCKWISE_90:
+                    switch (this){
+                        case EAST:
+                            return NORTH;
+                        case SOUTH:
+                            return EAST;
+                        case WEST:
+                            return SOUTH;
+                        case NORTH:
+                            return WEST;
+                    }
+            }
+            return this;
         }
 
         @Override
@@ -106,24 +145,27 @@ public class MKSpawnerBlock extends Block {
 
 
     @Override
+    public BlockState rotate(BlockState state, IWorld world, BlockPos pos, Rotation direction) {
+        return state.with(ORIENTATION, state.get(ORIENTATION).rotate(direction));
+    }
+
+    @Override
+    public BlockState rotate(BlockState state, Rotation rot) {
+        return state.with(ORIENTATION, state.get(ORIENTATION).rotate(rot));
+    }
+
+    @Override
+    public BlockState mirror(BlockState state, Mirror mirrorIn) {
+        return state.with(ORIENTATION, state.get(ORIENTATION).rotate(Rotation.CLOCKWISE_180));
+    }
+
+    @Override
     public ActionResultType onBlockActivated(BlockState state, World worldIn, BlockPos pos, PlayerEntity player,
                                              Hand handIn, BlockRayTraceResult hit) {
         if (handIn.equals(Hand.MAIN_HAND)){
             if (!worldIn.isRemote() && player.isCreative()){
                 if (player.isSneaking()){
-                    if (player.getHeldItemMainhand().equals(new ItemStack(MKNpcBlocks.MK_SPAWNER_BLOCK.get()))){
-                        BlockState dataState = Blocks.STRUCTURE_BLOCK.getStateForPlacement(null);
-                        if (dataState != null){
-                            worldIn.setBlockState(pos.up(), dataState, 3);
-                            TileEntity tileEntity = worldIn.getTileEntity(pos.up());
-                            if (tileEntity instanceof StructureBlockTileEntity){
-                                ((StructureBlockTileEntity) tileEntity).setMetadata("mkspawner");
-                            }
-
-                        }
-                    } else {
-                        worldIn.setBlockState(pos, state.with(ORIENTATION, getNextOrientation(state.get(ORIENTATION))));
-                    }
+                    worldIn.setBlockState(pos, state.with(ORIENTATION, getNextOrientation(state.get(ORIENTATION))));
                     TileEntity spawner = worldIn.getTileEntity(pos);
                     if (spawner instanceof MKSpawnerTileEntity){
                         ((MKSpawnerTileEntity) spawner).clearSpawn();

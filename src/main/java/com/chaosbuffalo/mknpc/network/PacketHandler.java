@@ -33,5 +33,8 @@ public class PacketHandler {
         networkChannel.registerMessage(id++, OpenMKSpawnerPacket.class,
                 OpenMKSpawnerPacket::toBytes,
                 OpenMKSpawnerPacket::new, OpenMKSpawnerPacket::handle);
+        networkChannel.registerMessage(id++, FinalizeMKSpawnerPacket.class,
+                FinalizeMKSpawnerPacket::toBytes,
+                FinalizeMKSpawnerPacket::new, FinalizeMKSpawnerPacket::handle);
     }
 }
