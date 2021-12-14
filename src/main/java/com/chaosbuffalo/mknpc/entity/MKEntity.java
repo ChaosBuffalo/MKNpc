@@ -49,6 +49,7 @@ import net.minecraft.item.ItemStack;
 import net.minecraft.item.Items;
 import net.minecraft.item.ShootableItem;
 import net.minecraft.nbt.CompoundNBT;
+import net.minecraft.network.IPacket;
 import net.minecraft.network.datasync.DataParameter;
 import net.minecraft.network.datasync.DataSerializers;
 import net.minecraft.network.datasync.EntityDataManager;
@@ -490,11 +491,25 @@ public abstract class MKEntity extends CreatureEntity implements IModelLookProvi
     }
 
     @Override
+    public void writeAdditional(CompoundNBT compound) {
+        super.writeAdditional(compound);
+    }
+
+    @Override
     protected void updateAITasks() {
         super.updateAITasks();
         this.world.getProfiler().startSection("brain");
         this.getBrain().tick((ServerWorld) this.world, this);
         this.world.getProfiler().endSection();
+    }
+
+@Override
+    public void setPositionAndRotation(double x, double y, double z, float yaw, float pitch) {
+        super.setPositionAndRotation(x, y, z, yaw, pitch);
+        this.renderYawOffset = yaw;
+        this.prevRenderYawOffset = yaw;
+        this.setRotationYawHead(yaw);
+        this.prevRotationYawHead = yaw;
     }
 
     @Override
