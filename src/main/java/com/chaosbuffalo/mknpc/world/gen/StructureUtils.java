@@ -41,7 +41,7 @@ public class StructureUtils {
     public static void handleMKDataMarker(String function, BlockPos pos, IWorld worldIn, Random rand, MutableBoundingBox sbb,
                                           ResourceLocation structureName, UUID instanceId)
     {
-        if (function.equals("mkspawner") && sbb.isVecInside(pos)) {
+        if (function.equals("mkspawner")) {
 
             TileEntity tileentity = worldIn.getTileEntity(pos.down());
             if (tileentity instanceof MKSpawnerTileEntity) {
