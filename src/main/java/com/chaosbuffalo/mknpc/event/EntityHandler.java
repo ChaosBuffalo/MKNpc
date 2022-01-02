@@ -100,9 +100,7 @@ public class EntityHandler {
                         if (!((IControlNaturalSpawns) structure).doesAllowSpawns()){
                             StructureStart<?> start = manager.getStructureStart(spawnPos, false, structure);
                             if (start != StructureStart.DUMMY){
-                                if (!((IControlNaturalSpawns) structure).doesAllowSpawns()){
-                                    event.setResult(Event.Result.DENY);
-                                }
+                                event.setResult(Event.Result.DENY);
                             }
                         }
                     }
