@@ -1,8 +1,10 @@
 package com.chaosbuffalo.mknpc;
 
+import com.chaosbuffalo.mkfaction.capabilities.PlayerFactionHandler;
 import com.chaosbuffalo.mknpc.capabilities.IEntityNpcData;
 import com.chaosbuffalo.mknpc.capabilities.IWorldNpcData;
 import com.chaosbuffalo.mknpc.capabilities.NpcCapabilities;
+import com.chaosbuffalo.mknpc.capabilities.PlayerQuestDataHandler;
 import com.chaosbuffalo.mknpc.command.NpcCommands;
 import com.chaosbuffalo.mknpc.dialogue.NPCDialogueExtension;
 import com.chaosbuffalo.mknpc.init.MKNpcBlocks;
@@ -51,7 +53,9 @@ public class MKNpc
     }
 
     private void enqueueIMC(final InterModEnqueueEvent event) {
+
         NPCDialogueExtension.sendExtension();
+        PlayerQuestDataHandler.registerPersonaExtension();
     }
 
     private void processIMC(final InterModProcessEvent event)

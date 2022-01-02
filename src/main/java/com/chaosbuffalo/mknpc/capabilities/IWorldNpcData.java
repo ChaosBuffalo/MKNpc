@@ -30,5 +30,7 @@ public interface IWorldNpcData extends INBTSerializable<CompoundNBT> {
 
     void addSpawner(MKSpawnerTileEntity spawner);
 
+    void addChest(IChestNpcData chestData);
+
     World getWorld();
 }

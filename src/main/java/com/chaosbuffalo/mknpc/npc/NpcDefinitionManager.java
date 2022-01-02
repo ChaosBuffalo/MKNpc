@@ -86,6 +86,7 @@ public class NpcDefinitionManager extends JsonReloadListener {
         putOptionDeserializer(LungeSpeedOption.NAME, LungeSpeedOption::new);
         putOptionDeserializer(AbilityTrainingOption.NAME, AbilityTrainingOption::new);
         putOptionDeserializer(ParticleEffectsOption.NAME, ParticleEffectsOption::new);
+        putOptionDeserializer(ExtraLootOption.NAME, ExtraLootOption::new);
     }
 
     public static void putOptionDeserializer(ResourceLocation optionName,
