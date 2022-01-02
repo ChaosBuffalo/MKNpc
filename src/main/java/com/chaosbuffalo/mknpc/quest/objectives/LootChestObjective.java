@@ -1,24 +1,31 @@
 package com.chaosbuffalo.mknpc.quest.objectives;
 
 import com.chaosbuffalo.mkcore.serialization.attributes.StringAttribute;
+import com.chaosbuffalo.mkcore.utils.SerializationUtils;
 import com.chaosbuffalo.mknpc.MKNpc;
+import com.chaosbuffalo.mknpc.capabilities.IChestNpcData;
+import com.chaosbuffalo.mknpc.capabilities.IWorldNpcData;
 import com.chaosbuffalo.mknpc.capabilities.WorldNpcDataHandler;
 import com.chaosbuffalo.mknpc.npc.MKStructureEntry;
 import com.chaosbuffalo.mknpc.npc.NotableChestEntry;
 import com.chaosbuffalo.mknpc.quest.data.QuestData;
 import com.chaosbuffalo.mknpc.quest.data.objective.UUIDInstanceData;
 import com.chaosbuffalo.mknpc.quest.data.player.PlayerQuestObjectiveData;
+import com.google.common.collect.ImmutableMap;
+import com.mojang.serialization.Dynamic;
+import com.mojang.serialization.DynamicOps;
+import net.minecraft.item.ItemStack;
+import net.minecraft.tileentity.ChestTileEntity;
 import net.minecraft.util.ResourceLocation;
 import net.minecraft.util.text.ITextComponent;
 import net.minecraft.util.text.StringTextComponent;
 
-import java.util.List;
-import java.util.Map;
-import java.util.Optional;
+import java.util.*;
 
-public class LootChestObjective extends StructureInstanceObjective<UUIDInstanceData>{
+public class LootChestObjective extends StructureInstanceObjective<UUIDInstanceData> implements IContainerObjectiveHandler{
     protected final StringAttribute chestTag = new StringAttribute("chestTag", "invalid");
     public static final ResourceLocation NAME = new ResourceLocation(MKNpc.MODID, "objective.loot_chest");
+    private final List<ItemStack> itemsToAdd = new ArrayList<>();
 
     public LootChestObjective(String name, ResourceLocation structure, String chestTag, ITextComponent description) {
         this(name, structure, 0, chestTag, description);
@@ -35,6 +42,25 @@ public class LootChestObjective extends StructureInstanceObjective<UUIDInstanceD
         addAttribute(this.chestTag);
     }
 
+    public void addItemStack(ItemStack stack){
+        itemsToAdd.add(stack);
+    }
+
+    @Override
+    public <D> void putAdditionalData(DynamicOps<D> ops, ImmutableMap.Builder<D, D> builder) {
+        super.putAdditionalData(ops, builder);
+        builder.put(ops.createString("items"),
+                ops.createList(itemsToAdd.stream().map(x -> SerializationUtils.serializeItemStack(ops, x)))
+        );
+    }
+
+    @Override
+    public <D> void readAdditionalData(Dynamic<D> dynamic) {
+        super.readAdditionalData(dynamic);
+        List<ItemStack> dStacks = dynamic.get("items").asList(SerializationUtils::deserializeItemStack);
+        itemsToAdd.clear();
+        itemsToAdd.addAll(dStacks);
+    }
 
     @Override
     public boolean isStructureRelevant(MKStructureEntry entry) {
@@ -54,13 +80,14 @@ public class LootChestObjective extends StructureInstanceObjective<UUIDInstanceD
     }
 
     @Override
-    public PlayerQuestObjectiveData generatePlayerData(WorldNpcDataHandler worldData, QuestData questData) {
+    public PlayerQuestObjectiveData generatePlayerData(IWorldNpcData worldData, QuestData questData) {
         UUIDInstanceData objData = getInstanceData(questData);
         PlayerQuestObjectiveData newObj = playerDataFactory();
         newObj.putBlockPos("chestPos", worldData.getNotableChest(objData.getUuid()).getLocation());
         newObj.putBool("hasLooted", false);
         return newObj;
     }
+
 
     @Override
     public PlayerQuestObjectiveData playerDataFactory() {
@@ -70,5 +97,28 @@ public class LootChestObjective extends StructureInstanceObjective<UUIDInstanceD
     @Override
     public boolean isComplete(PlayerQuestObjectiveData playerData) {
         return playerData.getBool("hasLooted");
+    }
+
+    @Override
+    public boolean onLootChest(PlayerQuestObjectiveData objectiveData, QuestData questData, UUID chestId) {
+        UUIDInstanceData objData = getInstanceData(questData);
+        if (objectiveData.getBool("hasLooted")){
+            return false;
+        }
+        if (chestId.equals(objData.getUuid())){
+            objectiveData.putBool("hasLooted", true);
+            return true;
+        }
+        return false;
+    }
+
+    @Override
+    public void populateChest(IChestNpcData chestData, QuestData questData) {
+        int index = 0;
+        ChestTileEntity chest = chestData.getTileEntity();
+        for (ItemStack item : itemsToAdd){
+            chest.setInventorySlotContents(index, item.copy());
+            index++;
+        }
     }
 }

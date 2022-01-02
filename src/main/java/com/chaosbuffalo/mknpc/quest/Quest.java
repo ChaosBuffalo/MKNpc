@@ -1,6 +1,7 @@
 package com.chaosbuffalo.mknpc.quest;
 
 import com.chaosbuffalo.mknpc.MKNpc;
+import com.chaosbuffalo.mknpc.capabilities.IWorldNpcData;
 import com.chaosbuffalo.mknpc.capabilities.WorldNpcDataHandler;
 import com.chaosbuffalo.mknpc.npc.MKStructureEntry;
 import com.chaosbuffalo.mknpc.quest.data.QuestData;
@@ -16,10 +17,8 @@ import com.mojang.serialization.Dynamic;
 import com.mojang.serialization.DynamicOps;
 import net.minecraft.util.ResourceLocation;
 
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
+import java.util.function.Supplier;
 import java.util.stream.Collectors;
 
 public class Quest {
@@ -37,6 +36,10 @@ public class Quest {
         this.objectiveIndex = new HashMap<>();
         this.rewards = new ArrayList<>();
         this.requirements = new ArrayList<>();
+    }
+
+    public Quest(){
+        this("default");
     }
 
     public String getQuestName() {
@@ -58,11 +61,27 @@ public class Quest {
 
     public <D> D serialize(DynamicOps<D> ops){
         ImmutableMap.Builder<D, D> builder = ImmutableMap.builder();
+        builder.put(ops.createString("questName"), ops.createString(questName));
+        builder.put(ops.createString("objectives"), ops.createList(objectives.stream().map(x -> x.serialize(ops))));
+        builder.put(ops.createString("autoComplete"), ops.createBoolean(autoComplete));
         return ops.createMap(builder.build());
     }
 
     public <D> void deserialize(Dynamic<D> dynamic){
-
+        questName = dynamic.get("questName").asString("default");
+        List<Optional<QuestObjective<?>>> objectives = dynamic.get("objectives").asList(x -> {
+            ResourceLocation type = QuestObjective.getType(x);
+            Supplier<QuestObjective<?>> sup = QuestDefinitionManager.getObjectiveDeserializer(type);
+            if (sup != null){
+                QuestObjective<?> obj = sup.get();
+                obj.deserialize(x);
+                return Optional.of(obj);
+            }
+            return Optional.empty();
+        });
+        for (Optional<QuestObjective<?>> objOpt : objectives){
+            objOpt.ifPresent(this::addObjective);
+        }
     }
 
     public List<QuestObjective<?>> getObjectives() {
@@ -81,8 +100,8 @@ public class Quest {
         return objectives.stream().allMatch(x -> x.isStructureRelevant(entry));
     }
 
-    public PlayerQuestData generatePlayerQuestData(WorldNpcDataHandler worldData, QuestData instanceData){
-        PlayerQuestData data = new PlayerQuestData();
+    public PlayerQuestData generatePlayerQuestData(IWorldNpcData worldData, QuestData instanceData){
+        PlayerQuestData data = new PlayerQuestData(getQuestName());
         objectives.forEach(x -> {
             PlayerQuestObjectiveData obj = x.generatePlayerData(worldData, instanceData);
             data.putObjective(x.getObjectiveName(), obj);

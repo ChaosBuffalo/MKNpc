@@ -4,7 +4,7 @@ import com.chaosbuffalo.mkcore.serialization.ISerializableAttributeContainer;
 import com.chaosbuffalo.mkcore.serialization.attributes.ISerializableAttribute;
 import com.chaosbuffalo.mkcore.serialization.attributes.StringAttribute;
 import com.chaosbuffalo.mknpc.MKNpc;
-import com.chaosbuffalo.mknpc.capabilities.WorldNpcDataHandler;
+import com.chaosbuffalo.mknpc.capabilities.IWorldNpcData;
 import com.chaosbuffalo.mknpc.npc.MKStructureEntry;
 import com.chaosbuffalo.mknpc.quest.data.QuestData;
 import com.chaosbuffalo.mknpc.quest.data.objective.ObjectiveInstanceData;
@@ -13,7 +13,6 @@ import com.google.common.collect.ImmutableMap;
 import com.mojang.datafixers.util.Pair;
 import com.mojang.serialization.Dynamic;
 import com.mojang.serialization.DynamicOps;
-import net.minecraft.entity.player.PlayerEntity;
 import net.minecraft.nbt.CompoundNBT;
 import net.minecraft.util.ResourceLocation;
 import net.minecraft.util.text.ITextComponent;
@@ -64,11 +63,16 @@ public abstract class QuestObjective<T extends ObjectiveInstanceData> implements
                 ops.createMap(attributes.stream().map(attr ->
                         Pair.of(ops.createString(attr.getName()), attr.serialize(ops))
                 ).collect(Collectors.toMap(Pair::getFirst, Pair::getSecond))));
+        putAdditionalData(ops, builder);
         return ops.createMap(builder.build());
     }
 
+    public <D> void putAdditionalData(DynamicOps<D> ops, ImmutableMap.Builder<D, D> builder){
+
+    }
+
     public String getObjectiveName() {
-        return objectiveName.getName();
+        return objectiveName.getValue();
     }
 
     public ResourceLocation getTypeName() {
@@ -79,6 +83,10 @@ public abstract class QuestObjective<T extends ObjectiveInstanceData> implements
         return new ResourceLocation(dynamic.get("objectiveType").asString().result().orElse(INVALID_OPTION.toString()));
     }
 
+    public <D> void readAdditionalData(Dynamic<D> dynamic){
+
+    }
+
     public <D> void deserialize(Dynamic<D> dynamic){
         Map<String, Dynamic<D>> map = dynamic.get("attributes").asMap(d -> d.asString(""), Function.identity());
         getAttributes().forEach(attr -> {
@@ -87,6 +95,7 @@ public abstract class QuestObjective<T extends ObjectiveInstanceData> implements
                 attr.deserialize(attrValue);
             }
         });
+        readAdditionalData(dynamic);
     }
 
     // return true if it works or you dont care
@@ -105,7 +114,7 @@ public abstract class QuestObjective<T extends ObjectiveInstanceData> implements
         return data;
     }
 
-    public abstract PlayerQuestObjectiveData generatePlayerData(WorldNpcDataHandler worldData, QuestData questData);
+    public abstract PlayerQuestObjectiveData generatePlayerData(IWorldNpcData worldData, QuestData questData);
 
     public abstract PlayerQuestObjectiveData playerDataFactory();
 

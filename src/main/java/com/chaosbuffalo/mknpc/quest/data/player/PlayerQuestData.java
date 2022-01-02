@@ -11,6 +11,14 @@ public class PlayerQuestData implements INBTSerializable<CompoundNBT> {
     private final Map<String, PlayerQuestObjectiveData> objectives = new HashMap<>();
     private String questName;
 
+    public PlayerQuestData(String questName){
+        this.questName = questName;
+    }
+
+    public PlayerQuestData(CompoundNBT nbt){
+        deserializeNBT(nbt);
+    }
+
     public void putObjective(String objectiveName, PlayerQuestObjectiveData data){
         objectives.put(objectiveName, data);
     }
@@ -20,14 +28,28 @@ public class PlayerQuestData implements INBTSerializable<CompoundNBT> {
     }
 
 
+    public String getQuestName() {
+        return questName;
+    }
 
     @Override
     public CompoundNBT serializeNBT() {
-        return null;
+        CompoundNBT nbt = new CompoundNBT();
+        CompoundNBT objectiveNbt = new CompoundNBT();
+        for (Map.Entry<String, PlayerQuestObjectiveData> entry : objectives.entrySet()){
+            objectiveNbt.put(entry.getKey(), entry.getValue().serializeNBT());
+        }
+        nbt.put("objectives", objectiveNbt);
+        nbt.putString("questName", questName);
+        return nbt;
     }
 
     @Override
     public void deserializeNBT(CompoundNBT nbt) {
-
+        CompoundNBT objectiveNbt = nbt.getCompound("objectives");
+        for (String key : objectiveNbt.keySet()){
+            objectives.put(key, new PlayerQuestObjectiveData(objectiveNbt.getCompound(key)));
+        }
+        questName = nbt.getString("questName");
     }
 }

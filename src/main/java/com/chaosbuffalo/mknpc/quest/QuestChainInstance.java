@@ -34,6 +34,14 @@ public class QuestChainInstance implements INBTSerializable<CompoundNBT> {
         return definition.getFirstQuest().getQuestName();
     }
 
+    public QuestChainData getQuestChainData() {
+        return questChainData;
+    }
+
+    public QuestDefinition getDefinition() {
+        return definition;
+    }
+
     @Override
     public CompoundNBT serializeNBT() {
         CompoundNBT nbt = new CompoundNBT();

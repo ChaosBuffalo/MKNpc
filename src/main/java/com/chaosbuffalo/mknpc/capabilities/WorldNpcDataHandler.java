@@ -56,6 +56,11 @@ public class WorldNpcDataHandler implements IWorldNpcData{
     }
 
     @Override
+    public QuestChainInstance getQuest(UUID questId){
+        return quests.get(questId);
+    }
+
+    @Override
     public void attach(World world) {
         this.world = world;
     }
@@ -70,10 +75,12 @@ public class WorldNpcDataHandler implements IWorldNpcData{
         notableChests.put(notableChestEntry.getChestId(), notableChestEntry);
     }
 
+    @Override
     public NotableChestEntry getNotableChest(UUID id){
         return notableChests.get(id);
     }
 
+    @Override
     public NotableNpcEntry getNotableNpc(UUID id){
         return notableNpcs.get(id);
     }
@@ -113,6 +120,7 @@ public class WorldNpcDataHandler implements IWorldNpcData{
         worldPermanentSpawnConfigurations.get(spawnId).addAttributeEntry(definition, attribute, entry);
     }
 
+    @Override
     public Optional<QuestChainInstance> buildQuest(QuestDefinition definition, BlockPos pos){
         Map<ResourceLocation, Integer> structuresNeeded = definition.getStructuresNeeded();
         if (hasStructureInstances(structuresNeeded.keySet())){

@@ -59,6 +59,7 @@ public class NpcCapabilities {
         CapabilityManager.INSTANCE.register(IChunkNpcData.class, new ChunkNpcDataHandler.Storage(),
                 ChunkNpcDataHandler::new);
         CapabilityManager.INSTANCE.register(IChestNpcData.class, new ChestNpcDataHandler.Storage(), ChestNpcDataHandler::new);
+        CapabilityManager.INSTANCE.register(IPlayerQuestData.class, new PlayerQuestDataHandler.Storage(), PlayerQuestDataHandler::new);
     }
 
 

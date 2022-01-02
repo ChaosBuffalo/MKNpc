@@ -6,19 +6,20 @@ import com.chaosbuffalo.mkcore.core.persona.IPersonaExtension;
 import com.chaosbuffalo.mkcore.core.persona.IPersonaExtensionProvider;
 import com.chaosbuffalo.mkcore.core.persona.Persona;
 import com.chaosbuffalo.mkcore.sync.SyncMapUpdater;
-import com.chaosbuffalo.mkfaction.faction.MKFaction;
-import com.chaosbuffalo.mkfaction.faction.PlayerFactionEntry;
 import com.chaosbuffalo.mknpc.MKNpc;
 import com.chaosbuffalo.mknpc.quest.QuestChainInstance;
 import com.chaosbuffalo.mknpc.quest.data.player.PlayerQuestChainInstance;
+import com.chaosbuffalo.mknpc.quest.data.player.PlayerQuestData;
 import net.minecraft.entity.player.PlayerEntity;
 import net.minecraft.nbt.CompoundNBT;
+import net.minecraft.nbt.INBT;
+import net.minecraft.util.Direction;
 import net.minecraft.util.ResourceLocation;
+import net.minecraftforge.common.capabilities.Capability;
 import net.minecraftforge.fml.InterModComms;
 
-import java.util.HashMap;
-import java.util.Map;
-import java.util.UUID;
+import javax.annotation.Nullable;
+import java.util.*;
 
 public class PlayerQuestDataHandler implements IPlayerQuestData {
 
@@ -44,6 +45,23 @@ public class PlayerQuestDataHandler implements IPlayerQuestData {
             playerData = MKCore.getPlayer(player).orElseThrow(IllegalStateException::new);
         }
         return playerData;
+    }
+
+
+    public Collection<PlayerQuestChainInstance> getQuestChains(){
+        return getPersonaData().questChains.values();
+    }
+
+    @Override
+    public void startQuest(IWorldNpcData worldHandler, UUID questId) {
+        QuestChainInstance chain = worldHandler.getQuest(questId);
+        if (chain != null){
+            MKNpc.LOGGER.info("Player {} started quest {}", getPlayer(), chain);
+            getPersonaData().startQuest(worldHandler, chain);
+        } else {
+            MKNpc.LOGGER.warn("Tried to start quest with id {} but it doesn't exist in the world data", questId);
+        }
+
     }
 
     private PersonaQuestData getPersonaData(){
@@ -80,10 +98,13 @@ public class PlayerQuestDataHandler implements IPlayerQuestData {
             );
         }
 
-        public void startQuest(QuestChainInstance questChain){
+        public void startQuest(IWorldNpcData worldHandler, QuestChainInstance questChain){
             PlayerQuestChainInstance quest = createNewEntry(questChain.getQuestId());
             quest.setCurrentQuest(questChain.getStartingQuestName());
-
+            PlayerQuestData questData = questChain.getDefinition().getFirstQuest().generatePlayerQuestData(
+                    worldHandler, questChain.getQuestChainData().getQuestData(quest.getCurrentQuest()));
+            quest.addQuestData(questData);
+            questChains.put(questChain.getQuestId(), quest);
         }
 
         private void onDirtyEntry(PlayerQuestChainInstance entry) {
@@ -136,5 +157,26 @@ public class PlayerQuestDataHandler implements IPlayerQuestData {
             MKNpc.LOGGER.info("MK NPC register player quest persona by IMC");
             return factory;
         });
+    }
+
+    public static class Storage implements Capability.IStorage<IPlayerQuestData> {
+
+
+        @Nullable
+        @Override
+        public INBT writeNBT(Capability<IPlayerQuestData> capability, IPlayerQuestData instance, Direction side) {
+            if (instance == null){
+                return null;
+            }
+            return instance.serializeNBT();
+        }
+
+        @Override
+        public void readNBT(Capability<IPlayerQuestData> capability, IPlayerQuestData instance, Direction side, INBT nbt) {
+            if (nbt instanceof CompoundNBT && instance != null) {
+                CompoundNBT tag = (CompoundNBT) nbt;
+                instance.deserializeNBT(tag);
+            }
+        }
     }
 }

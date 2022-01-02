@@ -1,7 +1,5 @@
 package com.chaosbuffalo.mknpc.quest;
 
-import com.chaosbuffalo.mkcore.serialization.ISerializableAttributeContainer;
-import com.chaosbuffalo.mkcore.serialization.attributes.ISerializableAttribute;
 import com.chaosbuffalo.mknpc.MKNpc;
 import com.chaosbuffalo.mknpc.npc.MKStructureEntry;
 import com.google.common.collect.ImmutableMap;
@@ -14,7 +12,7 @@ import javax.annotation.Nullable;
 import java.util.*;
 import java.util.stream.Collectors;
 
-public class QuestDefinition implements ISerializableAttributeContainer {
+public class QuestDefinition {
     private ResourceLocation name;
     private final List<Quest> questChain;
     private final Map<String, Quest> questIndex;
@@ -26,15 +24,6 @@ public class QuestDefinition implements ISerializableAttributeContainer {
         this.questIndex = new HashMap<>();
     }
 
-    @Override
-    public List<ISerializableAttribute<?>> getAttributes() {
-        return null;
-    }
-
-    @Override
-    public void addAttribute(ISerializableAttribute<?> iSerializableAttribute) {
-
-    }
 
     public Quest getFirstQuest(){
         return questChain.get(0);
@@ -62,18 +51,24 @@ public class QuestDefinition implements ISerializableAttributeContainer {
         return name;
     }
 
-    @Override
-    public void addAttributes(ISerializableAttribute<?>... iSerializableAttributes) {
-
-    }
 
     public <D> D serialize(DynamicOps<D> ops){
         ImmutableMap.Builder<D, D> builder = ImmutableMap.builder();
+        builder.put(ops.createString("quests"), ops.createList(questChain.stream().map(x -> x.serialize(ops))));
         return ops.createMap(builder.build());
     }
 
     public <D> void deserialize(Dynamic<D> dynamic){
-
+        List<Quest> dQuests = dynamic.get("quests").asList(d -> {
+            Quest q = new Quest();
+            q.deserialize(d);
+            return q;
+        });
+        questIndex.clear();
+        questChain.clear();
+        for (Quest quest : dQuests){
+            addQuest(quest);
+        }
     }
 
     public Map<ResourceLocation, Integer> getStructuresNeeded(){

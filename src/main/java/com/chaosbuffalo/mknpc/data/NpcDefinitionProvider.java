@@ -86,7 +86,7 @@ public class NpcDefinitionProvider implements IDataProvider {
             JsonElement element = definition.serialize(JsonOps.INSTANCE);
             IDataProvider.save(GSON, cache, element, path);
         } catch (IOException e){
-            MKWeapons.LOGGER.error("Couldn't write npc definition {}", path, e);
+            MKNpc.LOGGER.error("Couldn't write npc definition {}", path, e);
         }
     }
 

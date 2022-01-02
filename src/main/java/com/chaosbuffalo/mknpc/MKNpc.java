@@ -1,10 +1,7 @@
 package com.chaosbuffalo.mknpc;
 
 import com.chaosbuffalo.mkfaction.capabilities.PlayerFactionHandler;
-import com.chaosbuffalo.mknpc.capabilities.IEntityNpcData;
-import com.chaosbuffalo.mknpc.capabilities.IWorldNpcData;
-import com.chaosbuffalo.mknpc.capabilities.NpcCapabilities;
-import com.chaosbuffalo.mknpc.capabilities.PlayerQuestDataHandler;
+import com.chaosbuffalo.mknpc.capabilities.*;
 import com.chaosbuffalo.mknpc.command.NpcCommands;
 import com.chaosbuffalo.mknpc.dialogue.NPCDialogueExtension;
 import com.chaosbuffalo.mknpc.init.MKNpcBlocks;
@@ -13,9 +10,11 @@ import com.chaosbuffalo.mknpc.init.MKNpcWorldGen;
 import com.chaosbuffalo.mknpc.network.PacketHandler;
 import com.chaosbuffalo.mknpc.npc.INpcOptionExtension;
 import com.chaosbuffalo.mknpc.npc.NpcDefinitionManager;
+import com.chaosbuffalo.mknpc.quest.QuestDefinitionManager;
 import com.chaosbuffalo.mknpc.world.gen.feature.structure.TestJigsawStructurePools;
 import net.minecraft.entity.Entity;
 import net.minecraft.entity.LivingEntity;
+import net.minecraft.entity.player.PlayerEntity;
 import net.minecraft.world.World;
 import net.minecraftforge.common.MinecraftForge;
 import net.minecraftforge.common.util.LazyOptional;
@@ -37,6 +36,7 @@ public class MKNpc
     public static final String MODID = "mknpc";
     public static final String REGISTER_NPC_OPTIONS_EXTENSION = "register_npc_options_extension";
     private NpcDefinitionManager npcDefinitionManager;
+    private QuestDefinitionManager questDefinitionManager;
 
     public MKNpc() {
         MinecraftForge.EVENT_BUS.register(this);
@@ -46,6 +46,7 @@ public class MKNpc
         MKNpcBlocks.register();
         MKNpcTileEntityTypes.register();
         npcDefinitionManager = new NpcDefinitionManager();
+        questDefinitionManager = new QuestDefinitionManager();
         MKNpcWorldGen.registerStructurePieces();
         TestJigsawStructurePools.registerPatterns();
         MinecraftForge.EVENT_BUS.addListener(MKNpcWorldGen::biomeSetup);
@@ -81,6 +82,7 @@ public class MKNpc
         NpcCapabilities.registerCapabilities();
         PacketHandler.setupHandler();
         NpcDefinitionManager.setupDeserializers();
+        QuestDefinitionManager.setupDeserializers();
         NpcCommands.registerArguments();
     }
 
@@ -100,6 +102,10 @@ public class MKNpc
 
     public static LazyOptional<? extends IEntityNpcData> getNpcData(Entity entity){
         return entity.getCapability(NpcCapabilities.ENTITY_NPC_DATA_CAPABILITY);
+    }
+
+    public static LazyOptional<? extends IPlayerQuestData> getPlayerQuestData(PlayerEntity entity){
+        return entity.getCapability(NpcCapabilities.PLAYER_QUEST_DATA_CAPABILITY);
     }
 
     public static LazyOptional<? extends IWorldNpcData> getWorldNpcData(World world){

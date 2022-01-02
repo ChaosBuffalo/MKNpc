@@ -28,6 +28,10 @@ public class QuestChainData implements IQuestInstanceData{
 
     }
 
+    public QuestData getQuestData(String questName){
+        return questData.get(questName);
+    }
+
     public QuestChainData(QuestDefinition definition, CompoundNBT nbt){
         questData = new HashMap<>();
         deserializeNBT(nbt, definition);
