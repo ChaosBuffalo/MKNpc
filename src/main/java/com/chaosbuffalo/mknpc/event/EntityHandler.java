@@ -1,5 +1,6 @@
 package com.chaosbuffalo.mknpc.event;
 
+import com.chaosbuffalo.mkchat.event.PlayerNpcDialogueTreeStackSetupEvent;
 import com.chaosbuffalo.mkcore.core.damage.MKDamageSource;
 import com.chaosbuffalo.mkcore.effects.SpellTriggers;
 import com.chaosbuffalo.mknpc.MKNpc;
@@ -10,6 +11,7 @@ import com.chaosbuffalo.mknpc.init.MKNpcWorldGen;
 import com.chaosbuffalo.mknpc.quest.Quest;
 import com.chaosbuffalo.mknpc.quest.QuestChainInstance;
 import com.chaosbuffalo.mknpc.quest.data.QuestData;
+import com.chaosbuffalo.mknpc.quest.data.player.PlayerQuestData;
 import com.chaosbuffalo.mknpc.quest.data.player.PlayerQuestObjectiveData;
 import com.chaosbuffalo.mknpc.quest.objectives.IContainerObjectiveHandler;
 import com.chaosbuffalo.mknpc.quest.objectives.LootChestObjective;
@@ -90,8 +92,11 @@ public class EntityHandler {
         }
     }
 
-    @SubscribeEvent
+    @SubscribeEvent(priority = EventPriority.LOWEST)
     public static void onEntityInteract(PlayerInteractEvent.RightClickBlock event){
+        if (event.isCanceled()){
+            return;
+        }
         if (event.getPlayer().world.isRemote) {
             return;
         }
@@ -107,45 +112,69 @@ public class EntityHandler {
                 if (te == null){
                     return;
                 }
-                LazyOptional<IChestNpcData> chestCapO = te.getCapability(NpcCapabilities.CHEST_NPC_DATA_CAPABILITY);
-                if (chestCapO.resolve().isPresent()){
-                    IChestNpcData chestCap = chestCapO.resolve().get();
-                    World overWorld = server.getWorld(World.OVERWORLD);
-                    if (overWorld != null){
-                        overWorld.getCapability(NpcCapabilities.WORLD_NPC_DATA_CAPABILITY).ifPresent(worldData -> {
-                            MKNpc.getPlayerQuestData(event.getPlayer()).ifPresent(x -> {
-                                x.getQuestChains().forEach(pQuestChain -> {
-                                    QuestChainInstance questChain = worldData.getQuest(pQuestChain.getQuestId());
-                                    Quest currentQuest = questChain.getDefinition().getQuest(pQuestChain.getCurrentQuest());
-                                    if (currentQuest != null) {
-                                        for (QuestObjective<?> obj : currentQuest.getObjectives()){
-                                            if (obj instanceof IContainerObjectiveHandler){
-                                                IContainerObjectiveHandler iObj = (IContainerObjectiveHandler) obj;
-                                                PlayerQuestObjectiveData pObj = pQuestChain.getQuestData(
-                                                        currentQuest.getQuestName()).getObjective(obj.getObjectiveName());
-                                                QuestData qData = questChain.getQuestChainData().getQuestData(currentQuest.getQuestName());
-                                                if (iObj.onLootChest(pObj, qData, chestCap.getChestId())){
-                                                    iObj.populateChest(chestCap, qData);
-                                                    return;
-                                                }
-                                            }
-                                        }
-                                    }
-                                });
-                            });
-                        });
-                    }
+                World overWorld = server.getWorld(World.OVERWORLD);
+                if (overWorld != null) {
+                    te.getCapability(NpcCapabilities.CHEST_NPC_DATA_CAPABILITY).ifPresent(
+                            chestCap -> overWorld.getCapability(NpcCapabilities.WORLD_NPC_DATA_CAPABILITY).ifPresent(
+                                    worldData -> processLootChestEvents(event.getPlayer(), chestCap, worldData)));
                 }
             }
         }
     }
 
+    private static void processLootChestEvents(PlayerEntity player, IChestNpcData chestCap, IWorldNpcData worldData) {
+        MKNpc.getPlayerQuestData(player).ifPresent(x -> x.getQuestChains().forEach(
+                pQuestChain -> {
+                    QuestChainInstance questChain = worldData.getQuest(pQuestChain.getQuestId());
+                    if (questChain == null) {
+                        return;
+                    }
+                    Quest currentQuest = questChain.getDefinition().getQuest(pQuestChain.getCurrentQuest());
+                    if (currentQuest != null) {
+                        for (QuestObjective<?> obj : currentQuest.getObjectives()) {
+                            if (obj instanceof IContainerObjectiveHandler) {
+                                IContainerObjectiveHandler iObj = (IContainerObjectiveHandler) obj;
+                                PlayerQuestData pQuest = pQuestChain.getQuestData(currentQuest.getQuestName());
+                                PlayerQuestObjectiveData pObj = pQuest.getObjective(obj.getObjectiveName());
+                                QuestData qData = questChain.getQuestChainData().getQuestData(currentQuest.getQuestName());
+                                if (iObj.onLootChest(pObj, qData, chestCap)) {
+                                    questChain.signalQuestProgress(worldData, x, currentQuest, pQuestChain, false);
+                                    return;
+                                }
+                            }
+                        }
+                    }
+                }));
+    }
+
+    @SubscribeEvent
+    public static void onSetupDialogue(PlayerNpcDialogueTreeStackSetupEvent event){
+        if (event.getPlayer().world.isRemote) {
+            return;
+        }
+        MinecraftServer server = event.getPlayer().getServer();
+        if (server == null) {
+            return;
+        }
+        World overWorld = server.getWorld(World.OVERWORLD);
+        if (overWorld != null) {
+           overWorld.getCapability(NpcCapabilities.WORLD_NPC_DATA_CAPABILITY).ifPresent(
+                    worldData -> MKNpc.getPlayerQuestData(event.getPlayer()).ifPresent(x -> x.getQuestChains().forEach(
+                            pQuestChain -> {
+                                QuestChainInstance questChainInstance = worldData.getQuest(pQuestChain.getQuestId());
+                                if (questChainInstance != null){
+                                    questChainInstance.getTreeForEntity(event.getSpeaker()).ifPresent(event::addTree);
+                                }
+                            })));
+        }
+
+    }
+
     @SubscribeEvent
     public static void onLootDrop(LivingDropsEvent event) {
         if (event.isRecentlyHit()) {
-            MKNpc.getNpcData(event.getEntityLiving()).ifPresent(x -> {
-                x.handleExtraLoot(event.getLootingLevel(), event.getDrops(), event.getSource());
-            });
+            MKNpc.getNpcData(event.getEntityLiving()).ifPresent(x -> x.handleExtraLoot(
+                    event.getLootingLevel(), event.getDrops(), event.getSource()));
         }
     }
 

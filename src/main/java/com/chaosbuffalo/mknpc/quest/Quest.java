@@ -1,14 +1,20 @@
 package com.chaosbuffalo.mknpc.quest;
 
+import com.chaosbuffalo.mkchat.dialogue.DialogueTree;
 import com.chaosbuffalo.mknpc.MKNpc;
+import com.chaosbuffalo.mknpc.capabilities.IPlayerQuestingData;
 import com.chaosbuffalo.mknpc.capabilities.IWorldNpcData;
+import com.chaosbuffalo.mknpc.capabilities.PlayerQuestingDataHandler;
 import com.chaosbuffalo.mknpc.capabilities.WorldNpcDataHandler;
 import com.chaosbuffalo.mknpc.npc.MKStructureEntry;
+import com.chaosbuffalo.mknpc.quest.data.QuestChainData;
 import com.chaosbuffalo.mknpc.quest.data.QuestData;
+import com.chaosbuffalo.mknpc.quest.data.objective.UUIDInstanceData;
 import com.chaosbuffalo.mknpc.quest.data.player.PlayerQuestData;
 import com.chaosbuffalo.mknpc.quest.data.player.PlayerQuestObjectiveData;
 import com.chaosbuffalo.mknpc.quest.objectives.QuestObjective;
 import com.chaosbuffalo.mknpc.quest.objectives.StructureInstanceObjective;
+import com.chaosbuffalo.mknpc.quest.objectives.TalkToNpcObjective;
 import com.chaosbuffalo.mknpc.quest.requirements.QuestRequirements;
 import com.chaosbuffalo.mknpc.quest.rewards.QuestReward;
 import com.google.common.collect.ImmutableMap;
@@ -38,12 +44,35 @@ public class Quest {
         this.requirements = new ArrayList<>();
     }
 
+    public void setAutoComplete(boolean autoComplete) {
+        this.autoComplete = autoComplete;
+    }
+
+    public boolean shouldAutoComplete(){
+        return autoComplete;
+    }
+
     public Quest(){
         this("default");
     }
 
     public String getQuestName() {
         return questName;
+    }
+
+    public void generateDialogueForNpc(QuestChainInstance questChain, ResourceLocation npcDefinitionName,
+                                       UUID npcId, DialogueTree tree,
+                                       Map<ResourceLocation, List<MKStructureEntry>> questStructures){
+        QuestData questData = questChain.getQuestChainData().getQuestData(getQuestName());
+        for (QuestObjective<?> obj : getObjectives()) {
+            if (obj instanceof TalkToNpcObjective) {
+                TalkToNpcObjective talkObj = (TalkToNpcObjective) obj;
+                UUIDInstanceData instanceData = talkObj.getInstanceData(questData);
+                if (instanceData.getUuid().equals(npcId)){
+                    talkObj.generateDialogueForNpc(this, questChain, npcDefinitionName, npcId, tree, questStructures);
+                }
+            }
+        }
     }
 
     public void addObjective(QuestObjective<?> objective){
@@ -111,5 +140,10 @@ public class Quest {
 
     public boolean isComplete(PlayerQuestData data){
         return objectives.stream().allMatch(x -> x.isComplete(data.getObjective(x.getObjectiveName())));
+    }
+
+    public void grantRewards(IPlayerQuestingData playerData){
+
+
     }
 }

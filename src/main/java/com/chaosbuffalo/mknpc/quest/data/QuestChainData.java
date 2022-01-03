@@ -1,7 +1,11 @@
 package com.chaosbuffalo.mknpc.quest.data;
 
+import com.chaosbuffalo.mkchat.dialogue.DialogueNode;
+import com.chaosbuffalo.mkchat.dialogue.DialoguePrompt;
+import com.chaosbuffalo.mkchat.dialogue.DialogueTree;
 import com.chaosbuffalo.mknpc.npc.MKStructureEntry;
 import com.chaosbuffalo.mknpc.quest.Quest;
+import com.chaosbuffalo.mknpc.quest.QuestChainInstance;
 import com.chaosbuffalo.mknpc.quest.QuestDefinition;
 import com.chaosbuffalo.mknpc.quest.objectives.QuestObjective;
 import net.minecraft.nbt.CompoundNBT;
@@ -10,6 +14,7 @@ import net.minecraft.util.ResourceLocation;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.UUID;
 
 public class QuestChainData implements IQuestInstanceData{
 
@@ -26,6 +31,24 @@ public class QuestChainData implements IQuestInstanceData{
             questData.put(quest.getQuestName(), qData);
         }
 
+    }
+
+    public Map<UUID, DialogueTree> generateDialogue(QuestChainInstance questChain,
+                                                    ResourceLocation dialogueName,
+                                                    QuestDefinition definition,
+                                                    Map<ResourceLocation, List<MKStructureEntry>> questStructures,
+                                                    Map<ResourceLocation, UUID> speakingRoles){
+
+        Map<UUID, DialogueTree> npcTrees = new HashMap<>();
+        for (Map.Entry<ResourceLocation, UUID> entry : speakingRoles.entrySet()){
+            DialogueTree tree = new DialogueTree(dialogueName);
+            DialoguePrompt hailPrompt = new DialoguePrompt("hail");
+            tree.setHailPrompt(hailPrompt);
+            definition.getQuestChain().forEach(quest ->
+                    quest.generateDialogueForNpc(questChain, entry.getKey(), entry.getValue(), tree, questStructures)
+            );
+        }
+        return npcTrees;
     }
 
     public QuestData getQuestData(String questName){

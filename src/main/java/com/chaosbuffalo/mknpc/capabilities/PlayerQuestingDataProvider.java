@@ -10,12 +10,12 @@ import net.minecraftforge.common.util.LazyOptional;
 import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
 
-public class PlayerQuestDataProvider implements ICapabilitySerializable<CompoundNBT> {
+public class PlayerQuestingDataProvider implements ICapabilitySerializable<CompoundNBT> {
 
-    private final PlayerQuestDataHandler data;
+    private final PlayerQuestingDataHandler data;
 
-    public PlayerQuestDataProvider(PlayerEntity player){
-        data = new PlayerQuestDataHandler();
+    public PlayerQuestingDataProvider(PlayerEntity player){
+        data = new PlayerQuestingDataHandler();
         data.attach(player);
     }
 

@@ -1,4 +1,4 @@
-package com.chaosbuffalo.mknpc.npc.option_entries;
+package com.chaosbuffalo.mknpc.npc.entries;
 
 import com.chaosbuffalo.mkweapons.items.randomization.LootTierManager;
 import com.chaosbuffalo.mkweapons.items.randomization.slots.LootSlotManager;

@@ -58,6 +58,14 @@ public class MKStructureEntry implements INBTSerializable<CompoundNBT> {
         return notableChests.stream().anyMatch(x -> x.getLabel() != null && x.getLabel().equals(tag));
     }
 
+    public boolean hasNotableOfType(ResourceLocation npcDef){
+        return notables.stream().anyMatch(x -> x.getDefinition() != null && x.getDefinition().getDefinitionName().equals(npcDef));
+    }
+
+    public Optional<NotableNpcEntry> getFirstNotableOfType(ResourceLocation npcDef){
+        return notables.stream().filter(x -> x.getDefinition() != null && x.getDefinition().getDefinitionName().equals(npcDef)).findFirst();
+    }
+
     public Optional<NotableChestEntry> getFirstChestWithTag(String tag){
         return notableChests.stream().filter(x -> x.getLabel() != null && x.getLabel().equals(tag)).findFirst();
     }

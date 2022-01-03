@@ -68,6 +68,14 @@ public class PlayerQuestObjectiveData implements INBTSerializable<CompoundNBT> {
         blockPosData.put(name, value);
     }
 
+    public Map<String, BlockPos> getBlockPosData() {
+        return blockPosData;
+    }
+
+    public void removeBlockPos(String name){
+        blockPosData.remove(name);
+    }
+
     public float getFloat(String name){
         return floatData.get(name);
     }

@@ -1,5 +1,6 @@
 package com.chaosbuffalo.mknpc.quest;
 
+import com.chaosbuffalo.mkchat.dialogue.DialogueNode;
 import com.chaosbuffalo.mknpc.MKNpc;
 import com.chaosbuffalo.mknpc.npc.MKStructureEntry;
 import com.google.common.collect.ImmutableMap;
@@ -16,14 +17,41 @@ public class QuestDefinition {
     private ResourceLocation name;
     private final List<Quest> questChain;
     private final Map<String, Quest> questIndex;
+    private boolean repeatable;
+    private DialogueNode startQuestResponse;
+    private DialogueNode startQuestHail;
 
 
     public QuestDefinition(ResourceLocation name){
         this.name = name;
         this.questChain = new ArrayList<>();
         this.questIndex = new HashMap<>();
+        this.repeatable = false;
     }
 
+    public void setStartQuestResponse(DialogueNode startQuestResponse) {
+        this.startQuestResponse = startQuestResponse;
+    }
+
+    public DialogueNode getStartQuestResponse() {
+        return startQuestResponse;
+    }
+
+    public DialogueNode getStartQuestHail() {
+        return startQuestHail;
+    }
+
+    public void setStartQuestHail(DialogueNode startQuestHail) {
+        this.startQuestHail = startQuestHail;
+    }
+
+    public void setRepeatable(boolean repeatable) {
+        this.repeatable = repeatable;
+    }
+
+    public boolean isRepeatable() {
+        return repeatable;
+    }
 
     public Quest getFirstQuest(){
         return questChain.get(0);
@@ -55,6 +83,7 @@ public class QuestDefinition {
     public <D> D serialize(DynamicOps<D> ops){
         ImmutableMap.Builder<D, D> builder = ImmutableMap.builder();
         builder.put(ops.createString("quests"), ops.createList(questChain.stream().map(x -> x.serialize(ops))));
+        builder.put(ops.createString("repeatable"), ops.createBoolean(isRepeatable()));
         return ops.createMap(builder.build());
     }
 
@@ -66,6 +95,7 @@ public class QuestDefinition {
         });
         questIndex.clear();
         questChain.clear();
+        repeatable = dynamic.get("repeatable").asBoolean(false);
         for (Quest quest : dQuests){
             addQuest(quest);
         }

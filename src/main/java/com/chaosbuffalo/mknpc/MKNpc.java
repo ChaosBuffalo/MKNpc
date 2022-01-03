@@ -1,6 +1,5 @@
 package com.chaosbuffalo.mknpc;
 
-import com.chaosbuffalo.mkfaction.capabilities.PlayerFactionHandler;
 import com.chaosbuffalo.mknpc.capabilities.*;
 import com.chaosbuffalo.mknpc.command.NpcCommands;
 import com.chaosbuffalo.mknpc.dialogue.NPCDialogueExtension;
@@ -56,7 +55,7 @@ public class MKNpc
     private void enqueueIMC(final InterModEnqueueEvent event) {
 
         NPCDialogueExtension.sendExtension();
-        PlayerQuestDataHandler.registerPersonaExtension();
+        PlayerQuestingDataHandler.registerPersonaExtension();
     }
 
     private void processIMC(final InterModProcessEvent event)
@@ -104,7 +103,7 @@ public class MKNpc
         return entity.getCapability(NpcCapabilities.ENTITY_NPC_DATA_CAPABILITY);
     }
 
-    public static LazyOptional<? extends IPlayerQuestData> getPlayerQuestData(PlayerEntity entity){
+    public static LazyOptional<? extends IPlayerQuestingData> getPlayerQuestData(PlayerEntity entity){
         return entity.getCapability(NpcCapabilities.PLAYER_QUEST_DATA_CAPABILITY);
     }
 

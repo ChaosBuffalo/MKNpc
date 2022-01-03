@@ -5,7 +5,6 @@ import com.chaosbuffalo.mkcore.utils.SerializationUtils;
 import com.chaosbuffalo.mknpc.MKNpc;
 import com.chaosbuffalo.mknpc.capabilities.IChestNpcData;
 import com.chaosbuffalo.mknpc.capabilities.IWorldNpcData;
-import com.chaosbuffalo.mknpc.capabilities.WorldNpcDataHandler;
 import com.chaosbuffalo.mknpc.npc.MKStructureEntry;
 import com.chaosbuffalo.mknpc.npc.NotableChestEntry;
 import com.chaosbuffalo.mknpc.quest.data.QuestData;
@@ -100,20 +99,21 @@ public class LootChestObjective extends StructureInstanceObjective<UUIDInstanceD
     }
 
     @Override
-    public boolean onLootChest(PlayerQuestObjectiveData objectiveData, QuestData questData, UUID chestId) {
+    public boolean onLootChest(PlayerQuestObjectiveData objectiveData, QuestData questData, IChestNpcData chestData) {
         UUIDInstanceData objData = getInstanceData(questData);
         if (objectiveData.getBool("hasLooted")){
             return false;
         }
-        if (chestId.equals(objData.getUuid())){
+        if (chestData.getChestId() != null && chestData.getChestId().equals(objData.getUuid())){
             objectiveData.putBool("hasLooted", true);
+            objectiveData.removeBlockPos("chestPos");
+            populateChest(chestData);
             return true;
         }
         return false;
     }
 
-    @Override
-    public void populateChest(IChestNpcData chestData, QuestData questData) {
+    protected void populateChest(IChestNpcData chestData) {
         int index = 0;
         ChestTileEntity chest = chestData.getTileEntity();
         for (ItemStack item : itemsToAdd){

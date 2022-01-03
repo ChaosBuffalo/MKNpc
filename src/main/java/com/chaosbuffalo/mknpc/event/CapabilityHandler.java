@@ -24,7 +24,7 @@ public class CapabilityHandler {
             e.addCapability(NpcCapabilities.MK_NPC_CAP_ID, new EntityNpcDataProvider((LivingEntity) e.getObject()));
         }
         if (e.getObject() instanceof PlayerEntity){
-            e.addCapability(NpcCapabilities.MK_QUEST_CAP_ID, new PlayerQuestDataProvider((PlayerEntity) e.getObject()));
+            e.addCapability(NpcCapabilities.MK_QUEST_CAP_ID, new PlayerQuestingDataProvider((PlayerEntity) e.getObject()));
         }
     }
 

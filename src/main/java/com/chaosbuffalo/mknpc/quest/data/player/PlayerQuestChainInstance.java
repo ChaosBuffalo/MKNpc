@@ -14,10 +14,20 @@ public class PlayerQuestChainInstance implements IMKSerializable<CompoundNBT> {
     private UUID questId;
     private ITextComponent questName;
     private String currentQuest;
+    private boolean questComplete;
     private final Map<String, PlayerQuestData> questData = new HashMap<>();
 
     public PlayerQuestChainInstance(UUID questId){
         this.questId = questId;
+        questComplete = false;
+    }
+
+    public PlayerQuestChainInstance(CompoundNBT nbt){
+        deserialize(nbt);
+    }
+
+    public boolean isQuestComplete() {
+        return questComplete;
     }
 
     public UUID getQuestId() {
@@ -30,6 +40,7 @@ public class PlayerQuestChainInstance implements IMKSerializable<CompoundNBT> {
         tag.putString("questName", ITextComponent.Serializer.toJson(questName));
         tag.putUniqueId("questId", questId);
         tag.putString("currentQuest", currentQuest);
+        tag.putBoolean("questComplete", questComplete);
         CompoundNBT quests = new CompoundNBT();
         for (Map.Entry<String, PlayerQuestData> entry : questData.entrySet()){
             quests.put(entry.getKey(), entry.getValue().serializeNBT());
@@ -50,6 +61,7 @@ public class PlayerQuestChainInstance implements IMKSerializable<CompoundNBT> {
         return currentQuest;
     }
 
+
     public void setCurrentQuest(String currentQuest) {
         this.currentQuest = currentQuest;
     }
@@ -63,7 +75,12 @@ public class PlayerQuestChainInstance implements IMKSerializable<CompoundNBT> {
         for (String key : questData.keySet()){
             this.questData.put(key, new PlayerQuestData(questData.getCompound(key)));
         }
+        questComplete = compoundNBT.getBoolean("questComplete");
         return true;
+    }
+
+    public void setQuestComplete(boolean questComplete) {
+        this.questComplete = questComplete;
     }
 
     public void setDirtyNotifier(Consumer<PlayerQuestChainInstance> dirtyNotifier) {

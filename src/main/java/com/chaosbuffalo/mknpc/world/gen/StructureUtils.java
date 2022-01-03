@@ -42,7 +42,6 @@ public class StructureUtils {
                                           ResourceLocation structureName, UUID instanceId)
     {
         if (function.equals("mkspawner")) {
-
             TileEntity tileentity = worldIn.getTileEntity(pos.down());
             if (tileentity instanceof MKSpawnerTileEntity) {
                 worldIn.setBlockState(pos, Blocks.AIR.getDefaultState(), 3);
@@ -50,9 +49,6 @@ public class StructureUtils {
                 spawner.regenerateSpawnID();
                 spawner.setStructureName(structureName);
                 spawner.setStructureId(instanceId);
-            } else {
-                IChunk chunk = worldIn.getChunk(pos.down());
-                MKNpc.LOGGER.warn("Failed to find TE in Chunk for mkspawner datablock: {}", chunk);
             }
         } else if (function.startsWith("mkcontainer")){
             String[] names = function.split("#", 2);
@@ -65,12 +61,7 @@ public class StructureUtils {
                     x.setStructureName(structureName);
                     x.generateChestId(labels);
                 });
-
-            }else {
-                IChunk chunk = worldIn.getChunk(pos.down());
-                MKNpc.LOGGER.warn("Failed to find TE in Chunk for mkcontainer datablock: {}", chunk);
             }
-
         }
     }
 }

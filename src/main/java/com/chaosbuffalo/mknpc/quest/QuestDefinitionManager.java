@@ -32,6 +32,8 @@ public class QuestDefinitionManager extends JsonReloadListener {
     private MinecraftServer server;
     private boolean serverStarted = false;
 
+    public static final ResourceLocation INVALID_QUEST = new ResourceLocation(MKNpc.MODID, "invalid_quest");
+
     public static final Map<ResourceLocation, QuestDefinition> DEFINITIONS = new HashMap<>();
 
     public static final Map<ResourceLocation, Supplier<QuestObjective<?>>> OBJECTIVE_DESERIALIZERS = new HashMap<>();

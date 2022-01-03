@@ -2,7 +2,7 @@ package com.chaosbuffalo.mknpc.capabilities;
 
 import com.chaosbuffalo.mknpc.npc.NpcDefinitionManager;
 import com.chaosbuffalo.mknpc.npc.NpcDefinition;
-import com.chaosbuffalo.mknpc.npc.option_entries.LootOptionEntry;
+import com.chaosbuffalo.mknpc.npc.entries.LootOptionEntry;
 import com.chaosbuffalo.mknpc.utils.RandomCollection;
 import com.chaosbuffalo.mkweapons.items.randomization.LootConstructor;
 import com.chaosbuffalo.mkweapons.items.randomization.LootTier;
@@ -22,10 +22,7 @@ import net.minecraftforge.common.capabilities.Capability;
 
 import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
-import java.util.ArrayList;
-import java.util.Collection;
-import java.util.List;
-import java.util.UUID;
+import java.util.*;
 
 public class EntityNpcDataHandler implements IEntityNpcData {
     private LivingEntity entity;
@@ -39,7 +36,9 @@ public class EntityNpcDataHandler implements IEntityNpcData {
     private double noLootChance;
     private int dropChances;
     private double noLootChanceIncrease;
+    private boolean shouldHaveQuest;
     private final List<LootOptionEntry> options;
+    private final Map<ResourceLocation, UUID> questOfferings = new HashMap<>();
 
     public EntityNpcDataHandler(){
         mkSpawned = false;
@@ -50,6 +49,7 @@ public class EntityNpcDataHandler implements IEntityNpcData {
         noLootChance = 0;
         dropChances = 0;
         noLootChanceIncrease = 0;
+        shouldHaveQuest = false;
         options = new ArrayList<>();
     }
 
@@ -159,6 +159,31 @@ public class EntityNpcDataHandler implements IEntityNpcData {
     @Override
     public void setSpawnPos(BlockPos pos) {
         this.blockPos = pos;
+    }
+
+    @Override
+    public void addQuestOffering(ResourceLocation questName, UUID questId) {
+        questOfferings.put(questName, questId);
+    }
+
+    @Override
+    public boolean hasGeneratedQuest() {
+        return !questOfferings.isEmpty();
+    }
+
+    @Override
+    public boolean shouldHaveQuest() {
+        return shouldHaveQuest;
+    }
+
+    @Override
+    public void putShouldHaveQuest(boolean value) {
+        shouldHaveQuest = value;
+    }
+
+    @Override
+    public Map<ResourceLocation, UUID> getQuestsOffered() {
+        return questOfferings;
     }
 
     @Override

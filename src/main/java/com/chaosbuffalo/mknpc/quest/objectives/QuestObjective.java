@@ -64,6 +64,7 @@ public abstract class QuestObjective<T extends ObjectiveInstanceData> implements
                         Pair.of(ops.createString(attr.getName()), attr.serialize(ops))
                 ).collect(Collectors.toMap(Pair::getFirst, Pair::getSecond))));
         putAdditionalData(ops, builder);
+
         return ops.createMap(builder.build());
     }
 

@@ -3,15 +3,10 @@ package com.chaosbuffalo.mknpc.capabilities;
 import com.chaosbuffalo.mkcore.CoreCapabilities;
 import com.chaosbuffalo.mknpc.MKNpc;
 import com.chaosbuffalo.mknpc.entity.MKEntity;
-import net.minecraft.nbt.CompoundNBT;
-import net.minecraft.nbt.INBT;
-import net.minecraft.util.Direction;
 import net.minecraft.util.ResourceLocation;
 import net.minecraftforge.common.capabilities.Capability;
 import net.minecraftforge.common.capabilities.CapabilityInject;
 import net.minecraftforge.common.capabilities.CapabilityManager;
-
-import javax.annotation.Nullable;
 
 public class NpcCapabilities {
     public static ResourceLocation MK_NPC_CAP_ID = new ResourceLocation(MKNpc.MODID,
@@ -38,8 +33,8 @@ public class NpcCapabilities {
     @CapabilityInject(IChestNpcData.class)
     public static final Capability<IChestNpcData> CHEST_NPC_DATA_CAPABILITY;
 
-    @CapabilityInject(IPlayerQuestData.class)
-    public static final Capability<IPlayerQuestData> PLAYER_QUEST_DATA_CAPABILITY;
+    @CapabilityInject(IPlayerQuestingData.class)
+    public static final Capability<IPlayerQuestingData> PLAYER_QUEST_DATA_CAPABILITY;
 
 
 
@@ -59,7 +54,7 @@ public class NpcCapabilities {
         CapabilityManager.INSTANCE.register(IChunkNpcData.class, new ChunkNpcDataHandler.Storage(),
                 ChunkNpcDataHandler::new);
         CapabilityManager.INSTANCE.register(IChestNpcData.class, new ChestNpcDataHandler.Storage(), ChestNpcDataHandler::new);
-        CapabilityManager.INSTANCE.register(IPlayerQuestData.class, new PlayerQuestDataHandler.Storage(), PlayerQuestDataHandler::new);
+        CapabilityManager.INSTANCE.register(IPlayerQuestingData.class, new PlayerQuestingDataHandler.Storage(), PlayerQuestingDataHandler::new);
     }
 
 
