@@ -182,6 +182,7 @@ public class PlayerQuestingDataHandler implements IPlayerQuestingData {
                     Quest quest = nextQuest.get();
                     chain.addQuestData(quest.generatePlayerQuestData(worldHandler,
                             questChainInstance.getQuestChainData().getQuestData(quest.getQuestName())));
+                    chain.setCurrentQuest(quest.getQuestName());
                 } else {
                     chain.setQuestComplete(true);
                     completedQuests.add(chain.getQuestId());

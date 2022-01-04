@@ -61,11 +61,14 @@ public class QuestOfferingEntry implements INBTSerializable<CompoundNBT> {
         DialoguePrompt hailPrompt = new DialoguePrompt("hail");
         hailPrompt.addResponse(new DialogueResponse(hailQuest.getId()).addCondition(
                 new OnQuestChainCondition(questId).setInvert(true)));
+        giverTree.addPrompt(definition.getHailPrompt().copy());
         giverTree.addPrompt(hailPrompt);
         giverTree.setHailPrompt(hailPrompt);
         giverTree.addNode(startQuest);
         giverTree.addNode(hailQuest);
+        giverTree.bake();
         this.tree = giverTree;
+
     }
 
     @Override
@@ -90,6 +93,7 @@ public class QuestOfferingEntry implements INBTSerializable<CompoundNBT> {
         if (nbt.contains("dialogue")){
             tree = new DialogueTree(new ResourceLocation(MKNpc.MODID, String.format("give_quest.%s", questId.toString())));
             tree.deserialize(new Dynamic<>(NBTDynamicOps.INSTANCE, nbt.get("dialogue")));
+            tree.bake();
         }
     }
 }

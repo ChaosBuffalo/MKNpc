@@ -1,6 +1,7 @@
 package com.chaosbuffalo.mknpc.quest;
 
 import com.chaosbuffalo.mkchat.dialogue.DialogueNode;
+import com.chaosbuffalo.mkchat.dialogue.DialoguePrompt;
 import com.chaosbuffalo.mknpc.MKNpc;
 import com.chaosbuffalo.mknpc.npc.MKStructureEntry;
 import com.google.common.collect.ImmutableMap;
@@ -20,6 +21,7 @@ public class QuestDefinition {
     private boolean repeatable;
     private DialogueNode startQuestResponse;
     private DialogueNode startQuestHail;
+    private DialoguePrompt hailPrompt;
 
 
     public QuestDefinition(ResourceLocation name){
@@ -35,6 +37,14 @@ public class QuestDefinition {
 
     public DialogueNode getStartQuestResponse() {
         return startQuestResponse;
+    }
+
+    public DialoguePrompt getHailPrompt(){
+        return hailPrompt;
+    }
+
+    public void setHailPrompt(DialoguePrompt hailPrompt) {
+        this.hailPrompt = hailPrompt;
     }
 
     public DialogueNode getStartQuestHail() {
@@ -84,6 +94,9 @@ public class QuestDefinition {
         ImmutableMap.Builder<D, D> builder = ImmutableMap.builder();
         builder.put(ops.createString("quests"), ops.createList(questChain.stream().map(x -> x.serialize(ops))));
         builder.put(ops.createString("repeatable"), ops.createBoolean(isRepeatable()));
+        builder.put(ops.createString("startQuestResponse"), startQuestResponse.serialize(ops));
+        builder.put(ops.createString("hailQuestResponse"), startQuestHail.serialize(ops));
+        builder.put(ops.createString("hailPrompt"), hailPrompt.serialize(ops));
         return ops.createMap(builder.build());
     }
 
@@ -96,6 +109,12 @@ public class QuestDefinition {
         questIndex.clear();
         questChain.clear();
         repeatable = dynamic.get("repeatable").asBoolean(false);
+        startQuestResponse = new DialogueNode();
+        dynamic.get("startQuestResponse").result().ifPresent(x -> startQuestResponse.deserialize(x));
+        startQuestHail = new DialogueNode();
+        dynamic.get("hailQuestResponse").result().ifPresent(x -> startQuestHail.deserialize(x));
+        hailPrompt = new DialoguePrompt();
+        dynamic.get("hailPrompt").result().ifPresent(x -> hailPrompt.deserialize(x));
         for (Quest quest : dQuests){
             addQuest(quest);
         }

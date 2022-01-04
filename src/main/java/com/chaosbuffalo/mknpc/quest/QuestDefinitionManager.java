@@ -4,6 +4,7 @@ import com.chaosbuffalo.mknpc.MKNpc;
 import com.chaosbuffalo.mknpc.npc.NpcDefinition;
 import com.chaosbuffalo.mknpc.quest.objectives.LootChestObjective;
 import com.chaosbuffalo.mknpc.quest.objectives.QuestObjective;
+import com.chaosbuffalo.mknpc.quest.objectives.TalkToNpcObjective;
 import com.google.gson.Gson;
 import com.google.gson.GsonBuilder;
 import com.google.gson.JsonElement;
@@ -60,6 +61,7 @@ public class QuestDefinitionManager extends JsonReloadListener {
 
     public static void setupDeserializers(){
         putObjectiveDeserializer(LootChestObjective.NAME, LootChestObjective::new);
+        putObjectiveDeserializer(TalkToNpcObjective.NAME, TalkToNpcObjective::new);
     }
 
     @Override

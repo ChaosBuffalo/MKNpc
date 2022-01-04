@@ -144,6 +144,7 @@ public class WorldNpcDataHandler implements IWorldNpcData{
                 }
 
                 QuestChainInstance instance = definition.generate(questStructures);
+                instance.generateDialogue(questStructures);
                 quests.put(instance.getQuestId(), instance);
                 return Optional.of(instance);
             } else {

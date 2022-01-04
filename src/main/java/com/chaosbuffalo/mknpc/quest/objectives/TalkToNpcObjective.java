@@ -4,6 +4,7 @@ import com.chaosbuffalo.mkchat.dialogue.DialogueNode;
 import com.chaosbuffalo.mkchat.dialogue.DialoguePrompt;
 import com.chaosbuffalo.mkchat.dialogue.DialogueResponse;
 import com.chaosbuffalo.mkchat.dialogue.DialogueTree;
+import com.chaosbuffalo.mkchat.dialogue.effects.DialogueEffect;
 import com.chaosbuffalo.mkcore.serialization.attributes.ResourceLocationAttribute;
 import com.chaosbuffalo.mknpc.MKNpc;
 import com.chaosbuffalo.mknpc.capabilities.IWorldNpcData;
@@ -16,11 +17,13 @@ import com.chaosbuffalo.mknpc.quest.data.QuestData;
 import com.chaosbuffalo.mknpc.quest.data.objective.UUIDInstanceData;
 import com.chaosbuffalo.mknpc.quest.data.player.PlayerQuestObjectiveData;
 import com.chaosbuffalo.mknpc.quest.dialogue.conditions.OnQuestCondition;
+import com.chaosbuffalo.mknpc.quest.dialogue.effects.AdvanceQuestChainEffect;
 import com.google.common.collect.ImmutableMap;
 import com.mojang.serialization.Dynamic;
 import com.mojang.serialization.DynamicOps;
 import net.minecraft.util.ResourceLocation;
 import net.minecraft.util.text.ITextComponent;
+import net.minecraft.util.text.StringTextComponent;
 
 import java.util.*;
 
@@ -35,6 +38,11 @@ public class TalkToNpcObjective extends StructureInstanceObjective<UUIDInstanceD
         super(NAME, name, structure, index, description);
         addAttribute(this.npcDefinition);
         this.npcDefinition.setValue(npcDefinition);
+    }
+
+    public TalkToNpcObjective(){
+        super(NAME, "invalid", new StringTextComponent("placeholder"));
+        addAttribute(this.npcDefinition);
     }
 
     public ResourceLocation getNpcDefinition(){
@@ -92,14 +100,25 @@ public class TalkToNpcObjective extends StructureInstanceObjective<UUIDInstanceD
         dynamic.get("hailResponse").result().ifPresent(x -> hailResponse.deserialize(x));
     }
 
+    private DialogueNode copyNodeAndSetUUID(DialogueNode node, UUID questId){
+        DialogueNode newNode = node.copy();
+        for (DialogueEffect effect : newNode.getEffects()){
+            if (effect instanceof AdvanceQuestChainEffect){
+                AdvanceQuestChainEffect advEffect = (AdvanceQuestChainEffect) effect;
+                advEffect.setChainId(questId);
+            }
+        }
+        return newNode;
+    }
+
     public void generateDialogueForNpc(Quest quest, QuestChainInstance questChain, ResourceLocation npcDefinitionName,
                                        UUID npcId, DialogueTree tree,
                                        Map<ResourceLocation, List<MKStructureEntry>> questStructures){
-        DialogueNode hrCopy = hailResponse.copy();
+        DialogueNode hrCopy = copyNodeAndSetUUID(hailResponse, questChain.getQuestId());
         DialogueResponse hrResponse = new DialogueResponse(hrCopy.getId());
         hrResponse.addCondition(new OnQuestCondition(questChain.getQuestId(), quest.getQuestName()));
         for (DialogueNode node : additionalNodes){
-            tree.addNode(node.copy());
+            tree.addNode(copyNodeAndSetUUID(node, questChain.getQuestId()));
         }
         for (DialoguePrompt prompt : additionalPrompts){
             DialoguePrompt copyPrompt = prompt.copy();

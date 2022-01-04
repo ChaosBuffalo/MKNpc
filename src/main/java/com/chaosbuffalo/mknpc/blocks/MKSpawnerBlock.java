@@ -154,10 +154,10 @@ public class MKSpawnerBlock extends Block {
         return state.with(ORIENTATION, state.get(ORIENTATION).rotate(rot));
     }
 
-    @Override
-    public BlockState mirror(BlockState state, Mirror mirrorIn) {
-        return state.with(ORIENTATION, state.get(ORIENTATION).rotate(Rotation.CLOCKWISE_180));
-    }
+//    @Override
+//    public BlockState mirror(BlockState state, Mirror mirrorIn) {
+//        return state.with(ORIENTATION, state.get(ORIENTATION).rotate(Rotation.CLOCKWISE_180));
+//    }
 
     @Override
     public ActionResultType onBlockActivated(BlockState state, World worldIn, BlockPos pos, PlayerEntity player,

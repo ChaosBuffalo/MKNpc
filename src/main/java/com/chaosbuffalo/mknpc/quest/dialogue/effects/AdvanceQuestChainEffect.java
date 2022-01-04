@@ -29,6 +29,11 @@ public class AdvanceQuestChainEffect extends DialogueEffect {
 
     public AdvanceQuestChainEffect() {
         super(effectTypeName);
+        chainId = UUID.randomUUID();
+    }
+
+    public void setChainId(UUID chainId) {
+        this.chainId = chainId;
     }
 
     @Override

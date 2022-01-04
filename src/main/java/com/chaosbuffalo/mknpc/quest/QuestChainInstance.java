@@ -12,9 +12,12 @@ import com.chaosbuffalo.mknpc.quest.data.player.PlayerQuestChainInstance;
 import com.chaosbuffalo.mknpc.quest.data.player.PlayerQuestData;
 import com.chaosbuffalo.mknpc.quest.objectives.QuestObjective;
 import com.chaosbuffalo.mknpc.quest.objectives.TalkToNpcObjective;
+import com.mojang.serialization.Dynamic;
 import net.minecraft.entity.Entity;
 import net.minecraft.nbt.CompoundNBT;
+import net.minecraft.nbt.NBTDynamicOps;
 import net.minecraft.util.ResourceLocation;
+import net.minecraftforge.common.util.Constants;
 import net.minecraftforge.common.util.INBTSerializable;
 
 import java.util.*;
@@ -24,14 +27,18 @@ public class QuestChainInstance implements INBTSerializable<CompoundNBT> {
     private UUID questId;
     private QuestDefinition definition;
     private QuestChainData questChainData;
-    private Map<UUID, DialogueTree> dialogueTrees;
+    private Map<UUID, DialogueTree> dialogueTrees = new HashMap<>();
     private UUID questSourceNpc;
 
     public QuestChainInstance(QuestDefinition definition, Map<ResourceLocation, List<MKStructureEntry>> questStructures){
         questId = UUID.randomUUID();
         this.definition = definition;
         questChainData = new QuestChainData(definition, questStructures);
-        dialogueTrees = questChainData.generateDialogue(this, getDialogueTreeName(), definition, questStructures, getSpeakingRoles());
+    }
+
+    public void generateDialogue(Map<ResourceLocation, List<MKStructureEntry>> questStructures){
+        questChainData.generateDialogue(this, getDialogueTreeName(), definition, questStructures,
+                getSpeakingRoles(), dialogueTrees);
     }
 
     public void setQuestSourceNpc(UUID questSourceNpc) {
@@ -103,7 +110,12 @@ public class QuestChainInstance implements INBTSerializable<CompoundNBT> {
         if (questSourceNpc != null){
             nbt.putUniqueId("questSource", questSourceNpc);
         }
+        CompoundNBT dialogueNbt = new CompoundNBT();
+        for (Map.Entry<UUID, DialogueTree> entry : dialogueTrees.entrySet()){
+            dialogueNbt.put(entry.getKey().toString(), entry.getValue().serialize(NBTDynamicOps.INSTANCE));
+        }
 //        nbt.put("dialogueTree", dialogueTree.serialize(NBTDynamicOps.INSTANCE));
+        nbt.put("dialogueTrees", dialogueNbt);
         return nbt;
     }
 
@@ -118,6 +130,15 @@ public class QuestChainInstance implements INBTSerializable<CompoundNBT> {
         questChainData = new QuestChainData(definition, nbt.getCompound("questData"));
         if (nbt.contains("questSource")){
             questSourceNpc = nbt.getUniqueId("questSource");
+        }
+        CompoundNBT dialogueNbt = nbt.getCompound("dialogueTrees");
+        dialogueTrees.clear();
+        for (String key : dialogueNbt.keySet()){
+            UUID npcId = UUID.fromString(key);
+            DialogueTree newTree = new DialogueTree(getDialogueTreeName());
+            newTree.deserialize(new Dynamic<>(NBTDynamicOps.INSTANCE, dialogueNbt.get(key)));
+            newTree.bake();
+            dialogueTrees.put(npcId, newTree);
         }
 //        dialogueTree = new DialogueTree(getDialogueTreeName());
 //        dialogueTree.deserialize(new Dynamic<>(NBTDynamicOps.INSTANCE, nbt.get("dialogueTree")));

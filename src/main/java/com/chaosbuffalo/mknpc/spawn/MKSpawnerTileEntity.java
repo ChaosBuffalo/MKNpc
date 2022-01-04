@@ -231,7 +231,7 @@ public class MKSpawnerTileEntity extends TileEntity implements ITickableTileEnti
     public void spawnEntity(){
         if (getWorld() != null){
             NpcDefinition definition = randomSpawns.next();
-            Vector3d spawnPos = Vector3d.copy(getPos()).add(0.5, 0.0630, 0.5);
+            Vector3d spawnPos = Vector3d.copy(getPos()).add(0.5, 0.125, 0.5);
 
             Entity entity = definition.createEntity(getWorld(), spawnPos, spawnUUID);
             this.entity = entity;
