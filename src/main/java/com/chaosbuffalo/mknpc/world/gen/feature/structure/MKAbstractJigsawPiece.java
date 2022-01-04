@@ -1,6 +1,6 @@
 package com.chaosbuffalo.mknpc.world.gen.feature.structure;
 
-import com.chaosbuffalo.mknpc.world.gen.StructureUtils;
+import com.chaosbuffalo.mknpc.init.MKNpcWorldGen;
 import net.minecraft.nbt.CompoundNBT;
 import net.minecraft.util.ResourceLocation;
 import net.minecraft.util.Rotation;
@@ -25,16 +25,20 @@ public class MKAbstractJigsawPiece extends AbstractVillagePiece implements IMKSt
                                  int groundLevelDelta, Rotation rotation, MutableBoundingBox boundingBox,
                                  ResourceLocation structureName, UUID instanceId) {
         super(templateManager, jigsawPiece, blockPos, groundLevelDelta, rotation, boundingBox);
+        this.structurePieceType = MKNpcWorldGen.MK_JIGSAW_PIECE_TYPE;
         this.structureName = structureName;
         this.instanceId = instanceId;
         this.manager = templateManager;
+
     }
 
     public MKAbstractJigsawPiece(TemplateManager templateManager, CompoundNBT compoundNBT) {
         super(templateManager, compoundNBT);
+        this.structurePieceType = MKNpcWorldGen.MK_JIGSAW_PIECE_TYPE;
         this.manager = templateManager;
         structureName = new ResourceLocation(compoundNBT.getString("structureName"));
         instanceId = compoundNBT.getUniqueId("instanceId");
+
     }
 
     @Override

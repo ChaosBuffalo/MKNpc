@@ -2,6 +2,7 @@ package com.chaosbuffalo.mknpc.world.gen.feature.structure;
 
 import com.mojang.serialization.Codec;
 import net.minecraft.nbt.CompoundNBT;
+import net.minecraft.util.Rotation;
 import net.minecraft.util.math.BlockPos;
 import net.minecraft.util.math.MutableBoundingBox;
 import net.minecraft.util.registry.DynamicRegistries;
@@ -13,12 +14,20 @@ import net.minecraft.world.gen.feature.template.TemplateManager;
 
 import java.util.UUID;
 
-public class MKJigsawStructure extends JigsawStructure {
+public class MKJigsawStructure extends JigsawStructure implements IControlNaturalSpawns {
+
+    private final boolean allowSpawns;
 
 
     public MKJigsawStructure(Codec<VillageConfig> codec, int groundLevel, boolean offsetVertical,
-                             boolean offsetFromWorldSurface) {
+                             boolean offsetFromWorldSurface, boolean allowSpawns) {
         super(codec, groundLevel, offsetVertical, offsetFromWorldSurface);
+        this.allowSpawns = allowSpawns;
+    }
+
+    @Override
+    public boolean doesAllowSpawns(){
+        return allowSpawns;
     }
 
     public Structure.IStartFactory<VillageConfig> getStartFactory() {
@@ -28,9 +37,11 @@ public class MKJigsawStructure extends JigsawStructure {
 
 
 
-    public static class Start extends MarginedStructureStart<VillageConfig> {
+
+
+    public static class Start extends MarginedStructureStart<VillageConfig> implements IAdditionalStartData {
         private final MKJigsawStructure structure;
-        private final UUID instanceId;
+        private UUID instanceId;
 
         public Start(MKJigsawStructure p_i241979_1_, int p_i241979_2_, int p_i241979_3_,
                      MutableBoundingBox p_i241979_4_, int p_i241979_5_, long seed) {
@@ -47,7 +58,7 @@ public class MKJigsawStructure extends JigsawStructure {
         public CompoundNBT write(int chunkX, int chunkZ) {
             CompoundNBT tag = super.write(chunkX, chunkZ);
             if (isValid()){
-                tag.putString("instanceId", instanceId.toString());
+                tag.putUniqueId("instanceId", instanceId);
             }
             return tag;
         }
@@ -63,6 +74,13 @@ public class MKJigsawStructure extends JigsawStructure {
                     chunkGenerator, templateManager, blockpos, this.components, this.rand,
                     this.structure.field_242775_v, this.structure.field_242776_w);
             this.recalculateStructureSize();
+        }
+
+        @Override
+        public void readAdditional(CompoundNBT tag) {
+            if (tag.contains("instanceId")){
+                instanceId = tag.getUniqueId("instanceId");
+            }
         }
     }
 }

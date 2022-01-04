@@ -31,6 +31,22 @@ public class NotableNpcEntry implements INBTSerializable<CompoundNBT> {
 
     }
 
+    public BlockPos getLocation() {
+        return location;
+    }
+
+    public UUID getSpawnerId() {
+        return spawnerId;
+    }
+
+    public UUID getStructureId() {
+        return structureId;
+    }
+
+    public StringTextComponent getName() {
+        return name;
+    }
+
     @Nullable
     public NpcDefinition getDefinition(){
         return NpcDefinitionManager.getDefinition(definition);

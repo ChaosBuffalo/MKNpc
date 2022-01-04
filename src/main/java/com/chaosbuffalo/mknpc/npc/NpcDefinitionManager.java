@@ -3,10 +3,7 @@ package com.chaosbuffalo.mknpc.npc;
 import com.chaosbuffalo.mknpc.MKNpc;
 import com.chaosbuffalo.mknpc.network.NpcDefinitionClientUpdatePacket;
 import com.chaosbuffalo.mknpc.network.PacketHandler;
-import com.chaosbuffalo.mknpc.npc.option_entries.AbilitiesOptionEntry;
-import com.chaosbuffalo.mknpc.npc.option_entries.EquipmentOptionEntry;
-import com.chaosbuffalo.mknpc.npc.option_entries.FactionNameOptionEntry;
-import com.chaosbuffalo.mknpc.npc.option_entries.INpcOptionEntry;
+import com.chaosbuffalo.mknpc.npc.option_entries.*;
 import com.chaosbuffalo.mknpc.npc.options.*;
 import com.google.gson.Gson;
 import com.google.gson.GsonBuilder;
@@ -39,6 +36,7 @@ public class NpcDefinitionManager extends JsonReloadListener {
     private MinecraftServer server;
     private boolean serverStarted = false;
 
+    public static final ResourceLocation INVALID_NPC_DEF = new ResourceLocation(MKNpc.MODID, "npc_def.invalid");
     public static final Gson GSON = (new GsonBuilder()).setPrettyPrinting().disableHtmlEscaping().create();
     public static final Map<ResourceLocation, NpcDefinition> DEFINITIONS = new HashMap<>();
     public static final Map<ResourceLocation, NpcDefinitionClient> CLIENT_DEFINITIONS = new HashMap<>();
@@ -86,6 +84,9 @@ public class NpcDefinitionManager extends JsonReloadListener {
         putOptionDeserializer(LungeSpeedOption.NAME, LungeSpeedOption::new);
         putOptionDeserializer(AbilityTrainingOption.NAME, AbilityTrainingOption::new);
         putOptionDeserializer(ParticleEffectsOption.NAME, ParticleEffectsOption::new);
+        putOptionDeserializer(ExtraLootOption.NAME, ExtraLootOption::new);
+        putOptionDeserializer(QuestOfferingOption.NAME, QuestOfferingOption::new);
+        putOptionEntryDeserializer(QuestOfferingOption.NAME, QuestOptionsEntry::new);
     }
 
     public static void putOptionDeserializer(ResourceLocation optionName,

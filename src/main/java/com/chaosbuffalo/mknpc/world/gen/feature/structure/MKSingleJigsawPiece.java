@@ -1,8 +1,10 @@
 package com.chaosbuffalo.mknpc.world.gen.feature.structure;
 
+import com.chaosbuffalo.mknpc.world.gen.StructureUtils;
 import com.mojang.datafixers.util.Either;
 import com.mojang.serialization.Codec;
 import com.mojang.serialization.codecs.RecordCodecBuilder;
+import jdk.nashorn.internal.ir.Block;
 import net.minecraft.util.ResourceLocation;
 import net.minecraft.util.Rotation;
 import net.minecraft.util.math.BlockPos;
@@ -13,6 +15,7 @@ import net.minecraft.world.gen.feature.jigsaw.IJigsawDeserializer;
 import net.minecraft.world.gen.feature.jigsaw.JigsawPattern;
 import net.minecraft.world.gen.feature.jigsaw.JigsawPiece;
 import net.minecraft.world.gen.feature.jigsaw.SingleJigsawPiece;
+import net.minecraft.world.gen.feature.structure.BastionRemnantsPieces;
 import net.minecraft.world.gen.feature.structure.StructureManager;
 import net.minecraft.world.gen.feature.template.*;
 
@@ -49,6 +52,12 @@ public class MKSingleJigsawPiece extends SingleJigsawPiece implements IMKJigsawP
 
 
 
+    public Either<ResourceLocation, Template> getPieceEither(){
+        return field_236839_c_;
+    }
+
+
+
     @Override
     public boolean mkPlace(TemplateManager templateManager, ISeedReader seedReader, StructureManager structureManager,
                            ChunkGenerator chunkGenerator, BlockPos structurePos, BlockPos blockPos, Rotation rot,
@@ -56,13 +65,16 @@ public class MKSingleJigsawPiece extends SingleJigsawPiece implements IMKJigsawP
         Template template = this.func_236843_a_(templateManager);
         PlacementSettings placementsettings = this.func_230379_a_(rot, boundingBox, keepJigsaw);
         placementsettings.removeProcessor(BlockIgnoreStructureProcessor.STRUCTURE_BLOCK);
+//        placementsettings.addProcessor(BlockIgnoreStructureProcessor.AIR_AND_STRUCTURE_BLOCK);
         placementsettings.field_204765_h = doWaterlog();
         if (!template.func_237146_a_(seedReader, structurePos, blockPos, placementsettings, rand, 18)) {
             return false;
         } else {
             List<Template.BlockInfo> dataMarkers = this.getDataMarkers(templateManager, structurePos, rot, false);
+            PlacementSettings processSettings = placementsettings.copy();
+//            processSettings.removeProcessor(BlockIgnoreStructureProcessor.STRUCTURE_BLOCK);
             for(Template.BlockInfo blockinfo : Template.processBlockInfos(
-                    seedReader, structurePos, blockPos, placementsettings,
+                    seedReader, structurePos, blockPos, processSettings,
                     dataMarkers, template)) {
                 mkHandleDataMarker(seedReader, blockinfo, blockinfo.pos, rot, rand, boundingBox, parent);
             }

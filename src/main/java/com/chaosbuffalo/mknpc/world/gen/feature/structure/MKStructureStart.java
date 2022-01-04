@@ -14,8 +14,8 @@ import net.minecraft.world.gen.feature.template.TemplateManager;
 
 import java.util.UUID;
 
-public abstract class MKStructureStart<C extends IFeatureConfig> extends StructureStart<C> {
-    private final UUID instanceId;
+public abstract class MKStructureStart<C extends IFeatureConfig> extends StructureStart<C> implements IAdditionalStartData {
+    private UUID instanceId;
 
     public MKStructureStart(Structure<C> structure, int chunkX, int chunkY,
                             MutableBoundingBox boundingBox, int refCount, long seed) {
@@ -28,9 +28,16 @@ public abstract class MKStructureStart<C extends IFeatureConfig> extends Structu
     public CompoundNBT write(int chunkX, int chunkZ) {
         CompoundNBT tag = super.write(chunkX, chunkZ);
         if (isValid()){
-            tag.putString("instanceId", instanceId.toString());
+            tag.putUniqueId("instanceId", instanceId);
         }
         return tag;
+    }
+
+    @Override
+    public void readAdditional(CompoundNBT tag){
+        if (tag.contains("instanceId")){
+            instanceId = tag.getUniqueId("instanceId");
+        }
     }
 
     public UUID getInstanceId() {
@@ -62,7 +69,6 @@ public abstract class MKStructureStart<C extends IFeatureConfig> extends Structu
                 rand, getInstanceId(), components);
         getComponents(args, config);
         recalculateStructureSize();
-
     }
 
 //    @Override

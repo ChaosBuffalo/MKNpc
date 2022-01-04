@@ -12,6 +12,7 @@ import net.minecraft.command.arguments.ArgumentTypes;
 public class NpcCommands {
     public static void register(CommandDispatcher<CommandSource> dispatcher) {
         dispatcher.register(MKSummonCommand.register());
+        dispatcher.register(MKQuestCommand.register());
     }
 
     public static void registerArguments() {

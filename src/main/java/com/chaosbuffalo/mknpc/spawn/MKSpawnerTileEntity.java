@@ -8,6 +8,7 @@ import com.chaosbuffalo.mknpc.entity.MKEntity;
 import com.chaosbuffalo.mknpc.init.MKNpcTileEntityTypes;
 import com.chaosbuffalo.mknpc.npc.NpcDefinition;
 import com.chaosbuffalo.mknpc.utils.RandomCollection;
+import com.chaosbuffalo.mknpc.world.gen.IStructurePlaced;
 import net.minecraft.block.BlockState;
 import net.minecraft.block.Blocks;
 import net.minecraft.entity.Entity;
@@ -16,10 +17,12 @@ import net.minecraft.entity.MobEntity;
 import net.minecraft.entity.SpawnReason;
 import net.minecraft.entity.player.PlayerEntity;
 import net.minecraft.nbt.CompoundNBT;
+import net.minecraft.server.MinecraftServer;
 import net.minecraft.tileentity.ITickableTileEntity;
 import net.minecraft.tileentity.TileEntity;
 import net.minecraft.tileentity.TileEntityType;
 import net.minecraft.util.Direction;
+import net.minecraft.util.RegistryKey;
 import net.minecraft.util.ResourceLocation;
 import net.minecraft.util.math.BlockPos;
 import net.minecraft.util.math.vector.Vector3d;
@@ -32,7 +35,7 @@ import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
 import java.util.UUID;
 
-public class MKSpawnerTileEntity extends TileEntity implements ITickableTileEntity {
+public class MKSpawnerTileEntity extends TileEntity implements ITickableTileEntity, IStructurePlaced {
     private final SpawnList spawnList;
     private UUID spawnUUID;
     private Entity entity;
@@ -70,18 +73,24 @@ public class MKSpawnerTileEntity extends TileEntity implements ITickableTileEnti
         this.placedByStructure = false;
     }
 
+    @Override
     public boolean isInsideStructure(){
         return structureName != null && structureId != null;
     }
 
+    @Override
     public void setStructureName(ResourceLocation structureName) {
         this.structureName = structureName;
     }
 
+    @Override
+    @Nullable
     public ResourceLocation getStructureName() {
         return structureName;
     }
 
+    @Override
+    @Nullable
     public UUID getStructureId() {
         return structureId;
     }
@@ -98,8 +107,20 @@ public class MKSpawnerTileEntity extends TileEntity implements ITickableTileEnti
         return super.getCapability(cap);
     }
 
+    @Override
     public void setStructureId(UUID structureId) {
         this.structureId = structureId;
+    }
+
+    @Override
+    public BlockPos getBlockPos() {
+        return getPos();
+    }
+
+    @Override
+    @Nullable
+    public World getStructureWorld() {
+        return getWorld();
     }
 
     public void setMoveType(MKEntity.NonCombatMoveType moveType) {
@@ -210,7 +231,7 @@ public class MKSpawnerTileEntity extends TileEntity implements ITickableTileEnti
     public void spawnEntity(){
         if (getWorld() != null){
             NpcDefinition definition = randomSpawns.next();
-            Vector3d spawnPos = Vector3d.copy(getPos()).add(0.5, 0.0630, 0.5);
+            Vector3d spawnPos = Vector3d.copy(getPos()).add(0.5, 0.125, 0.5);
 
             Entity entity = definition.createEntity(getWorld(), spawnPos, spawnUUID);
             this.entity = entity;
@@ -270,11 +291,21 @@ public class MKSpawnerTileEntity extends TileEntity implements ITickableTileEnti
     @Override
     public void tick() {
         World world = getWorld();
-        if (world != null && !getWorld().isRemote() && randomSpawns.size() >0){
+        if (world != null && !world.isRemote() && randomSpawns.size() >0){
             if (needsUploadToWorld){
-                world.getCapability(NpcCapabilities.WORLD_NPC_DATA_CAPABILITY)
-                        .ifPresent(cap -> cap.addSpawner(this));
-                needsUploadToWorld = false;
+                MinecraftServer server = world.getServer();
+                if (server != null){
+                    World overworld = server.getWorld(World.OVERWORLD);
+                    if (overworld != null){
+                        overworld.getCapability(NpcCapabilities.WORLD_NPC_DATA_CAPABILITY)
+                                .ifPresent(cap -> cap.addSpawner(this));
+                    }
+                    if (!isAir(world, getPos().up())){
+                        world.setBlockState(getPos().up(), Blocks.AIR.getDefaultState(), 3);
+                    }
+                    needsUploadToWorld = false;
+
+                }
             }
             if (!isAir(world, getPos().up())){
                 if (placedByStructure){

@@ -23,6 +23,7 @@ import java.util.List;
 @Mod.EventBusSubscriber(modid = MKNpc.MODID, bus = Mod.EventBusSubscriber.Bus.MOD)
 public class MKNpcWorldGen {
 
+    public static final ResourceLocation UNKNOWN_PIECE = new ResourceLocation(MKNpc.MODID, "unknown_structure_piece");
     public static IStructurePieceType TEST_PIECE_TYPE;
     public static IStructurePieceType TEST_JIGSAW_PIECE_TYPE;
     public static TestStructure TEST_STRUCTURE;
@@ -35,10 +36,13 @@ public class MKNpcWorldGen {
     public static ResourceLocation TEST_JIG_SAW_NAME = new ResourceLocation(MKNpc.MODID, "test_jigsaw");
     private static StructureFeature<?, ?> TEST_JIGSAW_FEATURE;
     public static List<Structure<?>> NO_WATER_STRUCTURES = new ArrayList<>();
+    public static IStructurePieceType MK_JIGSAW_PIECE_TYPE;
 
     public static void registerStructurePieces(){
         TEST_PIECE_TYPE = Registry.register(Registry.STRUCTURE_PIECE, TEST_STRUCTURE_NAME.toString(),
                 TestStructurePieces.Piece::new);
+        MK_JIGSAW_PIECE_TYPE = Registry.register(Registry.STRUCTURE_PIECE, "mk_jigsaw",
+                MKAbstractJigsawPiece::new);
     }
 
     @SubscribeEvent
@@ -50,7 +54,7 @@ public class MKNpcWorldGen {
         Structure.STRUCTURE_DECORATION_STAGE_MAP.put(TEST_STRUCTURE, GenerationStage.Decoration.SURFACE_STRUCTURES);
         evt.getRegistry().register(TEST_STRUCTURE);
 
-        TEST_JIGSAW = new MKJigsawStructure(VillageConfig.field_236533_a_, 0, true, true);
+        TEST_JIGSAW = new MKJigsawStructure(VillageConfig.field_236533_a_, 0, true, true, false);
         TEST_JIGSAW.setRegistryName(TEST_JIG_SAW_NAME);
         Structure.NAME_STRUCTURE_BIMAP.put(TEST_JIG_SAW_NAME.toString(), TEST_JIGSAW);
         Structure.STRUCTURE_DECORATION_STAGE_MAP.put(TEST_JIGSAW, GenerationStage.Decoration.SURFACE_STRUCTURES);

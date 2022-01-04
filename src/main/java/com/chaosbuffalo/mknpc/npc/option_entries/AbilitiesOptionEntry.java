@@ -2,6 +2,7 @@ package com.chaosbuffalo.mknpc.npc.option_entries;
 
 import com.chaosbuffalo.mkcore.CoreCapabilities;
 import com.chaosbuffalo.mkcore.MKCoreRegistry;
+import com.chaosbuffalo.mkcore.abilities.AbilitySource;
 import com.chaosbuffalo.mkcore.abilities.MKAbility;
 import com.chaosbuffalo.mkcore.abilities.MKAbilityInfo;
 import com.chaosbuffalo.mknpc.npc.NpcAbilityEntry;
@@ -38,7 +39,7 @@ public class AbilitiesOptionEntry implements INpcOptionEntry {
                     toUnlearn.add(ability.getId());
                 }
                 for (ResourceLocation loc : toUnlearn){
-                    cap.getKnowledge().unlearnAbility(loc);
+                    cap.getKnowledge().getAbilityKnowledge().unlearnAbility(loc, AbilitySource.TRAINED);
                 }
                 for (NpcAbilityEntry entry : abilities) {
                     MKAbility ability = MKCoreRegistry.getAbility(entry.getAbilityName());

@@ -31,8 +31,8 @@ public class ReturnToSpawnGoal extends Goal {
         ticksReturning++;
         if (ticksReturning > TICKS_TO_TELEPORT){
             Optional<BlockPos> blockPosOpt = entity.getBrain().getMemory(MKMemoryModuleTypes.SPAWN_POINT);
-            blockPosOpt.ifPresent(blockPos -> entity.setPositionAndUpdate(blockPos.getX(),
-                    blockPos.getY(), blockPos.getZ()));
+            blockPosOpt.ifPresent(blockPos -> entity.setPositionAndUpdate(blockPos.getX() + 0.5,
+                    blockPos.getY(), blockPos.getZ() + 0.5));
         }
         entity.returnToSpawnTick();
     }

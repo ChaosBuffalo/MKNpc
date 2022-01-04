@@ -47,7 +47,7 @@ public class MKSummonCommand {
                 player.getServerWorld().addEntity(entity);
                 if (entity instanceof MobEntity){
                     ((MobEntity) entity).onInitialSpawn(player.getServerWorld(), player.getServerWorld().getDifficultyForLocation(
-                            new BlockPos(entity.getPositionVec())), SpawnReason.SPAWNER, null, null);
+                            new BlockPos(entity.getPositionVec())), SpawnReason.COMMAND, null, null);
                 }
             } else {
                 player.sendMessage(new StringTextComponent(String.format("Failed to summon: %s",
