@@ -19,6 +19,9 @@ import net.minecraft.entity.EntityClassification;
 import net.minecraft.entity.LivingEntity;
 import net.minecraft.entity.SpawnReason;
 import net.minecraft.entity.player.PlayerEntity;
+import net.minecraft.entity.player.ServerPlayerEntity;
+import net.minecraft.inventory.container.ChestContainer;
+import net.minecraft.inventory.container.SimpleNamedContainerProvider;
 import net.minecraft.server.MinecraftServer;
 import net.minecraft.tileentity.ChestTileEntity;
 import net.minecraft.tileentity.TileEntity;
@@ -92,17 +95,15 @@ public class EntityHandler {
         World world = event.getWorld();
         BlockPos pos = event.getHitVec().getPos();
         if (world.getBlockState(pos).getBlock() instanceof ChestBlock){
-            if (ChestTileEntity.getPlayersUsing(world, pos) == 0){
-                TileEntity te = world.getTileEntity(pos);
-                if (te == null){
-                    return;
-                }
-                World overWorld = server.getWorld(World.OVERWORLD);
-                if (overWorld != null) {
-                    te.getCapability(NpcCapabilities.CHEST_NPC_DATA_CAPABILITY).ifPresent(
-                            chestCap -> overWorld.getCapability(NpcCapabilities.WORLD_NPC_DATA_CAPABILITY).ifPresent(
-                                    worldData -> processLootChestEvents(event.getPlayer(), chestCap, worldData)));
-                }
+            TileEntity te = world.getTileEntity(pos);
+            if (te == null){
+                return;
+            }
+            World overWorld = server.getWorld(World.OVERWORLD);
+            if (overWorld != null) {
+                te.getCapability(NpcCapabilities.CHEST_NPC_DATA_CAPABILITY).ifPresent(
+                        chestCap -> overWorld.getCapability(NpcCapabilities.WORLD_NPC_DATA_CAPABILITY).ifPresent(
+                                worldData -> processLootChestEvents(event.getPlayer(), chestCap, worldData)));
             }
         }
     }
@@ -122,7 +123,7 @@ public class EntityHandler {
                                 PlayerQuestData pQuest = pQuestChain.getQuestData(currentQuest.getQuestName());
                                 PlayerQuestObjectiveData pObj = pQuest.getObjective(obj.getObjectiveName());
                                 QuestData qData = questChain.getQuestChainData().getQuestData(currentQuest.getQuestName());
-                                if (iObj.onLootChest(pObj, qData, chestCap)) {
+                                if (iObj.onLootChest(player, pObj, qData, chestCap)) {
                                     questChain.signalQuestProgress(worldData, x, currentQuest, pQuestChain, false);
                                     return;
                                 }
