@@ -1,49 +1,38 @@
 package com.chaosbuffalo.mknpc.event;
 
-import com.chaosbuffalo.mkchat.event.PlayerNpcDialogueTreeStackSetupEvent;
+import com.chaosbuffalo.mkchat.event.PlayerNpcDialogueTreeGatherEvent;
 import com.chaosbuffalo.mkcore.core.damage.MKDamageSource;
-import com.chaosbuffalo.mkcore.effects.SpellTriggers;
 import com.chaosbuffalo.mknpc.MKNpc;
 import com.chaosbuffalo.mknpc.capabilities.IChestNpcData;
 import com.chaosbuffalo.mknpc.capabilities.IWorldNpcData;
 import com.chaosbuffalo.mknpc.capabilities.NpcCapabilities;
-import com.chaosbuffalo.mknpc.init.MKNpcWorldGen;
 import com.chaosbuffalo.mknpc.quest.Quest;
 import com.chaosbuffalo.mknpc.quest.QuestChainInstance;
 import com.chaosbuffalo.mknpc.quest.data.QuestData;
 import com.chaosbuffalo.mknpc.quest.data.player.PlayerQuestData;
 import com.chaosbuffalo.mknpc.quest.data.player.PlayerQuestObjectiveData;
 import com.chaosbuffalo.mknpc.quest.objectives.IContainerObjectiveHandler;
-import com.chaosbuffalo.mknpc.quest.objectives.LootChestObjective;
 import com.chaosbuffalo.mknpc.quest.objectives.QuestObjective;
 import com.chaosbuffalo.mknpc.world.gen.feature.structure.IControlNaturalSpawns;
-import com.chaosbuffalo.mknpc.world.gen.feature.structure.MKJigsawStructure;
-import com.chaosbuffalo.mknpc.world.gen.feature.structure.MKStructureStart;
-import jdk.nashorn.internal.ir.Block;
 import net.minecraft.block.ChestBlock;
 import net.minecraft.entity.EntityClassification;
 import net.minecraft.entity.LivingEntity;
 import net.minecraft.entity.SpawnReason;
-import net.minecraft.entity.monster.DrownedEntity;
 import net.minecraft.entity.player.PlayerEntity;
 import net.minecraft.server.MinecraftServer;
 import net.minecraft.tileentity.ChestTileEntity;
 import net.minecraft.tileentity.TileEntity;
 import net.minecraft.util.math.BlockPos;
 import net.minecraft.world.World;
-import net.minecraft.world.chunk.IChunk;
 import net.minecraft.world.gen.feature.structure.Structure;
 import net.minecraft.world.gen.feature.structure.StructureManager;
 import net.minecraft.world.gen.feature.structure.StructureStart;
 import net.minecraft.world.server.ServerWorld;
-import net.minecraftforge.common.util.LazyOptional;
 import net.minecraftforge.event.TickEvent;
 import net.minecraftforge.event.entity.EntityJoinWorldEvent;
 import net.minecraftforge.event.entity.living.LivingDamageEvent;
 import net.minecraftforge.event.entity.living.LivingDropsEvent;
 import net.minecraftforge.event.entity.living.LivingSpawnEvent;
-import net.minecraftforge.event.entity.living.LootingLevelEvent;
-import net.minecraftforge.event.entity.player.PlayerContainerEvent;
 import net.minecraftforge.event.entity.player.PlayerInteractEvent;
 import net.minecraftforge.eventbus.api.Event;
 import net.minecraftforge.eventbus.api.EventPriority;
@@ -52,10 +41,6 @@ import net.minecraftforge.fml.LogicalSide;
 import net.minecraftforge.fml.common.Mod;
 import net.minecraftforge.registries.ForgeRegistries;
 
-import java.util.Collection;
-import java.util.HashSet;
-import java.util.Set;
-import java.util.stream.Collectors;
 
 @SuppressWarnings("unused")
 @Mod.EventBusSubscriber(modid= MKNpc.MODID, bus=Mod.EventBusSubscriber.Bus.FORGE)
@@ -148,7 +133,7 @@ public class EntityHandler {
     }
 
     @SubscribeEvent
-    public static void onSetupDialogue(PlayerNpcDialogueTreeStackSetupEvent event){
+    public static void onSetupDialogue(PlayerNpcDialogueTreeGatherEvent event){
         if (event.getPlayer().world.isRemote) {
             return;
         }
