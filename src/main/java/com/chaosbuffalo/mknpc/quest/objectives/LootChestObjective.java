@@ -13,6 +13,8 @@ import com.chaosbuffalo.mknpc.quest.data.player.PlayerQuestObjectiveData;
 import com.google.common.collect.ImmutableMap;
 import com.mojang.serialization.Dynamic;
 import com.mojang.serialization.DynamicOps;
+import net.minecraft.entity.player.PlayerEntity;
+import net.minecraft.inventory.Inventory;
 import net.minecraft.item.ItemStack;
 import net.minecraft.tileentity.ChestTileEntity;
 import net.minecraft.util.ResourceLocation;
@@ -99,7 +101,7 @@ public class LootChestObjective extends StructureInstanceObjective<UUIDInstanceD
     }
 
     @Override
-    public boolean onLootChest(PlayerQuestObjectiveData objectiveData, QuestData questData, IChestNpcData chestData) {
+    public boolean onLootChest(PlayerEntity player, PlayerQuestObjectiveData objectiveData, QuestData questData, IChestNpcData chestData) {
         UUIDInstanceData objData = getInstanceData(questData);
         if (objectiveData.getBool("hasLooted")){
             return false;
@@ -107,17 +109,17 @@ public class LootChestObjective extends StructureInstanceObjective<UUIDInstanceD
         if (chestData.getChestId() != null && chestData.getChestId().equals(objData.getUuid())){
             objectiveData.putBool("hasLooted", true);
             objectiveData.removeBlockPos("chestPos");
-            populateChest(chestData);
+            populateChest(player, chestData);
             return true;
         }
         return false;
     }
 
-    protected void populateChest(IChestNpcData chestData) {
+    protected void populateChest(PlayerEntity player, IChestNpcData chestData) {
         int index = 0;
-        ChestTileEntity chest = chestData.getTileEntity();
+        Inventory inventory = chestData.getQuestInventoryForPlayer(player);
         for (ItemStack item : itemsToAdd){
-            chest.setInventorySlotContents(index, item.copy());
+            inventory.setInventorySlotContents(index, item.copy());
             index++;
         }
     }

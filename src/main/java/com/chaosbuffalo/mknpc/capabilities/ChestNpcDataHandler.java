@@ -1,6 +1,11 @@
 package com.chaosbuffalo.mknpc.capabilities;
 
-import net.minecraft.block.Blocks;
+import com.chaosbuffalo.mknpc.inventories.QuestChestInventory;
+import net.minecraft.entity.player.PlayerEntity;
+import net.minecraft.entity.player.PlayerInventory;
+import net.minecraft.inventory.Inventory;
+import net.minecraft.inventory.container.ChestContainer;
+import net.minecraft.inventory.container.Container;
 import net.minecraft.nbt.CompoundNBT;
 import net.minecraft.nbt.INBT;
 import net.minecraft.server.MinecraftServer;
@@ -8,10 +13,15 @@ import net.minecraft.tileentity.ChestTileEntity;
 import net.minecraft.util.Direction;
 import net.minecraft.util.ResourceLocation;
 import net.minecraft.util.math.BlockPos;
+import net.minecraft.util.text.ITextComponent;
+import net.minecraft.util.text.StringTextComponent;
 import net.minecraft.world.World;
 import net.minecraftforge.common.capabilities.Capability;
+import net.minecraftforge.common.util.Constants;
 
 import javax.annotation.Nullable;
+import java.util.HashMap;
+import java.util.Map;
 import java.util.UUID;
 
 public class ChestNpcDataHandler implements IChestNpcData{
@@ -27,6 +37,8 @@ public class ChestNpcDataHandler implements IChestNpcData{
     @Nullable
     private ResourceLocation structureName;
 
+    private final HashMap<UUID, QuestChestInventory> questInventories = new HashMap<>();
+
     public ChestNpcDataHandler(){
         structureId = null;
         chestId = null;
@@ -34,6 +46,21 @@ public class ChestNpcDataHandler implements IChestNpcData{
         placedByStructure = false;
         chestLabel = null;
         structureName = null;
+    }
+
+    public QuestChestInventory createQuestInventoryForPlayer(UUID playerId){
+        QuestChestInventory inventory = new QuestChestInventory(getTileEntity());
+        return inventory;
+    }
+
+    @Override
+    public QuestChestInventory getQuestInventoryForPlayer(PlayerEntity player){
+        return questInventories.computeIfAbsent(player.getUniqueID(), this::createQuestInventoryForPlayer);
+    }
+
+    @Override
+    public boolean hasQuestInventoryForPlayer(PlayerEntity player){
+        return questInventories.containsKey(player.getUniqueID());
     }
 
 
@@ -140,6 +167,11 @@ public class ChestNpcDataHandler implements IChestNpcData{
         if (structureName != null){
             tag.putString("structureName", structureName.toString());
         }
+        CompoundNBT questInvNbt = new CompoundNBT();
+        for (Map.Entry<UUID, QuestChestInventory> entry : questInventories.entrySet()){
+            questInvNbt.put(entry.getKey().toString(), entry.getValue().write());
+        }
+        tag.put("questInventories", questInvNbt);
         return tag;
     }
 
@@ -159,7 +191,27 @@ public class ChestNpcDataHandler implements IChestNpcData{
         if (nbt.contains("structureName")){
             structureName = new ResourceLocation(nbt.getString("structureName"));
         }
+        if (nbt.contains("questInventories")){
+            questInventories.clear();
+            CompoundNBT questInvNbt = nbt.getCompound("questInventories");
+            for (String key : questInvNbt.keySet()){
+                QuestChestInventory newInventory = new QuestChestInventory(entity);
+                newInventory.read(questInvNbt.getList(key, Constants.NBT.TAG_COMPOUND));
+                questInventories.put(UUID.fromString(key), newInventory);
+            }
+        }
 
+    }
+
+    @Override
+    public ITextComponent getDisplayName() {
+        return new StringTextComponent("Quest Chest");
+    }
+
+    @Nullable
+    @Override
+    public Container createMenu(int guiWindow, PlayerInventory playerInventory, PlayerEntity player) {
+        return ChestContainer.createGeneric9X3(guiWindow, playerInventory, getQuestInventoryForPlayer(player));
     }
 
     public static class Storage implements Capability.IStorage<IChestNpcData> {
