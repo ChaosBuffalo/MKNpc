@@ -5,8 +5,7 @@
   "refmap": "mknpc.refmap.json",
   "mixins": [
     "WorldGenMixins",
-    "StructureMixins",
-    "ChestBlockMixins"
+    "StructureMixins"
   ],
   "minVersion": "0.8"
 }

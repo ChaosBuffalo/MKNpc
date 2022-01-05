@@ -102,8 +102,14 @@ public class EntityHandler {
             World overWorld = server.getWorld(World.OVERWORLD);
             if (overWorld != null) {
                 te.getCapability(NpcCapabilities.CHEST_NPC_DATA_CAPABILITY).ifPresent(
-                        chestCap -> overWorld.getCapability(NpcCapabilities.WORLD_NPC_DATA_CAPABILITY).ifPresent(
-                                worldData -> processLootChestEvents(event.getPlayer(), chestCap, worldData)));
+                        chestCap -> {
+                            overWorld.getCapability(NpcCapabilities.WORLD_NPC_DATA_CAPABILITY).ifPresent(
+                                    worldData -> processLootChestEvents(event.getPlayer(), chestCap, worldData));
+                            if (chestCap.hasQuestInventoryForPlayer(event.getPlayer()) && !event.getPlayer().isSneaking()){
+                                event.getPlayer().openContainer(chestCap);
+                                event.setCanceled(true);
+                            }
+                        });
             }
         }
     }
