@@ -11,6 +11,7 @@ import com.chaosbuffalo.mknpc.quest.dialogue.conditions.OnQuestChainCondition;
 import com.chaosbuffalo.mknpc.quest.dialogue.conditions.OnQuestCondition;
 import com.chaosbuffalo.mknpc.quest.dialogue.conditions.PendingGenerationCondition;
 import com.chaosbuffalo.mknpc.quest.dialogue.effects.AdvanceQuestChainEffect;
+import com.chaosbuffalo.mknpc.quest.dialogue.effects.ObjectiveCompleteEffect;
 import com.chaosbuffalo.mknpc.quest.dialogue.effects.StartQuestChainEffect;
 import net.minecraftforge.fml.InterModComms;
 
@@ -32,5 +33,6 @@ public class NPCDialogueExtension implements IDialogueExtension {
         DialogueManager.putConditionDeserializer(HasGeneratedQuestsCondition.conditionTypeName, HasGeneratedQuestsCondition::new);
         DialogueManager.putEffectDeserializer(AdvanceQuestChainEffect.effectTypeName, AdvanceQuestChainEffect::new);
         DialogueManager.putEffectDeserializer(StartQuestChainEffect.effectTypeName, StartQuestChainEffect::new);
+        DialogueManager.putEffectDeserializer(ObjectiveCompleteEffect.effectTypeName, ObjectiveCompleteEffect::new);
     }
 }

@@ -1,6 +1,7 @@
 package com.chaosbuffalo.mknpc.quest.data.player;
 
 import com.chaosbuffalo.mkcore.sync.IMKSerializable;
+import com.chaosbuffalo.mknpc.quest.QuestChainInstance;
 import net.minecraft.nbt.CompoundNBT;
 import net.minecraft.util.text.ITextComponent;
 
@@ -32,6 +33,18 @@ public class PlayerQuestChainInstance implements IMKSerializable<CompoundNBT> {
 
     public UUID getQuestId() {
         return questId;
+    }
+
+    public void setQuestName(ITextComponent questName) {
+        this.questName = questName;
+    }
+
+    public void setupQuestChain(QuestChainInstance instance){
+        setQuestName(instance.getDefinition().getQuestName());
+    }
+
+    public ITextComponent getQuestName() {
+        return questName;
     }
 
     @Override

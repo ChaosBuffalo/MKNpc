@@ -152,4 +152,15 @@ public class QuestChainInstance implements INBTSerializable<CompoundNBT> {
             }
         }
     }
+
+    public void signalObjectiveComplete(String objectiveName, IWorldNpcData worldData, IPlayerQuestingData questingData,
+                                        Quest currentQuest, PlayerQuestChainInstance playerInstance){
+        for (QuestObjective<?> obj : currentQuest.getObjectives()){
+            if (obj.getObjectiveName().equals(objectiveName)){
+                obj.signalCompleted(playerInstance.getQuestData(
+                        playerInstance.getCurrentQuest()).getObjective(objectiveName));
+            }
+        }
+        signalQuestProgress(worldData, questingData, currentQuest, playerInstance, false);
+    }
 }

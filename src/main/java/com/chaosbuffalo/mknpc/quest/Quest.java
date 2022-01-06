@@ -98,6 +98,7 @@ public class Quest {
 
     public <D> void deserialize(Dynamic<D> dynamic){
         questName = dynamic.get("questName").asString("default");
+        autoComplete = dynamic.get("autoComplete").asBoolean(false);
         List<Optional<QuestObjective<?>>> objectives = dynamic.get("objectives").asList(x -> {
             ResourceLocation type = QuestObjective.getType(x);
             Supplier<QuestObjective<?>> sup = QuestDefinitionManager.getObjectiveDeserializer(type);
@@ -133,6 +134,7 @@ public class Quest {
         PlayerQuestData data = new PlayerQuestData(getQuestName());
         objectives.forEach(x -> {
             PlayerQuestObjectiveData obj = x.generatePlayerData(worldData, instanceData);
+            obj.putBool("isComplete", false);
             data.putObjective(x.getObjectiveName(), obj);
         });
         return data;

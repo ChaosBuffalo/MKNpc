@@ -9,6 +9,8 @@ import com.mojang.datafixers.util.Pair;
 import com.mojang.serialization.Dynamic;
 import com.mojang.serialization.DynamicOps;
 import net.minecraft.util.ResourceLocation;
+import net.minecraft.util.text.ITextComponent;
+import net.minecraft.util.text.StringTextComponent;
 
 import javax.annotation.Nullable;
 import java.util.*;
@@ -22,6 +24,8 @@ public class QuestDefinition {
     private DialogueNode startQuestResponse;
     private DialogueNode startQuestHail;
     private DialoguePrompt hailPrompt;
+    private ITextComponent questName;
+    private static final ITextComponent defaultQuestName = new StringTextComponent("Default");
 
 
     public QuestDefinition(ResourceLocation name){
@@ -29,6 +33,15 @@ public class QuestDefinition {
         this.questChain = new ArrayList<>();
         this.questIndex = new HashMap<>();
         this.repeatable = false;
+        this.questName = defaultQuestName;
+    }
+
+    public void setQuestName(ITextComponent questName) {
+        this.questName = questName;
+    }
+
+    public ITextComponent getQuestName() {
+        return questName;
     }
 
     public void setStartQuestResponse(DialogueNode startQuestResponse) {
@@ -97,6 +110,7 @@ public class QuestDefinition {
         builder.put(ops.createString("startQuestResponse"), startQuestResponse.serialize(ops));
         builder.put(ops.createString("hailQuestResponse"), startQuestHail.serialize(ops));
         builder.put(ops.createString("hailPrompt"), hailPrompt.serialize(ops));
+        builder.put(ops.createString("questName"), ops.createString(ITextComponent.Serializer.toJson(questName)));
         return ops.createMap(builder.build());
     }
 
@@ -118,6 +132,8 @@ public class QuestDefinition {
         for (Quest quest : dQuests){
             addQuest(quest);
         }
+        questName = ITextComponent.Serializer.getComponentFromJson(
+                dynamic.get("questName").asString(ITextComponent.Serializer.toJson(defaultQuestName)));
     }
 
     public Map<ResourceLocation, Integer> getStructuresNeeded(){

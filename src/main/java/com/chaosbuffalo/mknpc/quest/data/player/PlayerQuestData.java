@@ -3,6 +3,7 @@ package com.chaosbuffalo.mknpc.quest.data.player;
 import net.minecraft.nbt.CompoundNBT;
 import net.minecraftforge.common.util.INBTSerializable;
 
+import java.util.Collection;
 import java.util.HashMap;
 import java.util.Map;
 
@@ -21,6 +22,10 @@ public class PlayerQuestData implements INBTSerializable<CompoundNBT> {
 
     public void putObjective(String objectiveName, PlayerQuestObjectiveData data){
         objectives.put(objectiveName, data);
+    }
+
+    public Collection<PlayerQuestObjectiveData> getObjectives(){
+        return objectives.values();
     }
 
     public PlayerQuestObjectiveData getObjective(String objectiveName){

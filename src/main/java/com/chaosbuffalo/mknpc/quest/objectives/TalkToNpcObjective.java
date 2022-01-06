@@ -17,13 +17,12 @@ import com.chaosbuffalo.mknpc.quest.data.QuestData;
 import com.chaosbuffalo.mknpc.quest.data.objective.UUIDInstanceData;
 import com.chaosbuffalo.mknpc.quest.data.player.PlayerQuestObjectiveData;
 import com.chaosbuffalo.mknpc.quest.dialogue.conditions.OnQuestCondition;
-import com.chaosbuffalo.mknpc.quest.dialogue.effects.AdvanceQuestChainEffect;
+import com.chaosbuffalo.mknpc.quest.dialogue.effects.IReceivesChainId;
 import com.google.common.collect.ImmutableMap;
 import com.mojang.serialization.Dynamic;
 import com.mojang.serialization.DynamicOps;
 import net.minecraft.util.ResourceLocation;
-import net.minecraft.util.text.ITextComponent;
-import net.minecraft.util.text.StringTextComponent;
+import net.minecraft.util.text.IFormattableTextComponent;
 
 import java.util.*;
 
@@ -34,14 +33,14 @@ public class TalkToNpcObjective extends StructureInstanceObjective<UUIDInstanceD
     protected List<DialogueNode> additionalNodes = new ArrayList<>();
     protected List<DialoguePrompt> additionalPrompts= new ArrayList<>();
 
-    public TalkToNpcObjective(String name, ResourceLocation structure, int index, ResourceLocation npcDefinition, ITextComponent description){
+    public TalkToNpcObjective(String name, ResourceLocation structure, int index, ResourceLocation npcDefinition, IFormattableTextComponent description){
         super(NAME, name, structure, index, description);
         addAttribute(this.npcDefinition);
         this.npcDefinition.setValue(npcDefinition);
     }
 
     public TalkToNpcObjective(){
-        super(NAME, "invalid", new StringTextComponent("placeholder"));
+        super(NAME, "invalid", defaultDescription);
         addAttribute(this.npcDefinition);
     }
 
@@ -103,8 +102,8 @@ public class TalkToNpcObjective extends StructureInstanceObjective<UUIDInstanceD
     private DialogueNode copyNodeAndSetUUID(DialogueNode node, UUID questId){
         DialogueNode newNode = node.copy();
         for (DialogueEffect effect : newNode.getEffects()){
-            if (effect instanceof AdvanceQuestChainEffect){
-                AdvanceQuestChainEffect advEffect = (AdvanceQuestChainEffect) effect;
+            if (effect instanceof IReceivesChainId){
+                IReceivesChainId advEffect = (IReceivesChainId) effect;
                 advEffect.setChainId(questId);
             }
         }
@@ -159,7 +158,9 @@ public class TalkToNpcObjective extends StructureInstanceObjective<UUIDInstanceD
     }
 
     @Override
-    public boolean isComplete(PlayerQuestObjectiveData playerData) {
-        return playerData.getBool("hasSpoken");
+    public void signalCompleted(PlayerQuestObjectiveData objectiveData) {
+        super.signalCompleted(objectiveData);
+        objectiveData.putBool("hasSpoken", true);
+
     }
 }

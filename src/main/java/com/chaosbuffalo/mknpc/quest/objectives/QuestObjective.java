@@ -15,7 +15,9 @@ import com.mojang.serialization.Dynamic;
 import com.mojang.serialization.DynamicOps;
 import net.minecraft.nbt.CompoundNBT;
 import net.minecraft.util.ResourceLocation;
+import net.minecraft.util.text.IFormattableTextComponent;
 import net.minecraft.util.text.ITextComponent;
+import net.minecraft.util.text.StringTextComponent;
 
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -31,9 +33,10 @@ public abstract class QuestObjective<T extends ObjectiveInstanceData> implements
     private final List<ISerializableAttribute<?>> attributes;
     private final ResourceLocation typeName;
     protected final StringAttribute objectiveName = new StringAttribute("objectiveName", "invalid");
-    protected final ITextComponent description;
+    protected IFormattableTextComponent description;
+    protected static final IFormattableTextComponent defaultDescription = new StringTextComponent("Placeholder");
 
-    public QuestObjective(ResourceLocation typeName, String name, ITextComponent description){
+    public QuestObjective(ResourceLocation typeName, String name, IFormattableTextComponent description){
         this.attributes = new ArrayList<>();
         addAttribute(objectiveName);
         objectiveName.setValue(name);
@@ -59,6 +62,7 @@ public abstract class QuestObjective<T extends ObjectiveInstanceData> implements
     public <D> D serialize(DynamicOps<D> ops){
         ImmutableMap.Builder<D, D> builder = ImmutableMap.builder();
         builder.put(ops.createString("objectiveType"), ops.createString(getTypeName().toString()));
+        builder.put(ops.createString("description"), ops.createString(ITextComponent.Serializer.toJson(description)));
         builder.put(ops.createString("attributes"),
                 ops.createMap(attributes.stream().map(attr ->
                         Pair.of(ops.createString(attr.getName()), attr.serialize(ops))
@@ -90,6 +94,8 @@ public abstract class QuestObjective<T extends ObjectiveInstanceData> implements
 
     public <D> void deserialize(Dynamic<D> dynamic){
         Map<String, Dynamic<D>> map = dynamic.get("attributes").asMap(d -> d.asString(""), Function.identity());
+        description = ITextComponent.Serializer.getComponentFromJson(
+                dynamic.get("description").asString(ITextComponent.Serializer.toJson(defaultDescription)));
         getAttributes().forEach(attr -> {
             Dynamic<D> attrValue = map.get(attr.getName());
             if (attrValue != null) {
@@ -123,13 +129,20 @@ public abstract class QuestObjective<T extends ObjectiveInstanceData> implements
         return (T) data.getObjective(getObjectiveName());
     }
 
+    public void signalCompleted(PlayerQuestObjectiveData objectiveData) {
+        objectiveData.putBool("isComplete", true);
+    }
+
+
+    public boolean isComplete(PlayerQuestObjectiveData playerData) {
+        return playerData.getBool("isComplete");
+    }
+
     public void createDataForQuest(QuestData data, Map<ResourceLocation, List<MKStructureEntry>> questStructures){
         data.putObjective(getObjectiveName(), generateInstanceData(questStructures));
     }
 
-    public ITextComponent getDescription(){
+    public IFormattableTextComponent getDescription(){
         return description;
     }
-
-    public abstract boolean isComplete(PlayerQuestObjectiveData playerData);
 }
