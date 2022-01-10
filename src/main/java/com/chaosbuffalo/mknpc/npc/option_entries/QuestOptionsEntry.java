@@ -38,41 +38,33 @@ public class QuestOptionsEntry implements INpcOptionEntry{
 
     @Override
     public void applyToEntity(Entity entity) {
-        BlockPos pos = new BlockPos(entity.getPositionVec());
-        for (QuestOfferingEntry entry : questOfferings.values()){
-            if (entry.getQuestId() == null){
-                QuestDefinition definition = QuestDefinitionManager.getDefinition(entry.getQuestDef());
-                if (definition != null) {
-                    MinecraftServer server = entity.getServer();
-                    if (server != null) {
-                        World world = server.getWorld(World.OVERWORLD);
-                        if (world != null) {
-                            Optional<QuestChainInstance> quest = world.getCapability(NpcCapabilities.WORLD_NPC_DATA_CAPABILITY)
-                                    .map(x -> x.buildQuest(definition, pos)).orElse(Optional.empty());
-                            if (quest.isPresent()) {
-                                QuestChainInstance newQuest = quest.get();
-                                MKNpc.getNpcData(entity).ifPresent(x -> newQuest.setQuestSourceNpc(x.getSpawnID()));
-                                entry.setQuestId(newQuest.getQuestId());
-                            }
-                        }
-                    }
-                }
-            }
-        }
+//        BlockPos pos = new BlockPos(entity.getPositionVec());
+//        for (QuestOfferingEntry entry : questOfferings.values()){
+//            if (entry.getQuestId() == null){
+//                QuestDefinition definition = QuestDefinitionManager.getDefinition(entry.getQuestDef());
+//                if (definition != null) {
+//                    MinecraftServer server = entity.getServer();
+//                    if (server != null) {
+//                        World world = server.getWorld(World.OVERWORLD);
+//                        if (world != null) {
+//                            Optional<QuestChainInstance> quest = world.getCapability(NpcCapabilities.WORLD_NPC_DATA_CAPABILITY)
+//                                    .map(x -> x.buildQuest(definition, pos)).orElse(Optional.empty());
+//                            if (quest.isPresent()) {
+//                                QuestChainInstance newQuest = quest.get();
+//                                MKNpc.getNpcData(entity).ifPresent(x -> newQuest.setQuestSourceNpc(x.getSpawnID()));
+//                                entry.setQuestId(newQuest.getQuestId());
+//                            }
+//                        }
+//                    }
+//                }
+//            }
+//        }
         MKNpc.getNpcData(entity).ifPresent(x -> {
             x.putShouldHaveQuest(true);
             for (QuestOfferingEntry entry : questOfferings.values()){
-                if (entry.getQuestId() != null){
-                    x.addQuestOffering(entry.getQuestDef(), entry.getQuestId());
-                    if (entry.getTree() != null){
-                        entity.getCapability(ChatCapabilities.NPC_DIALOGUE_CAPABILITY).ifPresent(
-                                chat -> chat.addAdditionalDialogueTree(entry.getTree()));
-                    }
-                }
+                x.requestQuest(entry);
             }
         });
-
-
     }
 
     @Override

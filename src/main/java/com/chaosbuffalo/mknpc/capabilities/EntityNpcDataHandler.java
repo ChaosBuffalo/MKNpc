@@ -1,8 +1,15 @@
 package com.chaosbuffalo.mknpc.capabilities;
 
+import com.chaosbuffalo.mkchat.capabilities.ChatCapabilities;
+import com.chaosbuffalo.mkcore.GameConstants;
+import com.chaosbuffalo.mknpc.MKNpc;
 import com.chaosbuffalo.mknpc.npc.NpcDefinitionManager;
 import com.chaosbuffalo.mknpc.npc.NpcDefinition;
 import com.chaosbuffalo.mknpc.npc.entries.LootOptionEntry;
+import com.chaosbuffalo.mknpc.npc.entries.QuestOfferingEntry;
+import com.chaosbuffalo.mknpc.quest.QuestChainInstance;
+import com.chaosbuffalo.mknpc.quest.QuestDefinition;
+import com.chaosbuffalo.mknpc.quest.QuestDefinitionManager;
 import com.chaosbuffalo.mknpc.utils.RandomCollection;
 import com.chaosbuffalo.mkweapons.items.randomization.LootConstructor;
 import com.chaosbuffalo.mkweapons.items.randomization.LootTier;
@@ -14,10 +21,12 @@ import net.minecraft.entity.item.ItemEntity;
 import net.minecraft.item.ItemStack;
 import net.minecraft.nbt.CompoundNBT;
 import net.minecraft.nbt.INBT;
+import net.minecraft.server.MinecraftServer;
 import net.minecraft.util.DamageSource;
 import net.minecraft.util.Direction;
 import net.minecraft.util.ResourceLocation;
 import net.minecraft.util.math.BlockPos;
+import net.minecraft.world.World;
 import net.minecraftforge.common.capabilities.Capability;
 
 import javax.annotation.Nonnull;
@@ -39,6 +48,8 @@ public class EntityNpcDataHandler implements IEntityNpcData {
     private boolean shouldHaveQuest;
     private final List<LootOptionEntry> options;
     private final Map<ResourceLocation, UUID> questOfferings = new HashMap<>();
+    private final Queue<QuestOfferingEntry> questRequests = new ArrayDeque<>();
+    private int questGenCd;
 
     public EntityNpcDataHandler(){
         mkSpawned = false;
@@ -51,6 +62,7 @@ public class EntityNpcDataHandler implements IEntityNpcData {
         noLootChanceIncrease = 0;
         shouldHaveQuest = false;
         options = new ArrayList<>();
+        questGenCd = 0;
     }
 
     public boolean needsDefinitionApplied() {
@@ -118,6 +130,57 @@ public class EntityNpcDataHandler implements IEntityNpcData {
             }
             noLoot += noLootChanceIncrease;
         }
+    }
+
+    private void handleQuestRequests(){
+        QuestOfferingEntry entry = questRequests.poll();
+        if (entry == null){
+            return;
+        }
+        MinecraftServer server = getEntity().getServer();
+        QuestDefinition npcDef = QuestDefinitionManager.getDefinition(entry.getQuestDef());
+        if (npcDef == null){
+            questRequests.add(entry);
+            return;
+        }
+        if (server != null && entry.getQuestId() == null){
+            World overworld = server.getWorld(World.OVERWORLD);
+            if (overworld != null){
+                Optional<QuestChainInstance> quest = overworld.getCapability(NpcCapabilities.WORLD_NPC_DATA_CAPABILITY)
+                        .map(x -> x.buildQuest(npcDef, getSpawnPos())).orElse(Optional.empty());
+                if (quest.isPresent()) {
+                    QuestChainInstance newQuest = quest.get();
+                    MKNpc.getNpcData(entity).ifPresent(x -> newQuest.setQuestSourceNpc(x.getSpawnID()));
+                    entry.setQuestId(newQuest.getQuestId());
+                }
+            }
+        }
+        if (entry.getQuestId() != null){
+            addQuestOffering(entry.getQuestDef(), entry.getQuestId());
+            if (entry.getTree() != null){
+                entity.getCapability(ChatCapabilities.NPC_DIALOGUE_CAPABILITY).ifPresent(
+                        chat -> chat.addAdditionalDialogueTree(entry.getTree()));
+            }
+        } else {
+            questRequests.add(entry);
+        }
+    }
+
+    @Override
+    public void tick(){
+        if (questGenCd <= 0){
+            if (questRequests.size() > 0){
+                handleQuestRequests();
+                questGenCd = entity.getRNG().nextInt(GameConstants.TICKS_PER_SECOND * 5);
+            }
+        } else {
+            questGenCd--;
+        }
+    }
+
+    @Override
+    public void requestQuest(QuestOfferingEntry entry) {
+        questRequests.add(entry);
     }
 
 
