@@ -1,5 +1,6 @@
 package com.chaosbuffalo.mknpc.capabilities;
 
+import com.chaosbuffalo.mknpc.inventories.PsuedoChestContainer;
 import com.chaosbuffalo.mknpc.inventories.QuestChestInventory;
 import net.minecraft.entity.player.PlayerEntity;
 import net.minecraft.entity.player.PlayerInventory;
@@ -211,7 +212,7 @@ public class ChestNpcDataHandler implements IChestNpcData{
     @Nullable
     @Override
     public Container createMenu(int guiWindow, PlayerInventory playerInventory, PlayerEntity player) {
-        return ChestContainer.createGeneric9X3(guiWindow, playerInventory, getQuestInventoryForPlayer(player));
+        return PsuedoChestContainer.createGeneric9X3(guiWindow, playerInventory, getQuestInventoryForPlayer(player), entity);
     }
 
     public static class Storage implements Capability.IStorage<IChestNpcData> {
