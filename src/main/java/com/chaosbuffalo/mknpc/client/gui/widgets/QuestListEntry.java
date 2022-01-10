@@ -1,5 +1,6 @@
 package com.chaosbuffalo.mknpc.client.gui.widgets;
 
+import com.chaosbuffalo.mknpc.client.gui.screens.QuestPage;
 import com.chaosbuffalo.mknpc.quest.data.player.PlayerQuestChainInstance;
 import com.chaosbuffalo.mkwidgets.client.gui.constraints.CenterYWithOffsetConstraint;
 import com.chaosbuffalo.mkwidgets.client.gui.layouts.MKStackLayoutHorizontal;
@@ -11,16 +12,16 @@ import net.minecraft.client.gui.FontRenderer;
 public class QuestListEntry extends MKStackLayoutHorizontal {
     private final FontRenderer font;
     private final PlayerQuestChainInstance playerQuestChain;
-    private final QuestPanel panel;
+    private final QuestPage screen;
 
     public QuestListEntry(int x, int y, int height, FontRenderer font, PlayerQuestChainInstance playerQuestChain,
-                          QuestPanel panel) {
+                          QuestPage screen) {
         super(x, y, height);
         this.font = font;
         this.setPaddingRight(2);
         this.setPaddingLeft(2);
         this.setMarginLeft(6);
-        this.panel = panel;
+        this.screen = screen;
         this.playerQuestChain = playerQuestChain;
         MKText name = new MKText(font, playerQuestChain.getQuestName());
         name.setWidth(100);
@@ -30,7 +31,7 @@ public class QuestListEntry extends MKStackLayoutHorizontal {
     }
 
     public boolean onMousePressed(Minecraft minecraft, double mouseX, double mouseY, int mouseButton) {
-        this.panel.setCurrentChain(playerQuestChain);
+        this.screen.setCurrentQuest(playerQuestChain);
         return true;
     }
 
@@ -39,7 +40,7 @@ public class QuestListEntry extends MKStackLayoutHorizontal {
             mkFill(matrixStack, x, y, x + width, y + height, 0x55ffffff);
         }
 //
-        if (playerQuestChain.equals(panel.getCurrentChain())) {
+        if (playerQuestChain.equals(screen.getCurrentQuest())) {
             mkFill(matrixStack, x, y, x + width, y + height, 0x99ffffff);
         }
     }

@@ -1,37 +1,105 @@
 package com.chaosbuffalo.mknpc.npc.options;
 
 import com.chaosbuffalo.mkcore.MKCoreRegistry;
+import com.chaosbuffalo.mkcore.abilities.AbilityManager;
 import com.chaosbuffalo.mkcore.abilities.MKAbility;
-import com.chaosbuffalo.mkcore.abilities.training.IAbilityTrainer;
+import com.chaosbuffalo.mkcore.abilities.training.AbilityTrainingEntry;
+import com.chaosbuffalo.mkcore.abilities.training.AbilityTrainingRequirement;
 import com.chaosbuffalo.mkcore.abilities.training.IAbilityTrainingEntity;
 import com.chaosbuffalo.mknpc.MKNpc;
 import com.chaosbuffalo.mknpc.npc.NpcDefinition;
+import com.google.common.collect.ImmutableMap;
+import com.mojang.serialization.Dynamic;
+import com.mojang.serialization.DynamicOps;
 import net.minecraft.entity.Entity;
 import net.minecraft.util.ResourceLocation;
 
+import javax.annotation.Nullable;
+import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.List;
-import java.util.stream.Collectors;
+import java.util.Optional;
+import java.util.function.Function;
 
-public class AbilityTrainingOption extends ResourceLocationListOption {
+public class AbilityTrainingOption extends SimpleOption<List<AbilityTrainingOption.AbilityTrainingOptionEntry>> {
     public static final ResourceLocation NAME = new ResourceLocation(MKNpc.MODID, "ability_trainings");
+
+    public static class AbilityTrainingOptionEntry{
+        @Nullable
+        MKAbility ability;
+        protected final List<AbilityTrainingRequirement> requirements = new ArrayList<>();
+
+        public AbilityTrainingOptionEntry(MKAbility ability, List<AbilityTrainingRequirement> requirements){
+            this.ability = ability;
+            this.requirements.addAll(requirements);
+        }
+
+        public <D> AbilityTrainingOptionEntry(Dynamic<D> dynamic){
+            deserialize(dynamic);
+        }
+
+        public <D> D serialize(DynamicOps<D> ops) {
+            ImmutableMap.Builder<D, D> builder = ImmutableMap.builder();
+            builder.put(ops.createString("ability"), ops.createString(ability.getAbilityId().toString()));
+            builder.put(ops.createString("reqs"), ops.createList(requirements.stream().map(x -> x.serialize(ops))));
+            return ops.createMap(builder.build());
+        }
+
+        public <D> void deserialize(Dynamic<D> dynamic){
+            dynamic.get("ability").asString().result().ifPresent(x ->
+                    this.ability = MKCoreRegistry.getAbility(new ResourceLocation(x)));
+            List<Optional<AbilityTrainingRequirement>> optReqs = dynamic.get("reqs").asList(x -> {
+                ResourceLocation typeName = AbilityTrainingRequirement.getType(x);
+                Function<Dynamic<?>, AbilityTrainingRequirement> deserializer = AbilityManager.getAbilityTrainingReqDeserializer(typeName);
+                if (deserializer != null){
+                    return Optional.of(deserializer.apply(x));
+                } else {
+                    return Optional.empty();
+                }
+            });
+            for (Optional<AbilityTrainingRequirement> optReq : optReqs){
+                optReq.ifPresent(requirements::add);
+            }
+        }
+
+    }
 
     public AbilityTrainingOption() {
         super(NAME);
+        setValue(new ArrayList<>());
     }
 
-    public AbilityTrainingOption withOptions(List<MKAbility> abilities){
-        setValue(abilities.stream().map(MKAbility::getAbilityId).collect(Collectors.toList()));
+    public AbilityTrainingOption withTrainingOption(MKAbility ability, AbilityTrainingRequirement... reqs){
+        getValue().add(new AbilityTrainingOptionEntry(ability, Arrays.asList(reqs)));
         return this;
     }
 
     @Override
-    public void applyToEntity(NpcDefinition definition, Entity entity, List<ResourceLocation> value) {
+    public <D> void deserialize(Dynamic<D> dynamic) {
+        List<AbilityTrainingOptionEntry> entries = dynamic.get("value").asList(AbilityTrainingOptionEntry::new);
+        setValue(entries);
+    }
+
+    @Override
+    public <D> D serialize(DynamicOps<D> ops) {
+        D sup = super.serialize(ops);
+        return ops.mergeToMap(sup, ImmutableMap.of(
+                ops.createString("value"), ops.createList(getValue().stream().map(x -> x.serialize(ops))))
+        ).result().orElse(sup);
+    }
+
+    @Override
+    public void applyToEntity(NpcDefinition definition, Entity entity, List<AbilityTrainingOptionEntry> value) {
         if (entity instanceof IAbilityTrainingEntity){
-            for (ResourceLocation abilityId : value){
-                MKAbility ability = MKCoreRegistry.getAbility(abilityId);
-                if (ability != null){
-                    ((IAbilityTrainingEntity) entity).getAbilityTrainer().addTrainedAbility(ability);
+            for (AbilityTrainingOptionEntry entry : value){
+                if (entry.ability != null){
+                    AbilityTrainingEntry trainingEntry = ((IAbilityTrainingEntity) entity).getAbilityTrainer()
+                            .addTrainedAbility(entry.ability);
+                    for (AbilityTrainingRequirement req : entry.requirements){
+                        trainingEntry.addRequirement(req);
+                    }
                 }
+
             }
         }
     }

@@ -234,6 +234,7 @@ public class PlayerQuestingDataHandler implements IPlayerQuestingData {
             ListNBT chainsNbt = nbt.getList("chains", Constants.NBT.TAG_COMPOUND);
             for (INBT chainNbt : chainsNbt){
                 PlayerQuestChainInstance newChain = new PlayerQuestChainInstance((CompoundNBT) chainNbt);
+                newChain.setDirtyNotifier(this::onDirtyEntry);
                 questChains.put(newChain.getQuestId(), newChain);
                 if (newChain.isQuestComplete()){
                     completedQuests.add(newChain.getQuestId());

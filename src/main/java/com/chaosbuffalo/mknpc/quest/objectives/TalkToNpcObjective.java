@@ -27,9 +27,47 @@ import net.minecraft.util.text.IFormattableTextComponent;
 import java.util.*;
 
 public class TalkToNpcObjective extends StructureInstanceObjective<UUIDInstanceData> {
+
+    public static class HailEntry {
+        private DialogueNode node;
+        private DialogueResponse response;
+
+        public HailEntry(DialogueNode node, DialogueResponse response){
+            this.node = node;
+            this.response = response;
+        }
+
+        public <D> HailEntry(Dynamic<D> dynamic){
+            deserialize(dynamic);
+        }
+
+        public <D> D serialize(DynamicOps<D> ops){
+            ImmutableMap.Builder<D, D> builder = ImmutableMap.builder();
+            builder.put(ops.createString("node"), node.serialize(ops));
+            builder.put(ops.createString("response"), response.serialize(ops));
+            return ops.createMap(builder.build());
+        }
+
+        public <D> void deserialize(Dynamic<D> dynamic){
+            Optional<DialogueNode> nodeResult = dynamic.get("node").into(x -> {
+                DialogueNode newNode = new DialogueNode();
+                newNode.deserialize(x);
+                return newNode;
+            }).result();
+            nodeResult.ifPresent(dialogueNode -> this.node = dialogueNode);
+            Optional<DialogueResponse> responseResult = dynamic.get("response").into(x -> {
+                DialogueResponse newResponse = new DialogueResponse();
+                newResponse.deserialize(x);
+                return newResponse;
+            }).result();
+            responseResult.ifPresent(dialogueResponse -> this.response = dialogueResponse);
+        }
+
+
+    }
     public static final ResourceLocation NAME = new ResourceLocation(MKNpc.MODID, "objective.talk_to_npc");
     protected ResourceLocationAttribute npcDefinition = new ResourceLocationAttribute("npcDefinition", NpcDefinitionManager.INVALID_NPC_DEF);
-    protected DialogueNode hailResponse;
+    protected List<HailEntry> hailResponses = new ArrayList<>();
     protected List<DialogueNode> additionalNodes = new ArrayList<>();
     protected List<DialoguePrompt> additionalPrompts= new ArrayList<>();
 
@@ -55,8 +93,8 @@ public class TalkToNpcObjective extends StructureInstanceObjective<UUIDInstanceD
         return chest.map(x -> new UUIDInstanceData(x.getSpawnerId())).orElse(new UUIDInstanceData());
     }
 
-    public TalkToNpcObjective withHailResponse(DialogueNode hailResponse){
-        this.hailResponse = hailResponse;
+    public TalkToNpcObjective withHailResponse(DialogueNode hailNode, DialogueResponse hailResponse){
+        this.hailResponses.add(new HailEntry(hailNode, hailResponse));
         return this;
     }
 
@@ -75,7 +113,7 @@ public class TalkToNpcObjective extends StructureInstanceObjective<UUIDInstanceD
         super.putAdditionalData(ops, builder);
         builder.put(ops.createString("nodes"), ops.createList(additionalNodes.stream().map(x -> x.serialize(ops))));
         builder.put(ops.createString("prompts"), ops.createList(additionalPrompts.stream().map(x -> x.serialize(ops))));
-        builder.put(ops.createString("hailResponse"), hailResponse.serialize(ops));
+        builder.put(ops.createString("hailResponses"), ops.createList(hailResponses.stream().map(x -> x.serialize(ops))));
     }
 
     @Override
@@ -95,8 +133,9 @@ public class TalkToNpcObjective extends StructureInstanceObjective<UUIDInstanceD
         });
         additionalPrompts.clear();
         additionalPrompts.addAll(prompts);
-        hailResponse = new DialogueNode();
-        dynamic.get("hailResponse").result().ifPresent(x -> hailResponse.deserialize(x));
+        List<HailEntry> hailResponses = dynamic.get("hailResponses").asList(HailEntry::new);
+        this.hailResponses.clear();
+        this.hailResponses.addAll(hailResponses);
     }
 
     private DialogueNode copyNodeAndSetUUID(DialogueNode node, UUID questId){
@@ -110,12 +149,25 @@ public class TalkToNpcObjective extends StructureInstanceObjective<UUIDInstanceD
         return newNode;
     }
 
+    private DialogueResponse copyResponseAndAddQuestCondition(DialogueResponse response, UUID questId, String questName){
+        DialogueResponse hrResponse = response.copy();
+        hrResponse.addCondition(new OnQuestCondition(questId, questName));
+        return hrResponse;
+    }
+
     public void generateDialogueForNpc(Quest quest, QuestChainInstance questChain, ResourceLocation npcDefinitionName,
                                        UUID npcId, DialogueTree tree,
                                        Map<ResourceLocation, List<MKStructureEntry>> questStructures){
-        DialogueNode hrCopy = copyNodeAndSetUUID(hailResponse, questChain.getQuestId());
-        DialogueResponse hrResponse = new DialogueResponse(hrCopy.getId());
-        hrResponse.addCondition(new OnQuestCondition(questChain.getQuestId(), quest.getQuestName()));
+        DialoguePrompt hailPrompt = tree.getHailPrompt();
+        for (HailEntry entry : hailResponses){
+            DialogueNode hrCopy = copyNodeAndSetUUID(entry.node, questChain.getQuestId());
+            DialogueResponse hrResponse = copyResponseAndAddQuestCondition(entry.response, questChain.getQuestId(), quest.getQuestName());
+            tree.addNode(hrCopy);
+            if (hailPrompt != null){
+                hailPrompt.addResponse(hrResponse);
+            }
+        }
+
         for (DialogueNode node : additionalNodes){
             tree.addNode(copyNodeAndSetUUID(node, questChain.getQuestId()));
         }
@@ -126,11 +178,8 @@ public class TalkToNpcObjective extends StructureInstanceObjective<UUIDInstanceD
             }
             tree.addPrompt(copyPrompt);
         }
-        tree.addNode(hrCopy);
-        DialoguePrompt hailPrompt = tree.getHailPrompt();
-        if (hailPrompt != null){
-            hailPrompt.addResponse(hrResponse);
-        }
+
+
     }
 
     @Override

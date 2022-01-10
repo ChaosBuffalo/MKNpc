@@ -1,6 +1,7 @@
 package com.chaosbuffalo.mknpc;
 
 import com.chaosbuffalo.mknpc.capabilities.*;
+import com.chaosbuffalo.mknpc.client.gui.screens.QuestPage;
 import com.chaosbuffalo.mknpc.command.NpcCommands;
 import com.chaosbuffalo.mknpc.dialogue.NPCDialogueExtension;
 import com.chaosbuffalo.mknpc.event.NpcClientEventHandler;
@@ -16,10 +17,12 @@ import net.minecraft.entity.Entity;
 import net.minecraft.entity.LivingEntity;
 import net.minecraft.entity.player.PlayerEntity;
 import net.minecraft.world.World;
+import net.minecraftforge.api.distmarker.Dist;
 import net.minecraftforge.common.MinecraftForge;
 import net.minecraftforge.common.util.LazyOptional;
 import net.minecraftforge.event.RegisterCommandsEvent;
 import net.minecraftforge.eventbus.api.SubscribeEvent;
+import net.minecraftforge.fml.DistExecutor;
 import net.minecraftforge.fml.common.Mod;
 import net.minecraftforge.fml.event.lifecycle.FMLClientSetupEvent;
 import net.minecraftforge.fml.event.lifecycle.FMLCommonSetupEvent;
@@ -55,9 +58,9 @@ public class MKNpc {
     }
 
     private void enqueueIMC(final InterModEnqueueEvent event) {
-
         NPCDialogueExtension.sendExtension();
         PlayerQuestingDataHandler.registerPersonaExtension();
+        DistExecutor.safeRunWhenOn(Dist.CLIENT, () -> QuestPage::registerPlayerPage);
     }
 
     private void processIMC(final InterModProcessEvent event) {

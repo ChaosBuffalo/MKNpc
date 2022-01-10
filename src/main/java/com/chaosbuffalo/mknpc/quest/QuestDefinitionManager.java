@@ -2,9 +2,12 @@ package com.chaosbuffalo.mknpc.quest;
 
 import com.chaosbuffalo.mknpc.MKNpc;
 import com.chaosbuffalo.mknpc.npc.NpcDefinition;
+import com.chaosbuffalo.mknpc.quest.objectives.KillNpcDefObjective;
 import com.chaosbuffalo.mknpc.quest.objectives.LootChestObjective;
 import com.chaosbuffalo.mknpc.quest.objectives.QuestObjective;
 import com.chaosbuffalo.mknpc.quest.objectives.TalkToNpcObjective;
+import com.chaosbuffalo.mknpc.quest.rewards.QuestReward;
+import com.chaosbuffalo.mknpc.quest.rewards.XpReward;
 import com.google.gson.Gson;
 import com.google.gson.GsonBuilder;
 import com.google.gson.JsonElement;
@@ -38,6 +41,7 @@ public class QuestDefinitionManager extends JsonReloadListener {
     public static final Map<ResourceLocation, QuestDefinition> DEFINITIONS = new HashMap<>();
 
     public static final Map<ResourceLocation, Supplier<QuestObjective<?>>> OBJECTIVE_DESERIALIZERS = new HashMap<>();
+    public static final Map<ResourceLocation, Supplier<QuestReward>> REWARD_DESERIALIZERS = new HashMap<>();
 
     public QuestDefinitionManager(){
         super(GSON, DEFINITION_FOLDER);
@@ -47,6 +51,10 @@ public class QuestDefinitionManager extends JsonReloadListener {
 
     public static void putObjectiveDeserializer(ResourceLocation name, Supplier<QuestObjective<?>> deserializer){
         OBJECTIVE_DESERIALIZERS.put(name, deserializer);
+    }
+
+    public static void putRewardDeserializer(ResourceLocation name, Supplier<QuestReward> deserializer){
+        REWARD_DESERIALIZERS.put(name, deserializer);
     }
 
     @SubscribeEvent
@@ -59,9 +67,16 @@ public class QuestDefinitionManager extends JsonReloadListener {
         return OBJECTIVE_DESERIALIZERS.get(name);
     }
 
+    @Nullable
+    public static Supplier<QuestReward> getRewardDeserializer(ResourceLocation name){
+        return REWARD_DESERIALIZERS.get(name);
+    }
+
     public static void setupDeserializers(){
         putObjectiveDeserializer(LootChestObjective.NAME, LootChestObjective::new);
         putObjectiveDeserializer(TalkToNpcObjective.NAME, TalkToNpcObjective::new);
+        putObjectiveDeserializer(KillNpcDefObjective.NAME, KillNpcDefObjective::new);
+        putRewardDeserializer(XpReward.TYPE_NAME, XpReward::new);
     }
 
     @Override

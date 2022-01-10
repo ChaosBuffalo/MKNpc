@@ -1,32 +1,48 @@
 package com.chaosbuffalo.mknpc.client.gui.screens;
 
-import com.chaosbuffalo.mkcore.client.gui.AbilityPanelScreen;
 import com.chaosbuffalo.mkcore.client.gui.GuiTextures;
+import com.chaosbuffalo.mkcore.client.gui.PlayerPageBase;
+import com.chaosbuffalo.mkcore.client.gui.PlayerPageRegistry;
 import com.chaosbuffalo.mkcore.client.gui.widgets.*;
+import com.chaosbuffalo.mkcore.core.MKPlayerData;
+import com.chaosbuffalo.mkfaction.MKFactionMod;
+import com.chaosbuffalo.mknpc.MKNpc;
 import com.chaosbuffalo.mknpc.capabilities.NpcCapabilities;
 import com.chaosbuffalo.mknpc.client.gui.widgets.QuestListEntry;
 import com.chaosbuffalo.mknpc.client.gui.widgets.QuestPanel;
+import com.chaosbuffalo.mknpc.quest.data.player.PlayerQuestChainInstance;
 import com.chaosbuffalo.mkwidgets.client.gui.layouts.MKLayout;
 import com.chaosbuffalo.mkwidgets.client.gui.layouts.MKStackLayoutVertical;
+import com.chaosbuffalo.mkwidgets.client.gui.screens.MKScreen;
 import com.chaosbuffalo.mkwidgets.client.gui.widgets.MKRectangle;
 import com.chaosbuffalo.mkwidgets.client.gui.widgets.MKWidget;
 import com.chaosbuffalo.mkwidgets.utils.TextureRegion;
+import net.minecraft.util.ResourceLocation;
+import net.minecraft.util.text.ITextComponent;
 import net.minecraft.util.text.StringTextComponent;
+import net.minecraft.util.text.TranslationTextComponent;
+import net.minecraftforge.fml.InterModComms;
 
 
-public class QuestScreen extends AbilityPanelScreen {
-
+public class QuestPage extends PlayerPageBase {
+    public static final ResourceLocation PAGE_ID = new ResourceLocation(MKNpc.MODID, "quests");
     private QuestPanel questPanel;
+    private ScrollingListPanelLayout currentScrollingPanel;
+    private PlayerQuestChainInstance currentQuest;
 
-    public QuestScreen() {
-        super(new StringTextComponent("Quest Log"));
+    public QuestPage(MKPlayerData playerData) {
+        super(playerData, new StringTextComponent("Quest Log"));
+    }
+
+    @Override
+    public ResourceLocation getPageId() {
+        return PAGE_ID;
     }
 
     @Override
     public void setupScreen() {
         super.setupScreen();
-        addState("quests", this::createQuestsPage);
-        pushState("quests");
+        addWidget(createQuestsPage());
     }
 
     private MKWidget createQuestsPage() {
@@ -58,7 +74,7 @@ public class QuestScreen extends AbilityPanelScreen {
             stackLayout.doSetChildWidth(true);
             pData.getQuestChains().forEach(questChain -> {
                 if (!questChain.isQuestComplete()){
-                    QuestListEntry questEntry = new QuestListEntry(0, 0, 16, font, questChain, questPanel);
+                    QuestListEntry questEntry = new QuestListEntry(0, 0, 16, font, questChain, this);
                     stackLayout.addWidget(questEntry);
                     MKRectangle div = new MKRectangle(0, 0,
                             panel.getListScrollView().getWidth() - 8, 1, 0x99ffffff);
@@ -69,5 +85,53 @@ public class QuestScreen extends AbilityPanelScreen {
             root.addWidget(panel);
         });
         return root;
+    }
+
+    public PlayerQuestChainInstance getCurrentQuest() {
+        return currentQuest;
+    }
+
+    public void setCurrentQuest(PlayerQuestChainInstance currentQuest) {
+        this.currentQuest = currentQuest;
+        if (questPanel != null){
+            questPanel.setCurrentChain(currentQuest);
+        }
+    }
+
+    @Override
+    protected void persistState(boolean wasResized) {
+        final PlayerQuestChainInstance currentQuest = getCurrentQuest();
+        addPostSetupCallback(() -> {
+            if (questPanel != null) {
+                questPanel.setCurrentChain(currentQuest);
+            }
+        });
+        persistScrollingListPanelState(() -> currentScrollingPanel, wasResized);
+    }
+
+    static class PageFactory implements PlayerPageRegistry.Extension {
+
+        @Override
+        public ResourceLocation getId() {
+            return PAGE_ID;
+        }
+
+        @Override
+        public ITextComponent getDisplayName() {
+            return new TranslationTextComponent("mknpc.gui.page.quests.name");
+        }
+
+        @Override
+        public MKScreen createPage(MKPlayerData playerData) {
+            return new QuestPage(playerData);
+        }
+    }
+
+    public static void registerPlayerPage() {
+        PlayerPageRegistry.ExtensionProvider provider = PageFactory::new;
+        InterModComms.sendTo("mkcore", "register_player_page", () -> {
+            MKFactionMod.LOGGER.info("Faction register player page");
+            return provider;
+        });
     }
 }

@@ -27,6 +27,10 @@ public class PlayerQuestObjectiveData implements INBTSerializable<CompoundNBT> {
         this.description = description;
     }
 
+    public void setDescription(IFormattableTextComponent description) {
+        this.description = description;
+    }
+
     public IFormattableTextComponent getDescription() {
         return description;
     }
