@@ -12,6 +12,7 @@ import com.chaosbuffalo.mknpc.quest.data.QuestData;
 import com.chaosbuffalo.mknpc.quest.data.objective.UUIDInstanceData;
 import com.chaosbuffalo.mknpc.quest.data.player.PlayerQuestData;
 import com.chaosbuffalo.mknpc.quest.data.player.PlayerQuestObjectiveData;
+import com.chaosbuffalo.mknpc.quest.data.player.PlayerQuestReward;
 import com.chaosbuffalo.mknpc.quest.objectives.QuestObjective;
 import com.chaosbuffalo.mknpc.quest.objectives.StructureInstanceObjective;
 import com.chaosbuffalo.mknpc.quest.objectives.TalkToNpcObjective;
@@ -22,6 +23,9 @@ import com.mojang.datafixers.util.Pair;
 import com.mojang.serialization.Dynamic;
 import com.mojang.serialization.DynamicOps;
 import net.minecraft.util.ResourceLocation;
+import net.minecraft.util.text.IFormattableTextComponent;
+import net.minecraft.util.text.ITextComponent;
+import net.minecraft.util.text.StringTextComponent;
 
 import java.util.*;
 import java.util.function.Supplier;
@@ -35,13 +39,16 @@ public class Quest {
     private final List<QuestReward> rewards;
     private final List<QuestRequirements> requirements;
     private String questName;
+    private IFormattableTextComponent description;
+    public static final IFormattableTextComponent defaultDescription = new StringTextComponent("Placeholder Quest Description");
 
-    public Quest(String questName){
+    public Quest(String questName, IFormattableTextComponent description){
         this.questName = questName;
         this.objectives = new ArrayList<>();
         this.objectiveIndex = new HashMap<>();
         this.rewards = new ArrayList<>();
         this.requirements = new ArrayList<>();
+        this.description = description;
     }
 
     public void setAutoComplete(boolean autoComplete) {
@@ -53,7 +60,7 @@ public class Quest {
     }
 
     public Quest(){
-        this("default");
+        this("default", defaultDescription);
     }
 
     public String getQuestName() {
@@ -84,20 +91,33 @@ public class Quest {
         }
     }
 
+    public void addReward(QuestReward reward){
+        rewards.add(reward);
+    }
+
     public QuestObjective<?> getObjective(String name){
         return objectiveIndex.get(name);
+    }
+
+    public IFormattableTextComponent getDescription() {
+        return description;
     }
 
     public <D> D serialize(DynamicOps<D> ops){
         ImmutableMap.Builder<D, D> builder = ImmutableMap.builder();
         builder.put(ops.createString("questName"), ops.createString(questName));
         builder.put(ops.createString("objectives"), ops.createList(objectives.stream().map(x -> x.serialize(ops))));
+        builder.put(ops.createString("description"), ops.createString(ITextComponent.Serializer.toJson(description)));
         builder.put(ops.createString("autoComplete"), ops.createBoolean(autoComplete));
+        builder.put(ops.createString("rewards"), ops.createList(rewards.stream().map(x -> x.serialize(ops))));
         return ops.createMap(builder.build());
     }
 
     public <D> void deserialize(Dynamic<D> dynamic){
         questName = dynamic.get("questName").asString("default");
+        autoComplete = dynamic.get("autoComplete").asBoolean(false);
+        description = ITextComponent.Serializer.getComponentFromJson(
+                dynamic.get("description").asString(ITextComponent.Serializer.toJson(defaultDescription)));
         List<Optional<QuestObjective<?>>> objectives = dynamic.get("objectives").asList(x -> {
             ResourceLocation type = QuestObjective.getType(x);
             Supplier<QuestObjective<?>> sup = QuestDefinitionManager.getObjectiveDeserializer(type);
@@ -110,6 +130,20 @@ public class Quest {
         });
         for (Optional<QuestObjective<?>> objOpt : objectives){
             objOpt.ifPresent(this::addObjective);
+        }
+
+        List<Optional<QuestReward>> rewards = dynamic.get("rewards").asList(x -> {
+            ResourceLocation type = QuestReward.getType(x);
+            Supplier<QuestReward> sup = QuestDefinitionManager.getRewardDeserializer(type);
+            if (sup != null){
+                QuestReward reward = sup.get();
+                reward.deserialize(x);
+                return Optional.of(reward);
+            }
+            return Optional.empty();
+        });
+        for (Optional<QuestReward> rewardOpt : rewards){
+            rewardOpt.ifPresent(this::addReward);
         }
     }
 
@@ -130,10 +164,15 @@ public class Quest {
     }
 
     public PlayerQuestData generatePlayerQuestData(IWorldNpcData worldData, QuestData instanceData){
-        PlayerQuestData data = new PlayerQuestData(getQuestName());
+        PlayerQuestData data = new PlayerQuestData(getQuestName(), getDescription());
         objectives.forEach(x -> {
             PlayerQuestObjectiveData obj = x.generatePlayerData(worldData, instanceData);
+            obj.putBool("isComplete", false);
             data.putObjective(x.getObjectiveName(), obj);
+        });
+        rewards.forEach(x -> {
+            PlayerQuestReward questReward = new PlayerQuestReward(x);
+            data.addReward(questReward);
         });
         return data;
     }
@@ -143,7 +182,9 @@ public class Quest {
     }
 
     public void grantRewards(IPlayerQuestingData playerData){
-
+        for (QuestReward reward : rewards){
+            reward.grantReward(playerData.getPlayer());
+        }
 
     }
 }

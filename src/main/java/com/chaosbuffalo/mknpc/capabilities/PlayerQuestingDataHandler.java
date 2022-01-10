@@ -124,6 +124,7 @@ public class PlayerQuestingDataHandler implements IPlayerQuestingData {
                     UUID::fromString,
                     this::createNewEntry
             );
+            persona.getKnowledge().addSyncPrivate(questChainUpdater);
         }
 
         public Optional<PlayerQuestChainInstance> getChain(UUID questId){
@@ -157,6 +158,7 @@ public class PlayerQuestingDataHandler implements IPlayerQuestingData {
                 return;
             }
             PlayerQuestChainInstance quest = createNewEntry(questChain.getQuestId());
+            quest.setupQuestChain(questChain);
             quest.setCurrentQuest(questChain.getStartingQuestName());
             PlayerQuestData questData = questChain.getDefinition().getFirstQuest().generatePlayerQuestData(
                     worldHandler, questChain.getQuestChainData().getQuestData(quest.getCurrentQuest()));
@@ -232,6 +234,7 @@ public class PlayerQuestingDataHandler implements IPlayerQuestingData {
             ListNBT chainsNbt = nbt.getList("chains", Constants.NBT.TAG_COMPOUND);
             for (INBT chainNbt : chainsNbt){
                 PlayerQuestChainInstance newChain = new PlayerQuestChainInstance((CompoundNBT) chainNbt);
+                newChain.setDirtyNotifier(this::onDirtyEntry);
                 questChains.put(newChain.getQuestId(), newChain);
                 if (newChain.isQuestComplete()){
                     completedQuests.add(newChain.getQuestId());

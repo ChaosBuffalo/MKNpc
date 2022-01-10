@@ -18,6 +18,7 @@ import net.minecraft.inventory.Inventory;
 import net.minecraft.item.ItemStack;
 import net.minecraft.tileentity.ChestTileEntity;
 import net.minecraft.util.ResourceLocation;
+import net.minecraft.util.text.IFormattableTextComponent;
 import net.minecraft.util.text.ITextComponent;
 import net.minecraft.util.text.StringTextComponent;
 
@@ -28,18 +29,18 @@ public class LootChestObjective extends StructureInstanceObjective<UUIDInstanceD
     public static final ResourceLocation NAME = new ResourceLocation(MKNpc.MODID, "objective.loot_chest");
     private final List<ItemStack> itemsToAdd = new ArrayList<>();
 
-    public LootChestObjective(String name, ResourceLocation structure, String chestTag, ITextComponent description) {
+    public LootChestObjective(String name, ResourceLocation structure, String chestTag, IFormattableTextComponent description) {
         this(name, structure, 0, chestTag, description);
     }
 
-    public LootChestObjective(String name, ResourceLocation structure, int index, String chestTag, ITextComponent description){
+    public LootChestObjective(String name, ResourceLocation structure, int index, String chestTag, IFormattableTextComponent description){
         super(NAME, name, structure, index, description);
         addAttribute(this.chestTag);
         this.chestTag.setValue(chestTag);
     }
 
     public LootChestObjective(){
-        super(NAME, "invalid", new StringTextComponent("placeholder"));
+        super(NAME, "invalid", defaultDescription);
         addAttribute(this.chestTag);
     }
 
@@ -96,11 +97,6 @@ public class LootChestObjective extends StructureInstanceObjective<UUIDInstanceD
     }
 
     @Override
-    public boolean isComplete(PlayerQuestObjectiveData playerData) {
-        return playerData.getBool("hasLooted");
-    }
-
-    @Override
     public boolean onLootChest(PlayerEntity player, PlayerQuestObjectiveData objectiveData, QuestData questData, IChestNpcData chestData) {
         UUIDInstanceData objData = getInstanceData(questData);
         if (objectiveData.getBool("hasLooted")){
@@ -109,6 +105,7 @@ public class LootChestObjective extends StructureInstanceObjective<UUIDInstanceD
         if (chestData.getChestId() != null && chestData.getChestId().equals(objData.getUuid())){
             objectiveData.putBool("hasLooted", true);
             objectiveData.removeBlockPos("chestPos");
+            signalCompleted(objectiveData);
             populateChest(player, chestData);
             return true;
         }

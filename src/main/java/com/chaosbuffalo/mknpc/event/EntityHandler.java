@@ -2,16 +2,19 @@ package com.chaosbuffalo.mknpc.event;
 
 import com.chaosbuffalo.mkchat.event.PlayerNpcDialogueTreeGatherEvent;
 import com.chaosbuffalo.mkcore.core.damage.MKDamageSource;
+import com.chaosbuffalo.mkcore.effects.SpellTriggers;
 import com.chaosbuffalo.mknpc.MKNpc;
 import com.chaosbuffalo.mknpc.capabilities.IChestNpcData;
 import com.chaosbuffalo.mknpc.capabilities.IWorldNpcData;
 import com.chaosbuffalo.mknpc.capabilities.NpcCapabilities;
+import com.chaosbuffalo.mknpc.npc.NpcDefinition;
 import com.chaosbuffalo.mknpc.quest.Quest;
 import com.chaosbuffalo.mknpc.quest.QuestChainInstance;
 import com.chaosbuffalo.mknpc.quest.data.QuestData;
 import com.chaosbuffalo.mknpc.quest.data.player.PlayerQuestData;
 import com.chaosbuffalo.mknpc.quest.data.player.PlayerQuestObjectiveData;
 import com.chaosbuffalo.mknpc.quest.objectives.IContainerObjectiveHandler;
+import com.chaosbuffalo.mknpc.quest.objectives.IKillObjectiveHandler;
 import com.chaosbuffalo.mknpc.quest.objectives.QuestObjective;
 import com.chaosbuffalo.mknpc.world.gen.feature.structure.IControlNaturalSpawns;
 import net.minecraft.block.ChestBlock;
@@ -22,6 +25,7 @@ import net.minecraft.entity.player.PlayerEntity;
 import net.minecraft.entity.player.ServerPlayerEntity;
 import net.minecraft.inventory.container.ChestContainer;
 import net.minecraft.inventory.container.SimpleNamedContainerProvider;
+import net.minecraft.scoreboard.Team;
 import net.minecraft.server.MinecraftServer;
 import net.minecraft.tileentity.ChestTileEntity;
 import net.minecraft.tileentity.TileEntity;
@@ -34,6 +38,7 @@ import net.minecraft.world.server.ServerWorld;
 import net.minecraftforge.event.TickEvent;
 import net.minecraftforge.event.entity.EntityJoinWorldEvent;
 import net.minecraftforge.event.entity.living.LivingDamageEvent;
+import net.minecraftforge.event.entity.living.LivingDeathEvent;
 import net.minecraftforge.event.entity.living.LivingDropsEvent;
 import net.minecraftforge.event.entity.living.LivingSpawnEvent;
 import net.minecraftforge.event.entity.player.PlayerInteractEvent;
@@ -160,6 +165,62 @@ public class EntityHandler {
                             })));
         }
 
+    }
+
+    private static void handleKillEntityForPlayer(PlayerEntity player, LivingDeathEvent event, IWorldNpcData worldData){
+        MKNpc.getNpcData(event.getEntityLiving()).ifPresent(x -> {
+            if (x.getDefinition() != null){
+                NpcDefinition def = x.getDefinition();
+                MKNpc.getPlayerQuestData(player).ifPresent(pData -> pData.getQuestChains().forEach(
+                        pQuestChain -> {
+                            QuestChainInstance questChain = worldData.getQuest(pQuestChain.getQuestId());
+                            if (questChain == null) {
+                                return;
+                            }
+                            Quest currentQuest = questChain.getDefinition().getQuest(pQuestChain.getCurrentQuest());
+                            if (currentQuest != null) {
+                                for (QuestObjective<?> obj : currentQuest.getObjectives()) {
+                                    if (obj instanceof IKillObjectiveHandler) {
+                                        PlayerQuestData pQuest = pQuestChain.getQuestData(currentQuest.getQuestName());
+                                        PlayerQuestObjectiveData pObj = pQuest.getObjective(obj.getObjectiveName());
+                                        QuestData qData = questChain.getQuestChainData().getQuestData(currentQuest.getQuestName());
+                                        ((IKillObjectiveHandler) obj).onPlayerKillNpcDefEntity(player, pObj, def, event, qData, pQuestChain);
+                                    }
+                                }
+                            }
+                        }));
+            }
+        });
+    }
+
+    @SubscribeEvent(priority = EventPriority.LOWEST)
+    public static void onLivingDeathEvent(LivingDeathEvent event){
+        if (event.isCanceled() || event.getEntityLiving().world.isRemote){
+            return;
+        }
+        if (event.getSource().getTrueSource() instanceof PlayerEntity){
+            PlayerEntity player = (PlayerEntity) event.getSource().getTrueSource();
+            MinecraftServer server = player.getServer();
+            if (server == null){
+                return;
+            }
+            World overWorld = server.getWorld(World.OVERWORLD);
+            if (overWorld == null){
+                return;
+            }
+            overWorld.getCapability(NpcCapabilities.WORLD_NPC_DATA_CAPABILITY).ifPresent(worldNpcData -> {
+                handleKillEntityForPlayer(player, event, worldNpcData);
+                Team team = player.getTeam();
+                if (team != null) {
+                    for (String s : team.getMembershipCollection()) {
+                        ServerPlayerEntity serverplayerentity = server.getPlayerList().getPlayerByUsername(s);
+                        if (serverplayerentity != null && !serverplayerentity.equals(player)){
+                            handleKillEntityForPlayer(serverplayerentity, event, worldNpcData);
+                        }
+                    }
+                }
+            });
+        }
     }
 
     @SubscribeEvent

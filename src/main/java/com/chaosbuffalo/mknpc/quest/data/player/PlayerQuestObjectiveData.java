@@ -3,6 +3,7 @@ package com.chaosbuffalo.mknpc.quest.data.player;
 import net.minecraft.nbt.CompoundNBT;
 import net.minecraft.util.ResourceLocation;
 import net.minecraft.util.math.BlockPos;
+import net.minecraft.util.text.IFormattableTextComponent;
 import net.minecraft.util.text.ITextComponent;
 import net.minecraftforge.common.util.INBTSerializable;
 
@@ -19,16 +20,18 @@ public class PlayerQuestObjectiveData implements INBTSerializable<CompoundNBT> {
     private final Map<String, ResourceLocation> rlData = new HashMap<>();
     private final Map<String, ITextComponent> textData = new HashMap<>();
     private final Map<String, Boolean> boolData = new HashMap<>();
-    private ITextComponent description;
-    private boolean isComplete;
+    private IFormattableTextComponent description;
 
-    public PlayerQuestObjectiveData(String objectiveName, ITextComponent description){
+    public PlayerQuestObjectiveData(String objectiveName, IFormattableTextComponent description){
         this.objectiveName = objectiveName;
         this.description = description;
-        this.isComplete = false;
     }
 
-    public ITextComponent getDescription() {
+    public void setDescription(IFormattableTextComponent description) {
+        this.description = description;
+    }
+
+    public IFormattableTextComponent getDescription() {
         return description;
     }
 
@@ -104,8 +107,8 @@ public class PlayerQuestObjectiveData implements INBTSerializable<CompoundNBT> {
         deserializeNBT(nbt);
     }
 
-    public void setComplete(boolean complete) {
-        isComplete = complete;
+    public boolean isComplete() {
+        return getBool("isComplete");
     }
 
     @Override
@@ -148,7 +151,6 @@ public class PlayerQuestObjectiveData implements INBTSerializable<CompoundNBT> {
         nbt.put("boolData", boolNbt);
         nbt.putString("name", objectiveName);
         nbt.putString("description", ITextComponent.Serializer.toJson(description));
-        nbt.putBoolean("isComplete", isComplete);
         return nbt;
     }
 
@@ -184,6 +186,5 @@ public class PlayerQuestObjectiveData implements INBTSerializable<CompoundNBT> {
         }
         objectiveName = nbt.getString("name");
         description = ITextComponent.Serializer.getComponentFromJson(nbt.getString("description"));
-        isComplete = nbt.getBoolean("isComplete");
     }
 }

@@ -18,18 +18,25 @@ import net.minecraft.world.World;
 
 import java.util.UUID;
 
-public class AdvanceQuestChainEffect extends DialogueEffect implements IReceivesChainId {
-    public static ResourceLocation effectTypeName = new ResourceLocation(MKNpc.MODID, "advance_quest_chain");
+public class ObjectiveCompleteEffect extends DialogueEffect implements IReceivesChainId{
+    public static ResourceLocation effectTypeName = new ResourceLocation(MKNpc.MODID, "objective_completion");
     private UUID chainId;
+    private String objectiveName;
 
-    public AdvanceQuestChainEffect(UUID chainId){
+    public ObjectiveCompleteEffect(UUID chainId, String objectiveName){
         this();
         this.chainId = chainId;
+        this.objectiveName = objectiveName;
     }
 
-    public AdvanceQuestChainEffect() {
+    public ObjectiveCompleteEffect(String objectiveName){
+        this(UUID.randomUUID(), objectiveName);
+    }
+
+    public ObjectiveCompleteEffect() {
         super(effectTypeName);
         chainId = UUID.randomUUID();
+        objectiveName = "invalid";
     }
 
     @Override
@@ -61,7 +68,7 @@ public class AdvanceQuestChainEffect extends DialogueEffect implements IReceives
                 if (currentQuest == null){
                     return;
                 }
-                questChain.signalQuestProgress(x, questingData, currentQuest, playerChain, true);
+                questChain.signalObjectiveComplete(objectiveName, x, questingData, currentQuest, playerChain);
             });
         });
     }
@@ -69,13 +76,15 @@ public class AdvanceQuestChainEffect extends DialogueEffect implements IReceives
     @Override
     public <D> void deserialize(Dynamic<D> dynamic) {
         chainId = dynamic.get("chainId").asString().result().map(UUID::fromString).orElse(UUID.randomUUID());
+        objectiveName = dynamic.get("objectiveName").asString("invalid");
     }
 
     @Override
     public <D> D serialize(DynamicOps<D> ops) {
         D sup = super.serialize(ops);
         return ops.mergeToMap(sup, ImmutableMap.of(
-                ops.createString("chainId"), ops.createString(chainId.toString())
+                ops.createString("chainId"), ops.createString(chainId.toString()),
+                ops.createString("objectiveName"), ops.createString(objectiveName)
         )).result().orElse(sup);
     }
 }
