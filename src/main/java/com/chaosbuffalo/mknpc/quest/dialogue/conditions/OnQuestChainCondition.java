@@ -31,16 +31,14 @@ public class OnQuestChainCondition extends DialogueCondition {
     }
 
     @Override
-    public <D> void deserialize(Dynamic<D> dynamic) {
-        super.deserialize(dynamic);
+    public <D> void readAdditionalData(Dynamic<D> dynamic) {
+        super.readAdditionalData(dynamic);
         this.questId = UUID.fromString(dynamic.get("questId").asString(questId.toString()));
     }
 
     @Override
-    public <D> D serialize(DynamicOps<D> ops) {
-        D ret = super.serialize(ops);
-        return ops.mergeToMap(ret, ImmutableMap.of(
-                ops.createString("questId"), ops.createString(questId.toString())
-        )).result().orElse(ret);
+    public <D> void writeAdditionalData(DynamicOps<D> ops, ImmutableMap.Builder<D, D> builder) {
+        super.writeAdditionalData(ops, builder);
+        builder.put(ops.createString("questId"), ops.createString(questId.toString()));
     }
 }
