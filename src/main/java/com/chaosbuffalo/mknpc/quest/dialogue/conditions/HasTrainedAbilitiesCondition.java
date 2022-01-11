@@ -44,8 +44,8 @@ public class HasTrainedAbilitiesCondition extends DialogueCondition {
     }
 
     @Override
-    public <D> void deserialize(Dynamic<D> dynamic) {
-        super.deserialize(dynamic);
+    public <D> void readAdditionalData(Dynamic<D> dynamic) {
+        super.readAdditionalData(dynamic);
         this.allMatch = dynamic.get("allMatch").asBoolean(false);
         List<Optional<ResourceLocation>> locs = dynamic.get("abilities").asList(
                 d -> d.asString().result().map(ResourceLocation::new));
@@ -53,12 +53,10 @@ public class HasTrainedAbilitiesCondition extends DialogueCondition {
     }
 
     @Override
-    public <D> D serialize(DynamicOps<D> ops) {
-        D ret = super.serialize(ops);
-        return ops.mergeToMap(ret, ImmutableMap.of(
-                ops.createString("allMatch"), ops.createBoolean(allMatch),
-                ops.createString("abilities"), ops.createList(abilities.stream().map(
-                        x -> ops.createString(x.toString())))
-        )).result().orElse(ret);
+    public <D> void writeAdditionalData(DynamicOps<D> ops, ImmutableMap.Builder<D, D> builder) {
+        super.writeAdditionalData(ops, builder);
+        builder.put(ops.createString("allMatch"), ops.createBoolean(allMatch));
+        builder.put(ops.createString("abilities"),
+                ops.createList(abilities.stream().map(x -> ops.createString(x.toString()))));
     }
 }

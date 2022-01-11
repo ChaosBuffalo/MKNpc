@@ -36,16 +36,14 @@ public class HasSpentTalentPointsCondition extends DialogueCondition {
     }
 
     @Override
-    public <D> void deserialize(Dynamic<D> dynamic) {
-        super.deserialize(dynamic);
-        this.talentCount = dynamic.get("talentCount").asInt(0);
+    public <D> void writeAdditionalData(DynamicOps<D> ops, ImmutableMap.Builder<D, D> builder) {
+        super.writeAdditionalData(ops, builder);
+        builder.put(ops.createString("talentCount"), ops.createInt(talentCount));
     }
 
     @Override
-    public <D> D serialize(DynamicOps<D> ops) {
-        D ret = super.serialize(ops);
-        return ops.mergeToMap(ret, ImmutableMap.of(
-                ops.createString("talentCount"), ops.createInt(talentCount)
-        )).result().orElse(ret);
+    public <D> void readAdditionalData(Dynamic<D> dynamic) {
+        super.readAdditionalData(dynamic);
+        this.talentCount = dynamic.get("talentCount").asInt(0);
     }
 }

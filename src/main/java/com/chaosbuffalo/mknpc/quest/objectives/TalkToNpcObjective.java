@@ -4,6 +4,7 @@ import com.chaosbuffalo.mkchat.dialogue.DialogueNode;
 import com.chaosbuffalo.mkchat.dialogue.DialoguePrompt;
 import com.chaosbuffalo.mkchat.dialogue.DialogueResponse;
 import com.chaosbuffalo.mkchat.dialogue.DialogueTree;
+import com.chaosbuffalo.mkchat.dialogue.conditions.DialogueCondition;
 import com.chaosbuffalo.mkchat.dialogue.effects.DialogueEffect;
 import com.chaosbuffalo.mkcore.serialization.attributes.ResourceLocationAttribute;
 import com.chaosbuffalo.mknpc.MKNpc;
@@ -152,6 +153,11 @@ public class TalkToNpcObjective extends StructureInstanceObjective<UUIDInstanceD
     private DialogueResponse copyResponseAndAddQuestCondition(DialogueResponse response, UUID questId, String questName){
         DialogueResponse hrResponse = response.copy();
         hrResponse.addCondition(new OnQuestCondition(questId, questName));
+        for (DialogueCondition condition : hrResponse.getConditions()){
+            if (condition instanceof IReceivesChainId){
+                ((IReceivesChainId) condition).setChainId(questId);
+            }
+        }
         return hrResponse;
     }
 

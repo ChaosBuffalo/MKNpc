@@ -35,18 +35,17 @@ public class OnQuestCondition extends DialogueCondition {
     }
 
     @Override
-    public <D> void deserialize(Dynamic<D> dynamic) {
-        super.deserialize(dynamic);
+    public <D> void writeAdditionalData(DynamicOps<D> ops, ImmutableMap.Builder<D, D> builder) {
+        super.writeAdditionalData(ops, builder);
+        builder.put(ops.createString("questId"), ops.createString(questId.toString()));
+        builder.put(ops.createString("questStep"), ops.createString(questStep));
+    }
+
+    @Override
+    public <D> void readAdditionalData(Dynamic<D> dynamic) {
+        super.readAdditionalData(dynamic);
         this.questId = UUID.fromString(dynamic.get("questId").asString(questId.toString()));
         this.questStep = dynamic.get("questStep").asString("invalid");
     }
 
-    @Override
-    public <D> D serialize(DynamicOps<D> ops) {
-        D ret = super.serialize(ops);
-        return ops.mergeToMap(ret, ImmutableMap.of(
-                ops.createString("questId"), ops.createString(questId.toString()),
-                ops.createString("questStep"), ops.createString(questStep)
-        )).result().orElse(ret);
-    }
 }
