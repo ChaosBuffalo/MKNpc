@@ -2,6 +2,7 @@ package com.chaosbuffalo.mknpc.capabilities;
 
 import com.chaosbuffalo.mknpc.npc.NpcDefinition;
 import com.chaosbuffalo.mknpc.npc.entries.LootOptionEntry;
+import com.chaosbuffalo.mknpc.npc.entries.QuestOfferingEntry;
 import net.minecraft.entity.LivingEntity;
 import net.minecraft.entity.item.ItemEntity;
 import net.minecraft.nbt.CompoundNBT;
@@ -52,6 +53,8 @@ public interface IEntityNpcData extends INBTSerializable<CompoundNBT> {
     @Nonnull
     UUID getSpawnID();
 
+    void tick();
+
     void setMKSpawned(boolean value);
 
     boolean isNotable();
@@ -71,4 +74,6 @@ public interface IEntityNpcData extends INBTSerializable<CompoundNBT> {
     void setNoLootChanceIncrease(double chance);
 
     void handleExtraLoot(int lootingLevel, Collection<ItemEntity> drops, DamageSource source);
+
+    void requestQuest(QuestOfferingEntry entry);
 }
