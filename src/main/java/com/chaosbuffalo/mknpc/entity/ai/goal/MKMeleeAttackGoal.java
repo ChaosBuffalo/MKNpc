@@ -90,7 +90,7 @@ public class MKMeleeAttackGoal extends Goal {
     }
 
     public boolean isInMeleeRange(LivingEntity target){
-        return entity.getDistanceSq(target) <= this.getAttackReachSqr(target);
+        return entity.getDistanceSq(target) <= this.getAttackReachSqr(target) * 1.15;
     }
 
 

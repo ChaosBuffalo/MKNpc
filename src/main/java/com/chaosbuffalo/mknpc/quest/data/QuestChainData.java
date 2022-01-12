@@ -34,11 +34,11 @@ public class QuestChainData implements IQuestInstanceData{
     }
 
     public void generateDialogue(QuestChainInstance questChain,
-                                                    ResourceLocation dialogueName,
-                                                    QuestDefinition definition,
-                                                    Map<ResourceLocation, List<MKStructureEntry>> questStructures,
-                                                    Map<ResourceLocation, UUID> speakingRoles,
-                                                    Map<UUID, DialogueTree> npcTrees){
+                                 ResourceLocation dialogueName,
+                                 QuestDefinition definition,
+                                 Map<ResourceLocation, List<MKStructureEntry>> questStructures,
+                                 Map<ResourceLocation, UUID> speakingRoles,
+                                 Map<UUID, DialogueTree> npcTrees){
 
         for (Map.Entry<ResourceLocation, UUID> entry : speakingRoles.entrySet()){
             DialogueTree tree = new DialogueTree(dialogueName);
@@ -46,7 +46,7 @@ public class QuestChainData implements IQuestInstanceData{
             tree.setHailPrompt(hailPrompt);
             tree.addPrompt(hailPrompt);
             definition.getQuestChain().forEach(quest ->
-                    quest.generateDialogueForNpc(questChain, entry.getKey(), entry.getValue(), tree, questStructures)
+                    quest.generateDialogueForNpc(questChain, entry.getKey(), entry.getValue(), tree, questStructures, definition)
             );
             tree.bake();
             npcTrees.put(entry.getValue(), tree);

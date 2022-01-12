@@ -19,8 +19,7 @@ import net.minecraft.util.text.TextFormatting;
 import net.minecraft.util.text.TranslationTextComponent;
 import net.minecraftforge.event.entity.living.LivingDeathEvent;
 
-import java.util.List;
-import java.util.Map;
+import java.util.*;
 
 public class KillNpcDefObjective extends QuestObjective<EmptyInstanceData> implements IKillObjectiveHandler{
     public static final ResourceLocation NAME = new ResourceLocation(MKNpc.MODID, "objective.kill_npc_def");
@@ -55,8 +54,8 @@ public class KillNpcDefObjective extends QuestObjective<EmptyInstanceData> imple
     }
 
     @Override
-    public IFormattableTextComponent getDescription() {
-        return getDescriptionWithKillCount(0);
+    public List<IFormattableTextComponent> getDescription() {
+        return Collections.singletonList(getDescriptionWithKillCount(0));
     }
 
     private IFormattableTextComponent getDescriptionWithKillCount(int count){

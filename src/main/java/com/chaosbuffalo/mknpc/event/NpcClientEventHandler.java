@@ -21,7 +21,9 @@ import net.minecraftforge.fml.client.registry.ClientRegistry;
 import net.minecraftforge.fml.common.Mod;
 import org.lwjgl.glfw.GLFW;
 
+import java.util.HashSet;
 import java.util.Map;
+import java.util.Set;
 
 @Mod.EventBusSubscriber(modid = MKNpc.MODID, value = Dist.CLIENT)
 public class NpcClientEventHandler {
@@ -61,6 +63,7 @@ public class NpcClientEventHandler {
 
             if (player.ticksExisted != ticks){
                 ticks = player.ticksExisted;
+                Set<BlockPos> alreadySeen = new HashSet<>();
                 player.getCapability(NpcCapabilities.PLAYER_QUEST_DATA_CAPABILITY).ifPresent(x -> {
                     x.getQuestChains().forEach(pQuestChain -> {
                         PlayerQuestData playerQuestData = pQuestChain.getQuestData(pQuestChain.getCurrentQuest());
@@ -68,8 +71,12 @@ public class NpcClientEventHandler {
                             if (!objectiveData.isComplete()){
                                 Map<String, BlockPos> posMap = objectiveData.getBlockPosData();
                                 for (BlockPos pos : posMap.values()){
-                                    event.getContext().addParticle(CoreParticles.INDICATOR_PARTICLE, true,
-                                            pos.getX() + 0.5, pos.getY() + 1.0, pos.getZ() + 0.5, 0.0, 0.0, 0.0);
+                                    if (!alreadySeen.contains(pos)){
+                                        event.getContext().addParticle(CoreParticles.INDICATOR_PARTICLE, true,
+                                                pos.getX() + 0.5, pos.getY() + 1.0, pos.getZ() + 0.5, 0.0, 0.0, 0.0);
+                                        alreadySeen.add(pos);
+                                    }
+
                                 }
                             }
                         }

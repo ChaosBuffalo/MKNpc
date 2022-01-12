@@ -73,13 +73,16 @@ public class QuestPanel extends MKLayout {
                 objectiveName.setColor(index == 0 ? 0xffffffff : 0x99ffffff);
                 questLayout.addWidget(objectiveName);
                 for (PlayerQuestObjectiveData obj : current.getObjectives()){
-                    MKText obj_desc = new MKText(fontRenderer, obj.isComplete() ?
-                            obj.getDescription().deepCopy().mergeStyle(TextFormatting.STRIKETHROUGH) : obj.getDescription());
-                    obj_desc.setMultiline(true);
-                    obj_desc.setColor(obj.isComplete() ? 0x99ffffff : 0xffffffff);
-                    obj_desc.setWidth(getWidth() - 30);
-                    questLayout.addWidget(obj_desc);
-                    questLayout.addConstraintToWidget(new OffsetConstraint(20, 0, true, false), obj_desc);
+                    obj.getDescription().forEach(desc -> {
+                        MKText obj_desc = new MKText(fontRenderer, obj.isComplete() ?
+                                desc.deepCopy().mergeStyle(TextFormatting.STRIKETHROUGH) : desc);
+                        obj_desc.setMultiline(true);
+                        obj_desc.setColor(obj.isComplete() ? 0x99ffffff : 0xffffffff);
+                        obj_desc.setWidth(getWidth() - 30);
+                        questLayout.addWidget(obj_desc);
+                        questLayout.addConstraintToWidget(new OffsetConstraint(20, 0, true, false), obj_desc);
+                    });
+
                 }
                 List<PlayerQuestReward> rewards = current.getQuestRewards();
                 if (rewards.size() >0 ){

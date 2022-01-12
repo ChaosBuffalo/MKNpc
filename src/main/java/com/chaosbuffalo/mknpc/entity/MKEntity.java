@@ -25,6 +25,7 @@ import com.chaosbuffalo.mknpc.entity.ai.movement_strategy.MovementStrategy;
 import com.chaosbuffalo.mknpc.entity.ai.movement_strategy.StationaryMovementStrategy;
 import com.chaosbuffalo.mknpc.entity.ai.sensor.MKSensorTypes;
 import com.chaosbuffalo.mknpc.entity.attributes.NpcAttributes;
+import com.chaosbuffalo.mknpc.inventories.QuestGiverInventoryContainer;
 import com.chaosbuffalo.targeting_api.Targeting;
 import com.google.common.collect.ImmutableList;
 import net.minecraft.block.BlockState;
@@ -42,6 +43,7 @@ import net.minecraft.entity.player.ServerPlayerEntity;
 import net.minecraft.entity.projectile.AbstractArrowEntity;
 import net.minecraft.entity.projectile.ProjectileHelper;
 import net.minecraft.inventory.EquipmentSlotType;
+import net.minecraft.inventory.container.INamedContainerProvider;
 import net.minecraft.item.BowItem;
 import net.minecraft.item.ItemStack;
 import net.minecraft.item.Items;
@@ -53,6 +55,7 @@ import net.minecraft.network.datasync.EntityDataManager;
 import net.minecraft.util.*;
 import net.minecraft.util.math.BlockPos;
 import net.minecraft.util.math.vector.Vector3d;
+import net.minecraft.util.text.ITextComponent;
 import net.minecraft.world.*;
 import net.minecraft.world.server.ServerWorld;
 
@@ -81,6 +84,7 @@ public abstract class MKEntity extends CreatureEntity implements IModelLookProvi
     private int comboCooldown;
     private final EntityUpdateEngine updateEngine;
     private final ParticleEffectInstanceTracker particleEffectTracker;
+    private final EntityTradeContainer entityTradeContainer;
 
 
     public enum CombatMoveType {
@@ -105,6 +109,7 @@ public abstract class MKEntity extends CreatureEntity implements IModelLookProvi
         if (!worldIn.isRemote()){
             setAttackComboStatsAndDefault(1, GameConstants.TICKS_PER_SECOND);
         }
+        entityTradeContainer = new EntityTradeContainer(this);
         castAnimTimer = 0;
         visualCastState = VisualCastState.NONE;
         castingAbility = null;
@@ -515,6 +520,8 @@ public abstract class MKEntity extends CreatureEntity implements IModelLookProvi
     }
 
 
+
+
     @Override
     public boolean attackEntityFrom(DamageSource source, float amount) {
         if (source.getTrueSource() instanceof LivingEntity) {
@@ -541,8 +548,13 @@ public abstract class MKEntity extends CreatureEntity implements IModelLookProvi
         if (hand.equals(Hand.MAIN_HAND) && getCapability(FactionCapabilities.MOB_FACTION_CAPABILITY)
                 .map((cap) -> cap.getRelationToEntity(player) != Targeting.TargetRelation.ENEMY).orElse(false)){
             if (!player.world.isRemote() && player instanceof ServerPlayerEntity){
-                getCapability(ChatCapabilities.NPC_DIALOGUE_CAPABILITY).ifPresent(cap ->
-                        cap.startDialogue((ServerPlayerEntity) player, false));
+                if (player.isSneaking()){
+                    player.openContainer(entityTradeContainer);
+                } else {
+                    getCapability(ChatCapabilities.NPC_DIALOGUE_CAPABILITY).ifPresent(cap ->
+                            cap.startDialogue((ServerPlayerEntity) player, false));
+                }
+
             }
             return ActionResultType.SUCCESS;
         }

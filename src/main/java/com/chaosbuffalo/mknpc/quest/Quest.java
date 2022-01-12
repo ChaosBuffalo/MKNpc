@@ -4,10 +4,7 @@ import com.chaosbuffalo.mkchat.dialogue.DialogueTree;
 import com.chaosbuffalo.mknpc.MKNpc;
 import com.chaosbuffalo.mknpc.capabilities.IPlayerQuestingData;
 import com.chaosbuffalo.mknpc.capabilities.IWorldNpcData;
-import com.chaosbuffalo.mknpc.capabilities.PlayerQuestingDataHandler;
-import com.chaosbuffalo.mknpc.capabilities.WorldNpcDataHandler;
 import com.chaosbuffalo.mknpc.npc.MKStructureEntry;
-import com.chaosbuffalo.mknpc.quest.data.QuestChainData;
 import com.chaosbuffalo.mknpc.quest.data.QuestData;
 import com.chaosbuffalo.mknpc.quest.data.objective.UUIDInstanceData;
 import com.chaosbuffalo.mknpc.quest.data.player.PlayerQuestData;
@@ -16,7 +13,7 @@ import com.chaosbuffalo.mknpc.quest.data.player.PlayerQuestReward;
 import com.chaosbuffalo.mknpc.quest.objectives.QuestObjective;
 import com.chaosbuffalo.mknpc.quest.objectives.StructureInstanceObjective;
 import com.chaosbuffalo.mknpc.quest.objectives.TalkToNpcObjective;
-import com.chaosbuffalo.mknpc.quest.requirements.QuestRequirements;
+import com.chaosbuffalo.mknpc.quest.requirements.QuestRequirement;
 import com.chaosbuffalo.mknpc.quest.rewards.QuestReward;
 import com.google.common.collect.ImmutableMap;
 import com.mojang.datafixers.util.Pair;
@@ -37,7 +34,7 @@ public class Quest {
     private final List<QuestObjective<?>> objectives;
     private final Map<String, QuestObjective<?>> objectiveIndex;
     private final List<QuestReward> rewards;
-    private final List<QuestRequirements> requirements;
+    private final List<QuestRequirement> requirements;
     private String questName;
     private IFormattableTextComponent description;
     public static final IFormattableTextComponent defaultDescription = new StringTextComponent("Placeholder Quest Description");
@@ -69,14 +66,15 @@ public class Quest {
 
     public void generateDialogueForNpc(QuestChainInstance questChain, ResourceLocation npcDefinitionName,
                                        UUID npcId, DialogueTree tree,
-                                       Map<ResourceLocation, List<MKStructureEntry>> questStructures){
+                                       Map<ResourceLocation, List<MKStructureEntry>> questStructures,
+                                       QuestDefinition definition){
         QuestData questData = questChain.getQuestChainData().getQuestData(getQuestName());
         for (QuestObjective<?> obj : getObjectives()) {
             if (obj instanceof TalkToNpcObjective) {
                 TalkToNpcObjective talkObj = (TalkToNpcObjective) obj;
                 UUIDInstanceData instanceData = talkObj.getInstanceData(questData);
                 if (instanceData.getUuid().equals(npcId)){
-                    talkObj.generateDialogueForNpc(this, questChain, npcDefinitionName, npcId, tree, questStructures);
+                    talkObj.generateDialogueForNpc(this, questChain, npcDefinitionName, npcId, tree, questStructures, definition);
                 }
             }
         }

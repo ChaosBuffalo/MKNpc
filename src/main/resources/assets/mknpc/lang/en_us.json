@@ -6,5 +6,10 @@
   "mknpc.gui.rewards.name": "Rewards:",
   "mknpc.quest_reward.xp.message": "You gained %d experience points from completing a quest.",
   "mknpc.grant_entitlement.message": "You gained an entitlement: %s",
-  "mknpc.objective.kill_npc_def.desc": "Kill %s (%d / %d)"
+  "mknpc.objective.kill_npc_def.desc": "Kill %s (%d / %d)",
+  "mknpc.quest.trade_container": "Trading With %s",
+  "mknpc.quest.trade.dont_need": "%s %s, I do not need this %d %s you can have it back.",
+  "mknpc.quest.trade.accepted": "%s accepted your trade.",
+  "mknpc.trade.item_needed": "Trade %d %s",
+  "mknpc.quest.start_quest": "Started Quest: %s"
 }

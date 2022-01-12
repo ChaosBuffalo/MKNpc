@@ -24,7 +24,7 @@ public interface IPlayerQuestingData extends INBTSerializable<CompoundNBT> {
 
     void startQuest(IWorldNpcData worldHandler, UUID questId);
 
-    boolean isOnQuest(UUID questId);
+    boolean isOnQuest(UUID questId, boolean repeatable);
 
     Optional<String> getCurrentQuestStep(UUID questId);
 }

@@ -17,6 +17,9 @@ import net.minecraft.nbt.INBT;
 import net.minecraft.nbt.ListNBT;
 import net.minecraft.util.Direction;
 import net.minecraft.util.ResourceLocation;
+import net.minecraft.util.Util;
+import net.minecraft.util.text.TextFormatting;
+import net.minecraft.util.text.TranslationTextComponent;
 import net.minecraftforge.common.capabilities.Capability;
 import net.minecraftforge.common.util.Constants;
 import net.minecraftforge.fml.InterModComms;
@@ -74,7 +77,7 @@ public class PlayerQuestingDataHandler implements IPlayerQuestingData {
         QuestChainInstance chain = worldHandler.getQuest(questId);
         if (chain != null){
             MKNpc.LOGGER.info("Player {} started quest {}", getPlayer(), chain);
-            getPersonaData().startQuest(worldHandler, chain);
+            getPersonaData().startQuest(playerData.getEntity(), worldHandler, chain);
         } else {
             MKNpc.LOGGER.warn("Tried to start quest with id {} but it doesn't exist in the world data", questId);
         }
@@ -82,8 +85,8 @@ public class PlayerQuestingDataHandler implements IPlayerQuestingData {
     }
 
     @Override
-    public boolean isOnQuest(UUID questId) {
-        return getPersonaData().isOnQuest(questId);
+    public boolean isOnQuest(UUID questId, boolean allowRepeat) {
+        return getPersonaData().isOnQuest(questId, allowRepeat);
     }
 
     @Override
@@ -143,18 +146,22 @@ public class PlayerQuestingDataHandler implements IPlayerQuestingData {
             return Optional.of(questChain.getCurrentQuest());
         }
 
-        public boolean isOnQuest(UUID questId){
+        public boolean isOnQuest(UUID questId, boolean allowRepeat){
             PlayerQuestChainInstance questChain = questChains.get(questId);
             if (questChain == null){
                 return false;
             }
-            return !questChain.isQuestComplete();
+            return !questChain.isQuestComplete() || allowRepeat;
         }
 
-        public void startQuest(IWorldNpcData worldHandler, QuestChainInstance questChain){
+        public void startQuest(PlayerEntity player, IWorldNpcData worldHandler, QuestChainInstance questChain){
             if (!questChain.getDefinition().isRepeatable() && completedQuests.contains(questChain.getQuestId())){
                 MKNpc.LOGGER.info("Can't start quest with definition {} for {} already completed {}",
                         questChain.getDefinition().getName(), persona.getPlayerData().getEntity(), questChain.getQuestId());
+                return;
+            }
+            if (!questChain.getDefinition().getRequirements().stream().allMatch(requirement ->
+                    requirement.meetsRequirements(player))){
                 return;
             }
             PlayerQuestChainInstance quest = createNewEntry(questChain.getQuestId());
@@ -165,6 +172,7 @@ public class PlayerQuestingDataHandler implements IPlayerQuestingData {
             quest.addQuestData(questData);
             questChains.put(questChain.getQuestId(), quest);
             questChainUpdater.markDirty(questChain.getQuestId());
+            player.sendMessage(new TranslationTextComponent("mknpc.quest.start_quest", questChain.getDefinition().getQuestName()).mergeStyle(TextFormatting.GOLD), Util.DUMMY_UUID);
         }
 
         public void questProgression(IWorldNpcData worldHandler, QuestChainInstance questChainInstance){

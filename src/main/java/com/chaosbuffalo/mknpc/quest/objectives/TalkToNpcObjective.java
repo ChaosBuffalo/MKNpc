@@ -14,6 +14,7 @@ import com.chaosbuffalo.mknpc.npc.NotableNpcEntry;
 import com.chaosbuffalo.mknpc.npc.NpcDefinitionManager;
 import com.chaosbuffalo.mknpc.quest.Quest;
 import com.chaosbuffalo.mknpc.quest.QuestChainInstance;
+import com.chaosbuffalo.mknpc.quest.QuestDefinition;
 import com.chaosbuffalo.mknpc.quest.data.QuestData;
 import com.chaosbuffalo.mknpc.quest.data.objective.UUIDInstanceData;
 import com.chaosbuffalo.mknpc.quest.data.player.PlayerQuestObjectiveData;
@@ -72,7 +73,7 @@ public class TalkToNpcObjective extends StructureInstanceObjective<UUIDInstanceD
     protected List<DialogueNode> additionalNodes = new ArrayList<>();
     protected List<DialoguePrompt> additionalPrompts= new ArrayList<>();
 
-    public TalkToNpcObjective(String name, ResourceLocation structure, int index, ResourceLocation npcDefinition, IFormattableTextComponent description){
+    public TalkToNpcObjective(String name, ResourceLocation structure, int index, ResourceLocation npcDefinition, IFormattableTextComponent... description){
         super(NAME, name, structure, index, description);
         addAttribute(this.npcDefinition);
         this.npcDefinition.setValue(npcDefinition);
@@ -89,7 +90,7 @@ public class TalkToNpcObjective extends StructureInstanceObjective<UUIDInstanceD
 
     @Override
     public UUIDInstanceData generateInstanceData(Map<ResourceLocation, List<MKStructureEntry>> questStructures) {
-        MKStructureEntry entry = questStructures.get(getStructureName()).get(structureIndex.getValue());
+        MKStructureEntry entry = questStructures.get(getStructureName()).get(structureIndex.value());
         Optional<NotableNpcEntry> chest = entry.getFirstNotableOfType(npcDefinition.getValue());
         return chest.map(x -> new UUIDInstanceData(x.getSpawnerId())).orElse(new UUIDInstanceData());
     }
@@ -110,8 +111,8 @@ public class TalkToNpcObjective extends StructureInstanceObjective<UUIDInstanceD
     }
 
     @Override
-    public <D> void putAdditionalData(DynamicOps<D> ops, ImmutableMap.Builder<D, D> builder) {
-        super.putAdditionalData(ops, builder);
+    public <D> void writeAdditionalData(DynamicOps<D> ops, ImmutableMap.Builder<D, D> builder) {
+        super.writeAdditionalData(ops, builder);
         builder.put(ops.createString("nodes"), ops.createList(additionalNodes.stream().map(x -> x.serialize(ops))));
         builder.put(ops.createString("prompts"), ops.createList(additionalPrompts.stream().map(x -> x.serialize(ops))));
         builder.put(ops.createString("hailResponses"), ops.createList(hailResponses.stream().map(x -> x.serialize(ops))));
@@ -150,9 +151,9 @@ public class TalkToNpcObjective extends StructureInstanceObjective<UUIDInstanceD
         return newNode;
     }
 
-    private DialogueResponse copyResponseAndAddQuestCondition(DialogueResponse response, UUID questId, String questName){
+    private DialogueResponse copyResponseAndAddQuestCondition(DialogueResponse response, UUID questId, String questName, boolean allowRepeat){
         DialogueResponse hrResponse = response.copy();
-        hrResponse.addCondition(new OnQuestCondition(questId, questName));
+        hrResponse.addCondition(new OnQuestCondition(questId, questName, allowRepeat));
         for (DialogueCondition condition : hrResponse.getConditions()){
             if (condition instanceof IReceivesChainId){
                 ((IReceivesChainId) condition).setChainId(questId);
@@ -163,11 +164,12 @@ public class TalkToNpcObjective extends StructureInstanceObjective<UUIDInstanceD
 
     public void generateDialogueForNpc(Quest quest, QuestChainInstance questChain, ResourceLocation npcDefinitionName,
                                        UUID npcId, DialogueTree tree,
-                                       Map<ResourceLocation, List<MKStructureEntry>> questStructures){
+                                       Map<ResourceLocation, List<MKStructureEntry>> questStructures,
+                                       QuestDefinition definition){
         DialoguePrompt hailPrompt = tree.getHailPrompt();
         for (HailEntry entry : hailResponses){
             DialogueNode hrCopy = copyNodeAndSetUUID(entry.node, questChain.getQuestId());
-            DialogueResponse hrResponse = copyResponseAndAddQuestCondition(entry.response, questChain.getQuestId(), quest.getQuestName());
+            DialogueResponse hrResponse = copyResponseAndAddQuestCondition(entry.response, questChain.getQuestId(), quest.getQuestName(), definition.isRepeatable());
             tree.addNode(hrCopy);
             if (hailPrompt != null){
                 hailPrompt.addResponse(hrResponse);
@@ -180,7 +182,7 @@ public class TalkToNpcObjective extends StructureInstanceObjective<UUIDInstanceD
         for (DialoguePrompt prompt : additionalPrompts){
             DialoguePrompt copyPrompt = prompt.copy();
             for (DialogueResponse resp : copyPrompt.getResponses()){
-                resp.addCondition(new OnQuestCondition(questChain.getQuestId(), quest.getQuestName()));
+                resp.addCondition(new OnQuestCondition(questChain.getQuestId(), quest.getQuestName(), definition.isRepeatable()));
             }
             tree.addPrompt(copyPrompt);
         }
