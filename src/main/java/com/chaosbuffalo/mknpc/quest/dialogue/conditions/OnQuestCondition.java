@@ -9,6 +9,8 @@ import net.minecraft.entity.LivingEntity;
 import net.minecraft.entity.player.ServerPlayerEntity;
 import net.minecraft.util.ResourceLocation;
 
+import java.util.ArrayList;
+import java.util.List;
 import java.util.UUID;
 
 public class OnQuestCondition extends DialogueCondition {
@@ -16,23 +18,21 @@ public class OnQuestCondition extends DialogueCondition {
     public static final ResourceLocation conditionTypeName = new ResourceLocation(MKNpc.MODID, "on_quest_condition");
     private UUID questId;
     private String questStep;
-    private boolean allowRepeat;
 
-    public OnQuestCondition(UUID questId, String questStep, boolean allowRepeat){
+    public OnQuestCondition(UUID questId, String questStep){
         super(conditionTypeName);
         this.questId = questId;
         this.questStep = questStep;
-        this.allowRepeat = allowRepeat;
     }
 
     public OnQuestCondition(){
-        this(UUID.randomUUID(), "invalid", false);
+        this(UUID.randomUUID(), "invalid");
     }
 
     @Override
     public boolean meetsCondition(ServerPlayerEntity player, LivingEntity source) {
         return MKNpc.getPlayerQuestData(player).map(
-                x -> x.isOnQuest(questId, allowRepeat) && x.getCurrentQuestStep(questId).orElse("invalid").equals(questStep))
+                x -> x.isOnQuest(questId, false) && x.getCurrentQuestSteps(questId).orElse(new ArrayList<>()).contains(questStep))
                 .orElse(false);
     }
 
@@ -41,7 +41,6 @@ public class OnQuestCondition extends DialogueCondition {
         super.writeAdditionalData(ops, builder);
         builder.put(ops.createString("questId"), ops.createString(questId.toString()));
         builder.put(ops.createString("questStep"), ops.createString(questStep));
-        builder.put(ops.createString("allowRepeat"), ops.createBoolean(allowRepeat));
     }
 
     @Override
@@ -49,7 +48,6 @@ public class OnQuestCondition extends DialogueCondition {
         super.readAdditionalData(dynamic);
         this.questId = UUID.fromString(dynamic.get("questId").asString(questId.toString()));
         this.questStep = dynamic.get("questStep").asString("invalid");
-        allowRepeat = dynamic.get("allowRepeat").asBoolean(false);
     }
 
 }

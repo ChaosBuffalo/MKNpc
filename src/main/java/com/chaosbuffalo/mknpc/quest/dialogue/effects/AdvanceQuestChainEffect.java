@@ -57,11 +57,14 @@ public class AdvanceQuestChainEffect extends DialogueEffect implements IReceives
                 return;
             }
             questingData.getQuestChain(chainId).ifPresent(playerChain -> {
-                Quest currentQuest = questChain.getDefinition().getQuest(playerChain.getCurrentQuest());
-                if (currentQuest == null){
-                    return;
+                for (String questName : playerChain.getCurrentQuests()){
+                    Quest currentQuest = questChain.getDefinition().getQuest(questName);
+                    if (currentQuest == null){
+                        continue;
+                    }
+                    questChain.signalQuestProgress(x, questingData, currentQuest, playerChain, true);
                 }
-                questChain.signalQuestProgress(x, questingData, currentQuest, playerChain, true);
+
             });
         });
     }

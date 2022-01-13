@@ -151,9 +151,9 @@ public class TalkToNpcObjective extends StructureInstanceObjective<UUIDInstanceD
         return newNode;
     }
 
-    private DialogueResponse copyResponseAndAddQuestCondition(DialogueResponse response, UUID questId, String questName, boolean allowRepeat){
+    private DialogueResponse copyResponseAndAddQuestCondition(DialogueResponse response, UUID questId, String questName){
         DialogueResponse hrResponse = response.copy();
-        hrResponse.addCondition(new OnQuestCondition(questId, questName, allowRepeat));
+        hrResponse.addCondition(new OnQuestCondition(questId, questName));
         for (DialogueCondition condition : hrResponse.getConditions()){
             if (condition instanceof IReceivesChainId){
                 ((IReceivesChainId) condition).setChainId(questId);
@@ -169,7 +169,7 @@ public class TalkToNpcObjective extends StructureInstanceObjective<UUIDInstanceD
         DialoguePrompt hailPrompt = tree.getHailPrompt();
         for (HailEntry entry : hailResponses){
             DialogueNode hrCopy = copyNodeAndSetUUID(entry.node, questChain.getQuestId());
-            DialogueResponse hrResponse = copyResponseAndAddQuestCondition(entry.response, questChain.getQuestId(), quest.getQuestName(), definition.isRepeatable());
+            DialogueResponse hrResponse = copyResponseAndAddQuestCondition(entry.response, questChain.getQuestId(), quest.getQuestName());
             tree.addNode(hrCopy);
             if (hailPrompt != null){
                 hailPrompt.addResponse(hrResponse);
@@ -182,7 +182,7 @@ public class TalkToNpcObjective extends StructureInstanceObjective<UUIDInstanceD
         for (DialoguePrompt prompt : additionalPrompts){
             DialoguePrompt copyPrompt = prompt.copy();
             for (DialogueResponse resp : copyPrompt.getResponses()){
-                resp.addCondition(new OnQuestCondition(questChain.getQuestId(), quest.getQuestName(), definition.isRepeatable()));
+                resp.addCondition(new OnQuestCondition(questChain.getQuestId(), quest.getQuestName()));
             }
             tree.addPrompt(copyPrompt);
         }

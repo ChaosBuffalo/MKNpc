@@ -11,5 +11,7 @@
   "mknpc.quest.trade.dont_need": "%s %s, I do not need this %d %s you can have it back.",
   "mknpc.quest.trade.accepted": "%s accepted your trade.",
   "mknpc.trade.item_needed": "Trade %d %s",
-  "mknpc.quest.start_quest": "Started Quest: %s"
+  "mknpc.quest.start_quest": "Started Quest: %s",
+  "mknpc.quest.cant_start_quest": "Unable to Start Quest: %s",
+  "mknpc.quest.complete_chain": "Completed Quest: %s"
 }

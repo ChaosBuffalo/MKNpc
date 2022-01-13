@@ -1,6 +1,5 @@
 package com.chaosbuffalo.mknpc.quest.data;
 
-import com.chaosbuffalo.mkchat.dialogue.DialogueNode;
 import com.chaosbuffalo.mkchat.dialogue.DialoguePrompt;
 import com.chaosbuffalo.mkchat.dialogue.DialogueTree;
 import com.chaosbuffalo.mknpc.npc.MKStructureEntry;

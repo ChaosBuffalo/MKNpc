@@ -72,22 +72,24 @@ public class QuestGiverInventoryContainer extends ChestContainer {
                             if (questChain == null) {
                                 continue;
                             }
-                            Quest currentQuest = questChain.getDefinition().getQuest(chain.getCurrentQuest());
-                            if (currentQuest != null) {
-                                for (QuestObjective<?> obj : currentQuest.getObjectives()){
-                                    if (obj instanceof ITradeObjectiveHandler){
-                                        int[] matches = ((ITradeObjectiveHandler) obj).findMatches(nonEmpty);
-                                        if (matches == null){
-                                            continue;
-                                        } else {
-                                            ((ITradeObjectiveHandler) obj).onPlayerTradeSuccess(playerIn,
-                                                    chain.getQuestData(currentQuest.getQuestName())
-                                                            .getObjective(obj.getObjectiveName()),
-                                                    questChain.getQuestChainData().getQuestData(chain.getCurrentQuest()), chain, entity);
-                                            questChain.signalQuestProgress(worldData, playerQuest, currentQuest,chain, false);
-                                            return;
-                                        }
+                            for (String questName : chain.getCurrentQuests()){
+                                Quest currentQuest = questChain.getDefinition().getQuest(questName);
+                                if (currentQuest != null) {
+                                    for (QuestObjective<?> obj : currentQuest.getObjectives()){
+                                        if (obj instanceof ITradeObjectiveHandler){
+                                            int[] matches = ((ITradeObjectiveHandler) obj).findMatches(nonEmpty);
+                                            if (matches == null){
+                                                continue;
+                                            } else {
+                                                ((ITradeObjectiveHandler) obj).onPlayerTradeSuccess(playerIn,
+                                                        chain.getQuestData(currentQuest.getQuestName())
+                                                                .getObjective(obj.getObjectiveName()),
+                                                        questChain.getQuestChainData().getQuestData(questName), chain, entity);
+                                                questChain.signalQuestProgress(worldData, playerQuest, currentQuest, chain, false);
+                                                return;
+                                            }
 
+                                        }
                                     }
                                 }
                             }

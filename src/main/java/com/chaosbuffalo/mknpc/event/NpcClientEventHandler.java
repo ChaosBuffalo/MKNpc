@@ -1,12 +1,9 @@
 package com.chaosbuffalo.mknpc.event;
 
 
-import com.chaosbuffalo.mkcore.MKCore;
-import com.chaosbuffalo.mkcore.core.MKPlayerData;
 import com.chaosbuffalo.mkcore.init.CoreParticles;
 import com.chaosbuffalo.mknpc.MKNpc;
 import com.chaosbuffalo.mknpc.capabilities.NpcCapabilities;
-import com.chaosbuffalo.mknpc.client.gui.screens.QuestPage;
 import com.chaosbuffalo.mknpc.quest.data.player.PlayerQuestData;
 import com.chaosbuffalo.mknpc.quest.data.player.PlayerQuestObjectiveData;
 import net.minecraft.client.Minecraft;
@@ -66,20 +63,23 @@ public class NpcClientEventHandler {
                 Set<BlockPos> alreadySeen = new HashSet<>();
                 player.getCapability(NpcCapabilities.PLAYER_QUEST_DATA_CAPABILITY).ifPresent(x -> {
                     x.getQuestChains().forEach(pQuestChain -> {
-                        PlayerQuestData playerQuestData = pQuestChain.getQuestData(pQuestChain.getCurrentQuest());
-                        for (PlayerQuestObjectiveData objectiveData : playerQuestData.getObjectives()){
-                            if (!objectiveData.isComplete()){
-                                Map<String, BlockPos> posMap = objectiveData.getBlockPosData();
-                                for (BlockPos pos : posMap.values()){
-                                    if (!alreadySeen.contains(pos)){
-                                        event.getContext().addParticle(CoreParticles.INDICATOR_PARTICLE, true,
-                                                pos.getX() + 0.5, pos.getY() + 1.0, pos.getZ() + 0.5, 0.0, 0.0, 0.0);
-                                        alreadySeen.add(pos);
-                                    }
+                        pQuestChain.getCurrentQuests().forEach(questName -> {
+                            PlayerQuestData playerQuestData = pQuestChain.getQuestData(questName);
+                            for (PlayerQuestObjectiveData objectiveData : playerQuestData.getObjectives()){
+                                if (!objectiveData.isComplete()){
+                                    Map<String, BlockPos> posMap = objectiveData.getBlockPosData();
+                                    for (BlockPos pos : posMap.values()){
+                                        if (!alreadySeen.contains(pos)){
+                                            event.getContext().addParticle(CoreParticles.INDICATOR_PARTICLE, true,
+                                                    pos.getX() + 0.5, pos.getY() + 1.0, pos.getZ() + 0.5, 0.0, 0.0, 0.0);
+                                            alreadySeen.add(pos);
+                                        }
 
+                                    }
                                 }
                             }
-                        }
+                        });
+
                     });
                 });
             }

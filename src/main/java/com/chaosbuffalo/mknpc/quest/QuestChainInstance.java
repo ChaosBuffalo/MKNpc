@@ -20,6 +20,7 @@ import net.minecraft.util.ResourceLocation;
 import net.minecraftforge.common.util.INBTSerializable;
 
 import java.util.*;
+import java.util.stream.Collectors;
 
 public class QuestChainInstance implements INBTSerializable<CompoundNBT> {
 
@@ -70,8 +71,8 @@ public class QuestChainInstance implements INBTSerializable<CompoundNBT> {
         return questId;
     }
 
-    public String getStartingQuestName(){
-        return definition.getFirstQuest().getQuestName();
+    public List<String> getStartingQuestNames(){
+        return definition.getFirstQuests().stream().map(Quest::getQuestName).collect(Collectors.toList());
     }
 
 
@@ -148,7 +149,7 @@ public class QuestChainInstance implements INBTSerializable<CompoundNBT> {
         questingData.questProgression(worldData, worldData.getQuest(playerInstance.getQuestId()));
         if (currentQuest.isComplete(playerData) || manualAdvance){
             if (currentQuest.shouldAutoComplete() || manualAdvance){
-                questingData.advanceQuest(worldData, worldData.getQuest(playerInstance.getQuestId()));
+                questingData.advanceQuestChain(worldData, worldData.getQuest(playerInstance.getQuestId()), currentQuest);
             }
         }
     }
@@ -157,8 +158,7 @@ public class QuestChainInstance implements INBTSerializable<CompoundNBT> {
                                         Quest currentQuest, PlayerQuestChainInstance playerInstance){
         for (QuestObjective<?> obj : currentQuest.getObjectives()){
             if (obj.getObjectiveName().equals(objectiveName)){
-                obj.signalCompleted(playerInstance.getQuestData(
-                        playerInstance.getCurrentQuest()).getObjective(objectiveName));
+                obj.signalCompleted(playerInstance.getQuestData(currentQuest.getQuestName()).getObjective(objectiveName));
             }
         }
         signalQuestProgress(worldData, questingData, currentQuest, playerInstance, false);

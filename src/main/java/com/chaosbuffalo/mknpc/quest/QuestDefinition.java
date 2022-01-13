@@ -19,6 +19,12 @@ import java.util.function.Supplier;
 import java.util.stream.Collectors;
 
 public class QuestDefinition {
+    public enum QuestMode {
+        LINEAR,
+        UNSORTED
+    }
+
+
     private ResourceLocation name;
     private final List<Quest> questChain;
     private final Map<String, Quest> questIndex;
@@ -29,7 +35,7 @@ public class QuestDefinition {
     private ITextComponent questName;
     private static final ITextComponent defaultQuestName = new StringTextComponent("Default");
     private final List<QuestRequirement> requirements;
-
+    private QuestMode mode;
 
     public QuestDefinition(ResourceLocation name){
         this.name = name;
@@ -37,7 +43,16 @@ public class QuestDefinition {
         this.questIndex = new HashMap<>();
         this.requirements = new ArrayList<>();
         this.repeatable = false;
+        this.mode = QuestMode.LINEAR;
         this.questName = defaultQuestName;
+    }
+
+    public QuestMode getMode() {
+        return mode;
+    }
+
+    public void setMode(QuestMode mode) {
+        this.mode = mode;
     }
 
     public List<QuestRequirement> getRequirements() {
@@ -88,8 +103,14 @@ public class QuestDefinition {
         return repeatable;
     }
 
-    public Quest getFirstQuest(){
-        return questChain.get(0);
+    public List<Quest> getFirstQuests(){
+        switch (getMode()){
+            case UNSORTED:
+                return questChain;
+            default:
+            case LINEAR:
+                return Collections.singletonList(questChain.get(0));
+        }
     }
 
     public void addQuest(Quest quest){
@@ -124,6 +145,7 @@ public class QuestDefinition {
         builder.put(ops.createString("hailPrompt"), hailPrompt.serialize(ops));
         builder.put(ops.createString("questName"), ops.createString(ITextComponent.Serializer.toJson(questName)));
         builder.put(ops.createString("requirements"), ops.createList(requirements.stream().map(x -> x.serialize(ops))));
+        builder.put(ops.createString("questMode"), ops.createInt(getMode().ordinal()));
         return ops.createMap(builder.build());
     }
 
@@ -147,6 +169,7 @@ public class QuestDefinition {
         }
         questName = ITextComponent.Serializer.getComponentFromJson(
                 dynamic.get("questName").asString(ITextComponent.Serializer.toJson(defaultQuestName)));
+        mode = QuestMode.values()[dynamic.get("questMode").asInt(0)];
         List<Optional<QuestRequirement>> reqs = dynamic.get("requirements").asList(x -> {
             ResourceLocation type = QuestRequirement.getType(x);
             Supplier<QuestRequirement> deserializer = QuestDefinitionManager.getRequirementDeserializer(type);

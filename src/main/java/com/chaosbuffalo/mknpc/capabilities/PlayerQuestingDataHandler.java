@@ -53,8 +53,9 @@ public class PlayerQuestingDataHandler implements IPlayerQuestingData {
         return playerData;
     }
 
-    public void advanceQuest(IWorldNpcData worldHandler, QuestChainInstance questChainInstance){
-        getPersonaData().advanceQuestChain(worldHandler, questChainInstance, this);
+    @Override
+    public void advanceQuestChain(IWorldNpcData worldHandler, QuestChainInstance questChainInstance, Quest currentQuest){
+        getPersonaData().advanceQuestChain(worldHandler, questChainInstance, currentQuest, this);
     }
 
     @Override
@@ -90,8 +91,8 @@ public class PlayerQuestingDataHandler implements IPlayerQuestingData {
     }
 
     @Override
-    public Optional<String> getCurrentQuestStep(UUID questId) {
-        return getPersonaData().getCurrentQuestStep(questId);
+    public Optional<List<String>> getCurrentQuestSteps(UUID questId) {
+        return getPersonaData().getCurrentQuestSteps(questId);
     }
 
     private PersonaQuestData getPersonaData(){
@@ -138,12 +139,12 @@ public class PlayerQuestingDataHandler implements IPlayerQuestingData {
             return Optional.of(questChain);
         }
 
-        public Optional<String> getCurrentQuestStep(UUID questId){
+        public Optional<List<String>> getCurrentQuestSteps(UUID questId){
             PlayerQuestChainInstance questChain = questChains.get(questId);
             if (questChain == null){
                 return Optional.empty();
             }
-            return Optional.of(questChain.getCurrentQuest());
+            return Optional.of(questChain.getCurrentQuests());
         }
 
         public boolean isOnQuest(UUID questId, boolean allowRepeat){
@@ -151,27 +152,35 @@ public class PlayerQuestingDataHandler implements IPlayerQuestingData {
             if (questChain == null){
                 return false;
             }
-            return !questChain.isQuestComplete() || allowRepeat;
+            if (allowRepeat && questChain.isQuestComplete()){
+                return false;
+            }
+            return !questChain.isQuestComplete();
         }
 
         public void startQuest(PlayerEntity player, IWorldNpcData worldHandler, QuestChainInstance questChain){
             if (!questChain.getDefinition().isRepeatable() && completedQuests.contains(questChain.getQuestId())){
                 MKNpc.LOGGER.info("Can't start quest with definition {} for {} already completed {}",
                         questChain.getDefinition().getName(), persona.getPlayerData().getEntity(), questChain.getQuestId());
+                player.sendMessage(new TranslationTextComponent("mknpc.quest.cant_start_quest", questChain.getDefinition().getQuestName()).mergeStyle(TextFormatting.DARK_RED), Util.DUMMY_UUID);
                 return;
             }
             if (!questChain.getDefinition().getRequirements().stream().allMatch(requirement ->
                     requirement.meetsRequirements(player))){
+                player.sendMessage(new TranslationTextComponent("mknpc.quest.cant_start_quest", questChain.getDefinition().getQuestName()).mergeStyle(TextFormatting.DARK_RED), Util.DUMMY_UUID);
                 return;
             }
             PlayerQuestChainInstance quest = createNewEntry(questChain.getQuestId());
             quest.setupQuestChain(questChain);
-            quest.setCurrentQuest(questChain.getStartingQuestName());
-            PlayerQuestData questData = questChain.getDefinition().getFirstQuest().generatePlayerQuestData(
-                    worldHandler, questChain.getQuestChainData().getQuestData(quest.getCurrentQuest()));
-            quest.addQuestData(questData);
-            questChains.put(questChain.getQuestId(), quest);
-            questChainUpdater.markDirty(questChain.getQuestId());
+            quest.setCurrentQuests(questChain.getStartingQuestNames());
+            for (Quest q : questChain.getDefinition().getFirstQuests()){
+                PlayerQuestData questData = q.generatePlayerQuestData(
+                        worldHandler, questChain.getQuestChainData().getQuestData(q.getQuestName()));
+                quest.addQuestData(questData);
+                questChains.put(questChain.getQuestId(), quest);
+                questChainUpdater.markDirty(questChain.getQuestId());
+            }
+
             player.sendMessage(new TranslationTextComponent("mknpc.quest.start_quest", questChain.getDefinition().getQuestName()).mergeStyle(TextFormatting.GOLD), Util.DUMMY_UUID);
         }
 
@@ -179,23 +188,46 @@ public class PlayerQuestingDataHandler implements IPlayerQuestingData {
             questChainUpdater.markDirty(questChainInstance.getQuestId());
         }
 
-        public void advanceQuestChain(IWorldNpcData worldHandler, QuestChainInstance questChainInstance, IPlayerQuestingData questingData){
+        private void completeChain(PlayerQuestChainInstance chain, PlayerEntity player){
+            chain.setQuestComplete(true);
+            completedQuests.add(chain.getQuestId());
+            player.sendMessage(new TranslationTextComponent("mknpc.quest.complete_chain", chain.getQuestName()).mergeStyle(TextFormatting.GOLD), Util.DUMMY_UUID);
+        }
+
+        public void advanceQuestChain(IWorldNpcData worldHandler, QuestChainInstance questChainInstance, Quest currentQuest, IPlayerQuestingData questingData){
             PlayerQuestChainInstance chain = questChains.get(questChainInstance.getQuestId());
-            if (chain != null){
-                String currentQuestName = chain.getCurrentQuest();
-                Quest currentQuest = questChainInstance.getDefinition().getQuest(currentQuestName);
-                if (currentQuest != null){
-                    currentQuest.grantRewards(questingData);
-                }
-                Optional<Quest> nextQuest = questChainInstance.getNextQuest(currentQuestName);
-                if (nextQuest.isPresent()){
-                    Quest quest = nextQuest.get();
-                    chain.addQuestData(quest.generatePlayerQuestData(worldHandler,
-                            questChainInstance.getQuestChainData().getQuestData(quest.getQuestName())));
-                    chain.setCurrentQuest(quest.getQuestName());
-                } else {
-                    chain.setQuestComplete(true);
-                    completedQuests.add(chain.getQuestId());
+            if (chain != null && currentQuest != null) {
+                currentQuest.grantRewards(questingData);
+                switch (questChainInstance.getDefinition().getMode()) {
+                    case LINEAR:
+                        String currentQuestName = currentQuest.getQuestName();
+                        Optional<Quest> nextQuest = questChainInstance.getNextQuest(currentQuestName);
+                        if (nextQuest.isPresent()) {
+                            Quest quest = nextQuest.get();
+                            chain.addQuestData(quest.generatePlayerQuestData(worldHandler,
+                                    questChainInstance.getQuestChainData().getQuestData(quest.getQuestName())));
+                            chain.setCurrentQuests(Collections.singletonList(quest.getQuestName()));
+                        } else {
+                            completeChain(chain, questingData.getPlayer());
+                        }
+                        break;
+                    case UNSORTED:
+                        boolean allComplete = chain.getCurrentQuests().stream().allMatch(questName -> {
+                            Quest quest = questChainInstance.getDefinition().getQuest(questName);
+                            if (quest != null){
+                                PlayerQuestData questData = chain.getQuestData(questName);
+                                if (questData == null){
+                                    return false;
+                                }
+                                return quest.isComplete(questData);
+                            } else {
+                                return false;
+                            }
+                        });
+                        if (allComplete){
+                            completeChain(chain, questingData.getPlayer());
+                        }
+                        break;
                 }
                 questChainUpdater.markDirty(chain.getQuestId());
             }

@@ -19,13 +19,19 @@ import java.util.stream.Collectors;
 public class ObjectivesCompleteCondition extends DialogueCondition implements IReceivesChainId {
     public static final ResourceLocation conditionTypeName = new ResourceLocation(MKNpc.MODID, "objectives_complete");
     private final List<String> objectiveNames = new ArrayList<>();
+    private String questName;
     private UUID chainId;
 
 
-    public ObjectivesCompleteCondition(String... objectiveNames){
+    public ObjectivesCompleteCondition(String questName, String... objectiveNames){
         super(conditionTypeName);
         this.objectiveNames.addAll(Arrays.asList(objectiveNames));
         this.chainId = UUID.randomUUID();
+        this.questName = questName;
+    }
+
+    public ObjectivesCompleteCondition(){
+        this("default");
     }
 
     @Override
@@ -35,7 +41,7 @@ public class ObjectivesCompleteCondition extends DialogueCondition implements IR
             if (chainInstance.isPresent()){
                 PlayerQuestChainInstance chain = chainInstance.get();
                 return objectiveNames.stream().allMatch(name -> {
-                    PlayerQuestData questData = chain.getQuestData(chain.getCurrentQuest());
+                    PlayerQuestData questData = chain.getQuestData(questName);
                     if (questData == null){
                         return false;
                     }
@@ -52,6 +58,7 @@ public class ObjectivesCompleteCondition extends DialogueCondition implements IR
         super.writeAdditionalData(ops, builder);
         builder.put(ops.createString("objectiveNames"), ops.createList(objectiveNames.stream().map(ops::createString)));
         builder.put(ops.createString("chainId"), ops.createString(chainId.toString()));
+        builder.put(ops.createString("questName"), ops.createString(questName));
     }
 
     @Override
@@ -59,6 +66,8 @@ public class ObjectivesCompleteCondition extends DialogueCondition implements IR
         super.readAdditionalData(dynamic);
         this.objectiveNames.addAll(dynamic.get("objectiveNames").asList(x -> x.asString().result()).stream()
                 .filter(Optional::isPresent).map(Optional::get).collect(Collectors.toList()));
+        questName = dynamic.get("questName").asString("default");
+        chainId = dynamic.get("chainId").asString().result().map(UUID::fromString).orElse(UUID.randomUUID());
     }
 
     @Override
