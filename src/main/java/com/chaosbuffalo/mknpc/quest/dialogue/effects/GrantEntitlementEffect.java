@@ -42,18 +42,19 @@ public class GrantEntitlementEffect extends DialogueEffect {
         }
     }
 
+
     @Override
-    public <D> D serialize(DynamicOps<D> ops) {
-        D sup = super.serialize(ops);
-        return ops.mergeToMap(sup, ImmutableMap.of(
-                ops.createString("entitlement"), ops.createString(entitlement.getRegistryName().toString())
-        )).result().orElse(sup);
+    public <D> void writeAdditionalData(DynamicOps<D> ops, ImmutableMap.Builder<D, D> builder) {
+        super.writeAdditionalData(ops, builder);
+        builder.put(ops.createString("entitlement"), ops.createString(entitlement.getRegistryName().toString()));
     }
 
     @Override
-    public <D> void deserialize(Dynamic<D> dynamic) {
-        dynamic.get("entitlement").asString().result().ifPresent(
-                x -> entitlement = MKCoreRegistry.getEntitlement(new ResourceLocation(x)));
-
+    public <D> void readAdditionalData(Dynamic<D> dynamic) {
+        ResourceLocation entitlementId = dynamic.get("entitlement").asString()
+                .resultOrPartial(MKCore.LOGGER::error)
+                .map(ResourceLocation::new)
+                .orElse(MKCoreRegistry.INVALID_ENTITLEMENT);
+        entitlement = MKCoreRegistry.getEntitlement(entitlementId);
     }
 }
