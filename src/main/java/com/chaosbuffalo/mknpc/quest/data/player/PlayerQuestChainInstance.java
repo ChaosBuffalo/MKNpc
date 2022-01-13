@@ -5,20 +5,19 @@ import com.chaosbuffalo.mknpc.quest.QuestChainInstance;
 import net.minecraft.nbt.CompoundNBT;
 import net.minecraft.nbt.INBT;
 import net.minecraft.nbt.ListNBT;
+import net.minecraft.nbt.StringNBT;
 import net.minecraft.util.text.ITextComponent;
 import net.minecraftforge.common.util.Constants;
 
-import java.util.HashMap;
-import java.util.LinkedHashMap;
-import java.util.Map;
-import java.util.UUID;
+import java.util.*;
 import java.util.function.Consumer;
+import java.util.stream.Collectors;
 
 public class PlayerQuestChainInstance implements IMKSerializable<CompoundNBT> {
     private Consumer<PlayerQuestChainInstance> dirtyNotifier;
     private UUID questId;
     private ITextComponent questName;
-    private String currentQuest;
+    private List<String> currentQuests;
     private boolean questComplete;
     private final LinkedHashMap<String, PlayerQuestData> questData = new LinkedHashMap<>();
 
@@ -60,7 +59,11 @@ public class PlayerQuestChainInstance implements IMKSerializable<CompoundNBT> {
         CompoundNBT tag = new CompoundNBT();
         tag.putString("questName", ITextComponent.Serializer.toJson(questName));
         tag.putUniqueId("questId", questId);
-        tag.putString("currentQuest", currentQuest);
+        ListNBT currentQuestsNbt = new ListNBT();
+        for (String questName : currentQuests){
+            currentQuestsNbt.add(StringNBT.valueOf(questName));
+        }
+        tag.put("currentQuests", currentQuestsNbt);
         tag.putBoolean("questComplete", questComplete);
         ListNBT quests = new ListNBT();
         for (Map.Entry<String, PlayerQuestData> entry : questData.entrySet()){
@@ -78,20 +81,25 @@ public class PlayerQuestChainInstance implements IMKSerializable<CompoundNBT> {
         return questData.get(questName);
     }
 
-    public String getCurrentQuest() {
-        return currentQuest;
+    public List<String> getCurrentQuests() {
+        return currentQuests;
     }
 
 
-    public void setCurrentQuest(String currentQuest) {
-        this.currentQuest = currentQuest;
+    public void addCurrentQuest(String questName){
+        this.currentQuests.add(questName);
+    }
+
+    public void setCurrentQuests(List<String> currentQuests) {
+        this.currentQuests = currentQuests;
     }
 
     @Override
     public boolean deserialize(CompoundNBT compoundNBT) {
         questName = ITextComponent.Serializer.getComponentFromJson(compoundNBT.getString("questName"));
         questId = compoundNBT.getUniqueId("questId");
-        currentQuest = compoundNBT.getString("currentQuest");
+        ListNBT currentQuestsNbt = compoundNBT.getList("currentQuests", Constants.NBT.TAG_STRING);
+        currentQuests = currentQuestsNbt.stream().map(INBT::getString).collect(Collectors.toList());
         ListNBT questData = compoundNBT.getList("quests", Constants.NBT.TAG_COMPOUND);
         for (INBT questNbt : questData){
             PlayerQuestData newData = new PlayerQuestData((CompoundNBT) questNbt);

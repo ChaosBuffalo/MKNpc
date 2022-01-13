@@ -9,6 +9,8 @@ import net.minecraft.entity.LivingEntity;
 import net.minecraft.entity.player.ServerPlayerEntity;
 import net.minecraft.util.ResourceLocation;
 
+import java.util.ArrayList;
+import java.util.List;
 import java.util.UUID;
 
 public class OnQuestCondition extends DialogueCondition {
@@ -30,7 +32,7 @@ public class OnQuestCondition extends DialogueCondition {
     @Override
     public boolean meetsCondition(ServerPlayerEntity player, LivingEntity source) {
         return MKNpc.getPlayerQuestData(player).map(
-                x -> x.isOnQuest(questId) && x.getCurrentQuestStep(questId).orElse("invalid").equals(questStep))
+                x -> x.isOnQuest(questId, false) && x.getCurrentQuestSteps(questId).orElse(new ArrayList<>()).contains(questStep))
                 .orElse(false);
     }
 

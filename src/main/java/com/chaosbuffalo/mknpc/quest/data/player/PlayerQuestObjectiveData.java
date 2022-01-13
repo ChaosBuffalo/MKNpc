@@ -1,14 +1,17 @@
 package com.chaosbuffalo.mknpc.quest.data.player;
 
 import net.minecraft.nbt.CompoundNBT;
+import net.minecraft.nbt.INBT;
+import net.minecraft.nbt.ListNBT;
+import net.minecraft.nbt.StringNBT;
 import net.minecraft.util.ResourceLocation;
 import net.minecraft.util.math.BlockPos;
 import net.minecraft.util.text.IFormattableTextComponent;
 import net.minecraft.util.text.ITextComponent;
+import net.minecraftforge.common.util.Constants;
 import net.minecraftforge.common.util.INBTSerializable;
 
-import java.util.HashMap;
-import java.util.Map;
+import java.util.*;
 
 public class PlayerQuestObjectiveData implements INBTSerializable<CompoundNBT> {
 
@@ -20,18 +23,23 @@ public class PlayerQuestObjectiveData implements INBTSerializable<CompoundNBT> {
     private final Map<String, ResourceLocation> rlData = new HashMap<>();
     private final Map<String, ITextComponent> textData = new HashMap<>();
     private final Map<String, Boolean> boolData = new HashMap<>();
-    private IFormattableTextComponent description;
+    private List<IFormattableTextComponent> description = new ArrayList<>();
 
-    public PlayerQuestObjectiveData(String objectiveName, IFormattableTextComponent description){
+    public PlayerQuestObjectiveData(String objectiveName, IFormattableTextComponent... description){
+        this(objectiveName, Arrays.asList(description));
+    }
+
+    public PlayerQuestObjectiveData(String objectiveName, List<IFormattableTextComponent> description){
         this.objectiveName = objectiveName;
-        this.description = description;
+        this.description.addAll(description);
     }
 
-    public void setDescription(IFormattableTextComponent description) {
-        this.description = description;
+    public void setDescription(IFormattableTextComponent... description) {
+        this.description.clear();
+        this.description.addAll(Arrays.asList(description));
     }
 
-    public IFormattableTextComponent getDescription() {
+    public List<IFormattableTextComponent> getDescription() {
         return description;
     }
 
@@ -150,7 +158,11 @@ public class PlayerQuestObjectiveData implements INBTSerializable<CompoundNBT> {
         }
         nbt.put("boolData", boolNbt);
         nbt.putString("name", objectiveName);
-        nbt.putString("description", ITextComponent.Serializer.toJson(description));
+        ListNBT descriptions = new ListNBT();
+        for (IFormattableTextComponent comp : this.description){
+            descriptions.add(StringNBT.valueOf(ITextComponent.Serializer.toJson(comp)));
+        }
+        nbt.put("description", descriptions);
         return nbt;
     }
 
@@ -185,6 +197,9 @@ public class PlayerQuestObjectiveData implements INBTSerializable<CompoundNBT> {
             boolData.put(key, boolNbt.getBoolean(key));
         }
         objectiveName = nbt.getString("name");
-        description = ITextComponent.Serializer.getComponentFromJson(nbt.getString("description"));
+        ListNBT descriptions = nbt.getList("description", Constants.NBT.TAG_STRING);
+        for (INBT desc : descriptions){
+            description.add(ITextComponent.Serializer.getComponentFromJson(desc.getString()));
+        }
     }
 }

@@ -2,7 +2,6 @@ package com.chaosbuffalo.mknpc.event;
 
 import com.chaosbuffalo.mkchat.event.PlayerNpcDialogueTreeGatherEvent;
 import com.chaosbuffalo.mkcore.core.damage.MKDamageSource;
-import com.chaosbuffalo.mkcore.effects.SpellTriggers;
 import com.chaosbuffalo.mknpc.MKNpc;
 import com.chaosbuffalo.mknpc.capabilities.IChestNpcData;
 import com.chaosbuffalo.mknpc.capabilities.IEntityNpcData;
@@ -24,11 +23,8 @@ import net.minecraft.entity.LivingEntity;
 import net.minecraft.entity.SpawnReason;
 import net.minecraft.entity.player.PlayerEntity;
 import net.minecraft.entity.player.ServerPlayerEntity;
-import net.minecraft.inventory.container.ChestContainer;
-import net.minecraft.inventory.container.SimpleNamedContainerProvider;
 import net.minecraft.scoreboard.Team;
 import net.minecraft.server.MinecraftServer;
-import net.minecraft.tileentity.ChestTileEntity;
 import net.minecraft.tileentity.TileEntity;
 import net.minecraft.util.math.BlockPos;
 import net.minecraft.world.World;
@@ -124,17 +120,19 @@ public class EntityHandler {
                     if (questChain == null) {
                         return;
                     }
-                    Quest currentQuest = questChain.getDefinition().getQuest(pQuestChain.getCurrentQuest());
-                    if (currentQuest != null) {
-                        for (QuestObjective<?> obj : currentQuest.getObjectives()) {
-                            if (obj instanceof IContainerObjectiveHandler) {
-                                IContainerObjectiveHandler iObj = (IContainerObjectiveHandler) obj;
-                                PlayerQuestData pQuest = pQuestChain.getQuestData(currentQuest.getQuestName());
-                                PlayerQuestObjectiveData pObj = pQuest.getObjective(obj.getObjectiveName());
-                                QuestData qData = questChain.getQuestChainData().getQuestData(currentQuest.getQuestName());
-                                if (iObj.onLootChest(player, pObj, qData, chestCap)) {
-                                    questChain.signalQuestProgress(worldData, x, currentQuest, pQuestChain, false);
-                                    return;
+                    for (String questName : pQuestChain.getCurrentQuests()){
+                        Quest currentQuest = questChain.getDefinition().getQuest(questName);
+                        if (currentQuest != null) {
+                            for (QuestObjective<?> obj : currentQuest.getObjectives()) {
+                                if (obj instanceof IContainerObjectiveHandler) {
+                                    IContainerObjectiveHandler iObj = (IContainerObjectiveHandler) obj;
+                                    PlayerQuestData pQuest = pQuestChain.getQuestData(currentQuest.getQuestName());
+                                    PlayerQuestObjectiveData pObj = pQuest.getObjective(obj.getObjectiveName());
+                                    QuestData qData = questChain.getQuestChainData().getQuestData(currentQuest.getQuestName());
+                                    if (iObj.onLootChest(player, pObj, qData, chestCap)) {
+                                        questChain.signalQuestProgress(worldData, x, currentQuest, pQuestChain, false);
+                                        return;
+                                    }
                                 }
                             }
                         }
@@ -175,14 +173,16 @@ public class EntityHandler {
                             if (questChain == null) {
                                 return;
                             }
-                            Quest currentQuest = questChain.getDefinition().getQuest(pQuestChain.getCurrentQuest());
-                            if (currentQuest != null) {
-                                for (QuestObjective<?> obj : currentQuest.getObjectives()) {
-                                    if (obj instanceof IKillObjectiveHandler) {
-                                        PlayerQuestData pQuest = pQuestChain.getQuestData(currentQuest.getQuestName());
-                                        PlayerQuestObjectiveData pObj = pQuest.getObjective(obj.getObjectiveName());
-                                        QuestData qData = questChain.getQuestChainData().getQuestData(currentQuest.getQuestName());
-                                        ((IKillObjectiveHandler) obj).onPlayerKillNpcDefEntity(player, pObj, def, event, qData, pQuestChain);
+                            for (String questName : pQuestChain.getCurrentQuests()){
+                                Quest currentQuest = questChain.getDefinition().getQuest(questName);
+                                if (currentQuest != null) {
+                                    for (QuestObjective<?> obj : currentQuest.getObjectives()) {
+                                        if (obj instanceof IKillObjectiveHandler) {
+                                            PlayerQuestData pQuest = pQuestChain.getQuestData(currentQuest.getQuestName());
+                                            PlayerQuestObjectiveData pObj = pQuest.getObjective(obj.getObjectiveName());
+                                            QuestData qData = questChain.getQuestChainData().getQuestData(currentQuest.getQuestName());
+                                            ((IKillObjectiveHandler) obj).onPlayerKillNpcDefEntity(player, pObj, def, event, qData, pQuestChain);
+                                        }
                                     }
                                 }
                             }

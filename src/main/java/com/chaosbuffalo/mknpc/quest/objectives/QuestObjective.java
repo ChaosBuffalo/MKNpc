@@ -19,10 +19,7 @@ import net.minecraft.util.text.IFormattableTextComponent;
 import net.minecraft.util.text.ITextComponent;
 import net.minecraft.util.text.StringTextComponent;
 
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
 import java.util.function.Function;
 import java.util.stream.Collectors;
 
@@ -33,15 +30,24 @@ public abstract class QuestObjective<T extends ObjectiveInstanceData> implements
     private final List<ISerializableAttribute<?>> attributes;
     private final ResourceLocation typeName;
     protected final StringAttribute objectiveName = new StringAttribute("objectiveName", "invalid");
-    protected IFormattableTextComponent description;
+    protected List<IFormattableTextComponent> description = new ArrayList<>();
     protected static final IFormattableTextComponent defaultDescription = new StringTextComponent("Placeholder");
 
-    public QuestObjective(ResourceLocation typeName, String name, IFormattableTextComponent description){
+    public QuestObjective(ResourceLocation typeName, String name, IFormattableTextComponent... description){
         this.attributes = new ArrayList<>();
         addAttribute(objectiveName);
         objectiveName.setValue(name);
         this.typeName = typeName;
-        this.description = description;
+        this.description.addAll(Arrays.asList(description));
+    }
+
+    public void setDescription(IFormattableTextComponent... description) {
+        this.setDescription(Arrays.asList(description));
+    }
+
+    public void setDescription(List<IFormattableTextComponent> description){
+        this.description.clear();
+        this.description.addAll(description);
     }
 
     @Override
@@ -62,17 +68,18 @@ public abstract class QuestObjective<T extends ObjectiveInstanceData> implements
     public <D> D serialize(DynamicOps<D> ops){
         ImmutableMap.Builder<D, D> builder = ImmutableMap.builder();
         builder.put(ops.createString("objectiveType"), ops.createString(getTypeName().toString()));
-        builder.put(ops.createString("description"), ops.createString(ITextComponent.Serializer.toJson(description)));
+        builder.put(ops.createString("description"), ops.createList(description.stream().map(x ->
+                ops.createString(ITextComponent.Serializer.toJson(x)))));
         builder.put(ops.createString("attributes"),
                 ops.createMap(attributes.stream().map(attr ->
                         Pair.of(ops.createString(attr.getName()), attr.serialize(ops))
                 ).collect(Collectors.toMap(Pair::getFirst, Pair::getSecond))));
-        putAdditionalData(ops, builder);
+        writeAdditionalData(ops, builder);
 
         return ops.createMap(builder.build());
     }
 
-    public <D> void putAdditionalData(DynamicOps<D> ops, ImmutableMap.Builder<D, D> builder){
+    public <D> void writeAdditionalData(DynamicOps<D> ops, ImmutableMap.Builder<D, D> builder){
 
     }
 
@@ -94,8 +101,10 @@ public abstract class QuestObjective<T extends ObjectiveInstanceData> implements
 
     public <D> void deserialize(Dynamic<D> dynamic){
         Map<String, Dynamic<D>> map = dynamic.get("attributes").asMap(d -> d.asString(""), Function.identity());
-        description = ITextComponent.Serializer.getComponentFromJson(
-                dynamic.get("description").asString(ITextComponent.Serializer.toJson(defaultDescription)));
+        description = dynamic.get("description").asList(x -> x.asString().result()).stream()
+                .filter(Optional::isPresent)
+                .map(Optional::get)
+                .map(ITextComponent.Serializer::getComponentFromJson).collect(Collectors.toList());
         getAttributes().forEach(attr -> {
             Dynamic<D> attrValue = map.get(attr.getName());
             if (attrValue != null) {
@@ -142,7 +151,7 @@ public abstract class QuestObjective<T extends ObjectiveInstanceData> implements
         data.putObjective(getObjectiveName(), generateInstanceData(questStructures));
     }
 
-    public IFormattableTextComponent getDescription(){
+    public List<IFormattableTextComponent> getDescription(){
         return description;
     }
 }

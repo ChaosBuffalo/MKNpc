@@ -8,19 +8,21 @@ import net.minecraft.util.ResourceLocation;
 import net.minecraft.util.text.IFormattableTextComponent;
 import net.minecraft.util.text.ITextComponent;
 
+import java.util.List;
+
 public abstract class StructureInstanceObjective<T extends ObjectiveInstanceData> extends QuestObjective<T>{
     public final static ResourceLocation INVALID_OPTION = new ResourceLocation(MKNpc.MODID, "structure.invalid");
 
     protected final ResourceLocationAttribute structureName = new ResourceLocationAttribute("structure", INVALID_OPTION);
     protected final IntAttribute structureIndex = new IntAttribute("structureIndex", 0);
 
-    public StructureInstanceObjective(ResourceLocation typeName, String name, ResourceLocation structure, IFormattableTextComponent description) {
+    public StructureInstanceObjective(ResourceLocation typeName, String name, ResourceLocation structure, IFormattableTextComponent... description) {
         this(typeName, name, description);
         structureName.setValue(structure);
 
     }
 
-    public StructureInstanceObjective(ResourceLocation typeName, String name, ResourceLocation structure, int index, IFormattableTextComponent description) {
+    public StructureInstanceObjective(ResourceLocation typeName, String name, ResourceLocation structure, int index, IFormattableTextComponent... description) {
         this(typeName, name, description);
         structureName.setValue(structure);
         structureIndex.setValue(index);
@@ -32,7 +34,7 @@ public abstract class StructureInstanceObjective<T extends ObjectiveInstanceData
         return structureIndex.getValue();
     }
 
-    public StructureInstanceObjective(ResourceLocation typeName, String name, IFormattableTextComponent description){
+    public StructureInstanceObjective(ResourceLocation typeName, String name, IFormattableTextComponent... description){
         super(typeName, name, description);
         addAttributes(structureName, structureIndex);
 

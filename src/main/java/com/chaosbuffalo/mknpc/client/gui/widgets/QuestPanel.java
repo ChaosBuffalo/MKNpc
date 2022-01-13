@@ -58,39 +58,48 @@ public class QuestPanel extends MKLayout {
             MKStackLayoutVertical questLayout = new MKStackLayoutVertical(getX(), getY(), getWidth());
             questLayout.setMargins(5, 5, 5, 5);
             questLayout.setPaddings(0, 0, 2, 2);
-
+            MKText questName = new MKText(fontRenderer, currentChain.getQuestName());
+            questName.setMultiline(true);
+            questName.setColor( 0xffffffff);
+            questName.setWidth(getWidth() - 10);
+            questLayout.addWidget(questName);
+            questLayout.addWidget(new MKRectangle(0, 0, getWidth() - 10, 1, 0x99ffffff));
             List<Map.Entry<String, PlayerQuestData>> quests = new ArrayList<>(currentChain.getQuestData().entrySet());
             Collections.reverse(quests);
             int index = 0;
             for (Map.Entry<String, PlayerQuestData> questEntry : quests){
                 PlayerQuestData current = questEntry.getValue();
+                boolean isComplete = current.isComplete();
                 MKText quest_desc = new MKText(fontRenderer, current.getDescription());
-                quest_desc.setColor(index == 0 ? 0xffffffff : 0x99ffffff);
+                quest_desc.setColor(!isComplete ? 0xffffffff : 0x99ffffff);
                 quest_desc.setMultiline(true);
                 quest_desc.setWidth(getWidth() - 10);
                 questLayout.addWidget(quest_desc);
                 MKText objectiveName = new MKText(fontRenderer, new TranslationTextComponent("mknpc.gui.objectives.name").mergeStyle(TextFormatting.BOLD));
-                objectiveName.setColor(index == 0 ? 0xffffffff : 0x99ffffff);
+                objectiveName.setColor(!current.isComplete() ? 0xffffffff : 0x99ffffff);
                 questLayout.addWidget(objectiveName);
                 for (PlayerQuestObjectiveData obj : current.getObjectives()){
-                    MKText obj_desc = new MKText(fontRenderer, obj.isComplete() ?
-                            obj.getDescription().deepCopy().mergeStyle(TextFormatting.STRIKETHROUGH) : obj.getDescription());
-                    obj_desc.setMultiline(true);
-                    obj_desc.setColor(obj.isComplete() ? 0x99ffffff : 0xffffffff);
-                    obj_desc.setWidth(getWidth() - 30);
-                    questLayout.addWidget(obj_desc);
-                    questLayout.addConstraintToWidget(new OffsetConstraint(20, 0, true, false), obj_desc);
+                    obj.getDescription().forEach(desc -> {
+                        MKText obj_desc = new MKText(fontRenderer, obj.isComplete() ?
+                                desc.deepCopy().mergeStyle(TextFormatting.STRIKETHROUGH) : desc);
+                        obj_desc.setMultiline(true);
+                        obj_desc.setColor(isComplete ? 0x99ffffff : 0xffffffff);
+                        obj_desc.setWidth(getWidth() - 30);
+                        questLayout.addWidget(obj_desc);
+                        questLayout.addConstraintToWidget(new OffsetConstraint(20, 0, true, false), obj_desc);
+                    });
+
                 }
                 List<PlayerQuestReward> rewards = current.getQuestRewards();
                 if (rewards.size() >0 ){
                     MKText rewardName = new MKText(fontRenderer, new TranslationTextComponent("mknpc.gui.rewards.name").mergeStyle(TextFormatting.BOLD));
-                    rewardName.setColor(index == 0 ? 0xffffffff : 0x99ffffff);
+                    rewardName.setColor(!isComplete ? 0xffffffff : 0x99ffffff);
                     questLayout.addWidget(rewardName);
                     for (PlayerQuestReward reward : rewards){
-                        MKText reward_desc = new MKText(fontRenderer, index == 0 ? reward.getDescription() :
+                        MKText reward_desc = new MKText(fontRenderer, !isComplete ? reward.getDescription() :
                                 reward.getDescription().deepCopy().mergeStyle(TextFormatting.STRIKETHROUGH));
                         reward_desc.setMultiline(true);
-                        reward_desc.setColor(index == 0 ? 0xffffffff : 0x99ffffff);
+                        reward_desc.setColor(!isComplete ? 0xffffffff : 0x99ffffff);
                         reward_desc.setWidth(getWidth() - 30);
                         questLayout.addWidget(reward_desc);
                         questLayout.addConstraintToWidget(new OffsetConstraint(20, 0, true, false), reward_desc);

@@ -59,6 +59,7 @@ public class PlayerQuestData implements INBTSerializable<CompoundNBT> {
         return questName;
     }
 
+
     @Override
     public CompoundNBT serializeNBT() {
         CompoundNBT nbt = new CompoundNBT();

@@ -37,5 +37,6 @@ public class NPCDialogueExtension implements IDialogueExtension {
         DialogueManager.putEffectDeserializer(GrantEntitlementEffect.effectTypeName, GrantEntitlementEffect::new);
         DialogueManager.putConditionDeserializer(HasTrainedAbilitiesCondition.conditionTypeName, HasTrainedAbilitiesCondition::new);
         DialogueManager.putConditionDeserializer(ObjectivesCompleteCondition.conditionTypeName, ObjectivesCompleteCondition::new);
+        DialogueManager.putConditionDeserializer(HasEntitlementCondition.conditionTypeName, HasEntitlementCondition::new);
     }
 }

@@ -2,10 +2,10 @@ package com.chaosbuffalo.mknpc.quest;
 
 import com.chaosbuffalo.mknpc.MKNpc;
 import com.chaosbuffalo.mknpc.npc.NpcDefinition;
-import com.chaosbuffalo.mknpc.quest.objectives.KillNpcDefObjective;
-import com.chaosbuffalo.mknpc.quest.objectives.LootChestObjective;
-import com.chaosbuffalo.mknpc.quest.objectives.QuestObjective;
-import com.chaosbuffalo.mknpc.quest.objectives.TalkToNpcObjective;
+import com.chaosbuffalo.mknpc.quest.objectives.*;
+import com.chaosbuffalo.mknpc.quest.requirements.HasEntitlementRequirement;
+import com.chaosbuffalo.mknpc.quest.requirements.QuestRequirement;
+import com.chaosbuffalo.mknpc.quest.rewards.MKLootReward;
 import com.chaosbuffalo.mknpc.quest.rewards.QuestReward;
 import com.chaosbuffalo.mknpc.quest.rewards.XpReward;
 import com.google.gson.Gson;
@@ -42,6 +42,7 @@ public class QuestDefinitionManager extends JsonReloadListener {
 
     public static final Map<ResourceLocation, Supplier<QuestObjective<?>>> OBJECTIVE_DESERIALIZERS = new HashMap<>();
     public static final Map<ResourceLocation, Supplier<QuestReward>> REWARD_DESERIALIZERS = new HashMap<>();
+    public static final Map<ResourceLocation, Supplier<QuestRequirement>> REQUIREMENT_DESERIALIZERS = new HashMap<>();
 
     public QuestDefinitionManager(){
         super(GSON, DEFINITION_FOLDER);
@@ -53,6 +54,10 @@ public class QuestDefinitionManager extends JsonReloadListener {
         OBJECTIVE_DESERIALIZERS.put(name, deserializer);
     }
 
+    public static void putRequirementDeserializer(ResourceLocation name, Supplier<QuestRequirement> deserializer){
+        REQUIREMENT_DESERIALIZERS.put(name, deserializer);
+    }
+
     public static void putRewardDeserializer(ResourceLocation name, Supplier<QuestReward> deserializer){
         REWARD_DESERIALIZERS.put(name, deserializer);
     }
@@ -60,6 +65,11 @@ public class QuestDefinitionManager extends JsonReloadListener {
     @SubscribeEvent
     public void subscribeEvent(AddReloadListenerEvent event){
         event.addListener(this);
+    }
+
+    @Nullable
+    public static Supplier<QuestRequirement> getRequirementDeserializer(ResourceLocation name){
+        return REQUIREMENT_DESERIALIZERS.get(name);
     }
 
     @Nullable
@@ -76,7 +86,10 @@ public class QuestDefinitionManager extends JsonReloadListener {
         putObjectiveDeserializer(LootChestObjective.NAME, LootChestObjective::new);
         putObjectiveDeserializer(TalkToNpcObjective.NAME, TalkToNpcObjective::new);
         putObjectiveDeserializer(KillNpcDefObjective.NAME, KillNpcDefObjective::new);
+        putObjectiveDeserializer(TradeItemsObjective.NAME, TradeItemsObjective::new);
         putRewardDeserializer(XpReward.TYPE_NAME, XpReward::new);
+        putRewardDeserializer(MKLootReward.TYPE_NAME, MKLootReward::new);
+        putRequirementDeserializer(HasEntitlementRequirement.TYPE_NAME, HasEntitlementRequirement::new);
     }
 
     @Override

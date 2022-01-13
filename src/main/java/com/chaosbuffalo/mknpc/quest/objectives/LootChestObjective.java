@@ -16,11 +16,8 @@ import com.mojang.serialization.DynamicOps;
 import net.minecraft.entity.player.PlayerEntity;
 import net.minecraft.inventory.Inventory;
 import net.minecraft.item.ItemStack;
-import net.minecraft.tileentity.ChestTileEntity;
 import net.minecraft.util.ResourceLocation;
 import net.minecraft.util.text.IFormattableTextComponent;
-import net.minecraft.util.text.ITextComponent;
-import net.minecraft.util.text.StringTextComponent;
 
 import java.util.*;
 
@@ -29,11 +26,11 @@ public class LootChestObjective extends StructureInstanceObjective<UUIDInstanceD
     public static final ResourceLocation NAME = new ResourceLocation(MKNpc.MODID, "objective.loot_chest");
     private final List<ItemStack> itemsToAdd = new ArrayList<>();
 
-    public LootChestObjective(String name, ResourceLocation structure, String chestTag, IFormattableTextComponent description) {
+    public LootChestObjective(String name, ResourceLocation structure, String chestTag, IFormattableTextComponent... description) {
         this(name, structure, 0, chestTag, description);
     }
 
-    public LootChestObjective(String name, ResourceLocation structure, int index, String chestTag, IFormattableTextComponent description){
+    public LootChestObjective(String name, ResourceLocation structure, int index, String chestTag, IFormattableTextComponent... description){
         super(NAME, name, structure, index, description);
         addAttribute(this.chestTag);
         this.chestTag.setValue(chestTag);
@@ -49,8 +46,8 @@ public class LootChestObjective extends StructureInstanceObjective<UUIDInstanceD
     }
 
     @Override
-    public <D> void putAdditionalData(DynamicOps<D> ops, ImmutableMap.Builder<D, D> builder) {
-        super.putAdditionalData(ops, builder);
+    public <D> void writeAdditionalData(DynamicOps<D> ops, ImmutableMap.Builder<D, D> builder) {
+        super.writeAdditionalData(ops, builder);
         builder.put(ops.createString("items"),
                 ops.createList(itemsToAdd.stream().map(x -> SerializationUtils.serializeItemStack(ops, x)))
         );
