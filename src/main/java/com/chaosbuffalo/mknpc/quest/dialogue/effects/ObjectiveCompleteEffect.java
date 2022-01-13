@@ -78,19 +78,18 @@ public class ObjectiveCompleteEffect extends DialogueEffect implements IReceives
     }
 
     @Override
-    public <D> void deserialize(Dynamic<D> dynamic) {
-        chainId = dynamic.get("chainId").asString().result().map(UUID::fromString).orElse(UUID.randomUUID());
-        objectiveName = dynamic.get("objectiveName").asString("invalid");
-        questName = dynamic.get("questName").asString("defualt");
+    public <D> void writeAdditionalData(DynamicOps<D> ops, ImmutableMap.Builder<D, D> builder) {
+        super.writeAdditionalData(ops, builder);
+        builder.put(ops.createString("chainId"), ops.createString(chainId.toString()));
+        builder.put(ops.createString("objectiveName"), ops.createString(objectiveName));
+        builder.put(ops.createString("questName"), ops.createString(questName));
     }
 
     @Override
-    public <D> D serialize(DynamicOps<D> ops) {
-        D sup = super.serialize(ops);
-        return ops.mergeToMap(sup, ImmutableMap.of(
-                ops.createString("chainId"), ops.createString(chainId.toString()),
-                ops.createString("objectiveName"), ops.createString(objectiveName),
-                ops.createString("questName"), ops.createString(questName)
-        )).result().orElse(sup);
+    public <D> void readAdditionalData(Dynamic<D> dynamic) {
+        super.readAdditionalData(dynamic);
+        chainId = dynamic.get("chainId").asString().result().map(UUID::fromString).orElse(UUID.randomUUID());
+        objectiveName = dynamic.get("objectiveName").asString("invalid");
+        questName = dynamic.get("questName").asString("defualt");
     }
 }
