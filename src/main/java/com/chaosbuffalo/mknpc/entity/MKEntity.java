@@ -556,7 +556,7 @@ public abstract class MKEntity extends CreatureEntity implements IModelLookProvi
                 }
 
             }
-            return ActionResultType.SUCCESS;
+            return ActionResultType.CONSUME;
         }
         return ActionResultType.PASS;
     }
