@@ -26,6 +26,7 @@ import com.chaosbuffalo.mknpc.entity.ai.movement_strategy.StationaryMovementStra
 import com.chaosbuffalo.mknpc.entity.ai.sensor.MKSensorTypes;
 import com.chaosbuffalo.mknpc.entity.attributes.NpcAttributes;
 import com.chaosbuffalo.mknpc.inventories.QuestGiverInventoryContainer;
+import com.chaosbuffalo.mkweapons.items.MKBow;
 import com.chaosbuffalo.targeting_api.Targeting;
 import com.google.common.collect.ImmutableList;
 import net.minecraft.block.BlockState;
@@ -44,10 +45,7 @@ import net.minecraft.entity.projectile.AbstractArrowEntity;
 import net.minecraft.entity.projectile.ProjectileHelper;
 import net.minecraft.inventory.EquipmentSlotType;
 import net.minecraft.inventory.container.INamedContainerProvider;
-import net.minecraft.item.BowItem;
-import net.minecraft.item.ItemStack;
-import net.minecraft.item.Items;
-import net.minecraft.item.ShootableItem;
+import net.minecraft.item.*;
 import net.minecraft.nbt.CompoundNBT;
 import net.minecraft.network.datasync.DataParameter;
 import net.minecraft.network.datasync.DataSerializers;
@@ -56,6 +54,7 @@ import net.minecraft.util.*;
 import net.minecraft.util.math.BlockPos;
 import net.minecraft.util.math.vector.Vector3d;
 import net.minecraft.util.text.ITextComponent;
+import net.minecraft.village.PointOfInterest;
 import net.minecraft.world.*;
 import net.minecraft.world.server.ServerWorld;
 
@@ -161,12 +160,18 @@ public abstract class MKEntity extends CreatureEntity implements IModelLookProvi
 
     @Override
     public void attackEntityWithRangedAttack(LivingEntity target, float distanceFactor) {
+        attackEntityWithRangedAttack(target, distanceFactor, 1.6f);
+        PointOfInterest
+    }
+
+    public void attackEntityWithRangedAttack(LivingEntity target, float launchPower, float launchVelocity) {
         ItemStack arrowStack = this.findAmmo(this.getHeldItem(Hand.MAIN_HAND));
-        AbstractArrowEntity arrowEntity = ProjectileHelper.fireArrow(this, arrowStack, distanceFactor);
-        if (this.getHeldItemMainhand().getItem() instanceof BowItem){
+        AbstractArrowEntity arrowEntity = ProjectileHelper.fireArrow(this, arrowStack, launchPower);
+        Item mainhand = this.getHeldItemMainhand().getItem();
+        if (mainhand instanceof BowItem){
             arrowEntity = ((BowItem) this.getHeldItemMainhand().getItem()).customArrow(arrowEntity);
         }
-        EntityUtils.shootArrow(this, arrowEntity, target);
+        EntityUtils.shootArrow(this, arrowEntity, target, launchPower * launchVelocity);
         this.playSound(getShootSound(), 1.0F, 1.0F / (this.getRNG().nextFloat() * 0.4F + 0.8F));
         this.world.addEntity(arrowEntity);
     }
