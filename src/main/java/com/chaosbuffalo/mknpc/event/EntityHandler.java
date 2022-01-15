@@ -113,6 +113,12 @@ public class EntityHandler {
         }
     }
 
+    @SubscribeEvent
+    public static void onExperienceDrop(LivingExperienceDropEvent event){
+        int bonusXp = MKNpc.getNpcData(event.getEntityLiving()).map(IEntityNpcData::getBonusXp).orElse(0);
+        event.setDroppedExperience(event.getDroppedExperience() + bonusXp);
+    }
+
     private static void processLootChestEvents(PlayerEntity player, IChestNpcData chestCap, IWorldNpcData worldData) {
         MKNpc.getPlayerQuestData(player).ifPresent(x -> x.getQuestChains().forEach(
                 pQuestChain -> {

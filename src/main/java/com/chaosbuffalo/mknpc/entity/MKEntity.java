@@ -54,7 +54,6 @@ import net.minecraft.util.*;
 import net.minecraft.util.math.BlockPos;
 import net.minecraft.util.math.vector.Vector3d;
 import net.minecraft.util.text.ITextComponent;
-import net.minecraft.village.PointOfInterest;
 import net.minecraft.world.*;
 import net.minecraft.world.server.ServerWorld;
 
@@ -161,7 +160,11 @@ public abstract class MKEntity extends CreatureEntity implements IModelLookProvi
     @Override
     public void attackEntityWithRangedAttack(LivingEntity target, float distanceFactor) {
         attackEntityWithRangedAttack(target, distanceFactor, 1.6f);
-        PointOfInterest
+    }
+
+    @Override
+    protected void dropExperience() {
+        super.dropExperience();
     }
 
     public void attackEntityWithRangedAttack(LivingEntity target, float launchPower, float launchVelocity) {
