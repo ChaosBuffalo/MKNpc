@@ -98,14 +98,22 @@ public class MKBowAttackGoal extends Goal {
         this.entity.resetActiveHand();
     }
 
-    public float getLaunchVelocity(int useTicks){
+    public float getLaunchVelocity(float powerFactor){
         ItemStack item = entity.getHeldItemMainhand();
         if (item.getItem() instanceof MKBow){
             MKBow mkBow = (MKBow) item.getItem();
-
-            float powerFactor = mkBow.getPowerFactor(useTicks, item, entity);
             float launchVel = mkBow.getLaunchVelocity(item, entity);
             return powerFactor * launchVel;
+        } else {
+            return powerFactor * 1.6f;
+        }
+    }
+
+    public float getLaunchPower(int useTicks){
+        ItemStack item = entity.getHeldItemMainhand();
+        if (item.getItem() instanceof MKBow){
+            MKBow mkBow = (MKBow) item.getItem();
+            return mkBow.getPowerFactor(useTicks, item, entity);
         } else {
             return BowItem.getArrowVelocity(useTicks);
         }
@@ -166,7 +174,8 @@ public class MKBowAttackGoal extends Goal {
                 } else if (canSee) {
                     int useTicks = this.entity.getItemInUseMaxCount();
                     if (useTicks >= getDrawTime()) {
-                        this.entity.attackEntityWithRangedAttack(target, getLaunchVelocity(useTicks));
+                        float powerFactor = getLaunchPower(useTicks);
+                        this.entity.attackEntityWithRangedAttack(target, powerFactor, getLaunchVelocity(powerFactor));
                         this.entity.resetActiveHand();
                         boolean fullCooldown = MKCore.getEntityData(entity).map(cap -> {
                             CombatExtensionModule combatExtensionModule = cap.getCombatExtension();
