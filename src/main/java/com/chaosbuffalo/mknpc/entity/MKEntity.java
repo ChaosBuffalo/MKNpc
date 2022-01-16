@@ -226,6 +226,18 @@ public abstract class MKEntity extends CreatureEntity implements IModelLookProvi
         }
     }
 
+    public void callForHelp(LivingEntity entity, float threatVal){
+       brain.getMemory(MKMemoryModuleTypes.ALLIES).ifPresent(x -> {
+           x.forEach(ent -> {
+               if (ent instanceof MKEntity){
+                   if (ent.getDistanceSq(this) < 9.0){
+                       ((MKEntity) ent).addTargetToThreat(entity, threatVal);
+                   }
+               }
+           });
+       });
+    }
+
     @Override
     public void setHeldItem(Hand hand, ItemStack stack) {
         super.setHeldItem(hand, stack);

@@ -1,5 +1,6 @@
 package com.chaosbuffalo.mknpc.entity.ai.sensor;
 
+import com.chaosbuffalo.mknpc.entity.MKEntity;
 import com.chaosbuffalo.mknpc.entity.ai.memory.MKMemoryModuleTypes;
 import com.chaosbuffalo.mknpc.entity.ai.memory.ThreatMapEntry;
 import com.chaosbuffalo.mknpc.entity.attributes.NpcAttributes;
@@ -12,7 +13,7 @@ import net.minecraft.world.server.ServerWorld;
 import java.util.*;
 import java.util.stream.Collectors;
 
-public class ThreatSensor extends Sensor<LivingEntity> {
+public class ThreatSensor extends Sensor<MKEntity> {
     private static final float THREAT_FALLOFF_2 = 225.0f;
     private static final float BONUS_THREAT_FIRST_SIGHT = 1000.0f;
     private static final float MAX_THREAT_FROM_DISTANCE = 100.0f;
@@ -26,7 +27,7 @@ public class ThreatSensor extends Sensor<LivingEntity> {
     }
 
     @Override
-    protected void update(ServerWorld worldIn, LivingEntity entityIn) {
+    protected void update(ServerWorld worldIn, MKEntity entityIn) {
         Optional<List<LivingEntity>> enemyOpt = entityIn.getBrain().getMemory(MKMemoryModuleTypes.VISIBLE_ENEMIES);
         Optional<Map<LivingEntity, ThreatMapEntry>> opt = entityIn.getBrain().getMemory(
                 MKMemoryModuleTypes.THREAT_MAP);
@@ -59,13 +60,18 @@ public class ThreatSensor extends Sensor<LivingEntity> {
             for (LivingEntity entity : toRemove){
                 threatMap.remove(entity);
             }
-            List<LivingEntity> sortedThreat = threatMap.entrySet().stream()
+            List<Map.Entry<LivingEntity, ThreatMapEntry>> sortedThreat = threatMap.entrySet().stream()
                     .sorted(Comparator.comparingDouble(entry -> -entry.getValue().getCurrentThreat()))
-                    .map(Map.Entry::getKey).collect(Collectors.toList());
+                    .collect(Collectors.toList());
             entityIn.getBrain().setMemory(MKMemoryModuleTypes.THREAT_MAP, threatMap);
-            entityIn.getBrain().setMemory(MKMemoryModuleTypes.THREAT_LIST, sortedThreat);
+            entityIn.getBrain().setMemory(MKMemoryModuleTypes.THREAT_LIST, sortedThreat.stream()
+                    .map(Map.Entry::getKey).collect(Collectors.toList()));
             if (sortedThreat.size() > 0) {
-                entityIn.getBrain().setMemory(MKMemoryModuleTypes.THREAT_TARGET, sortedThreat.get(0));
+                Map.Entry<LivingEntity, ThreatMapEntry> ent = sortedThreat.get(0);
+                if (!entityIn.getBrain().hasMemory(MKMemoryModuleTypes.THREAT_TARGET)){
+                    entityIn.callForHelp(ent.getKey(), ent.getValue().getCurrentThreat());
+                }
+                entityIn.getBrain().setMemory(MKMemoryModuleTypes.THREAT_TARGET, ent.getKey());
             } else {
                 entityIn.getBrain().removeMemory(MKMemoryModuleTypes.THREAT_TARGET);
             }
