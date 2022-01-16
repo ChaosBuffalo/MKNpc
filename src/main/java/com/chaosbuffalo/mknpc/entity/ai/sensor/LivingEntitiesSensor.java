@@ -1,5 +1,6 @@
 package com.chaosbuffalo.mknpc.entity.ai.sensor;
 
+import com.chaosbuffalo.mknpc.entity.MKEntity;
 import com.chaosbuffalo.mknpc.entity.ai.memory.MKMemoryModuleTypes;
 import com.chaosbuffalo.targeting_api.Targeting;
 import com.google.common.collect.ImmutableSet;
@@ -12,13 +13,13 @@ import net.minecraft.world.server.ServerWorld;
 import java.util.*;
 import java.util.stream.Collectors;
 
-public class LivingEntitiesSensor extends Sensor<LivingEntity> {
+public class LivingEntitiesSensor extends Sensor<MKEntity> {
 
     public LivingEntitiesSensor() {
-        super(50);
+        super(10);
     }
 
-    protected void update(ServerWorld worldIn, LivingEntity entityIn) {
+    protected void update(ServerWorld worldIn, MKEntity entityIn) {
         List<LivingEntity> entities = worldIn.getLoadedEntitiesWithinAABB(LivingEntity.class,
                 entityIn.getBoundingBox().grow(16.0D, 16.0D, 16.0D),
                 (entity) -> entity != entityIn && entity.isAlive());
@@ -35,7 +36,7 @@ public class LivingEntitiesSensor extends Sensor<LivingEntity> {
                 .collect(Collectors.toList());
         brain.setMemory(MKMemoryModuleTypes.ENEMIES, enemies);
         brain.setMemory(MKMemoryModuleTypes.ALLIES, friends);
-        brain.setMemory(MKMemoryModuleTypes.VISIBLE_ENEMIES, enemies.stream().filter(entityIn::canEntityBeSeen)
+        brain.setMemory(MKMemoryModuleTypes.VISIBLE_ENEMIES, enemies.stream().filter(x -> entityIn.getEntitySenses().canSee(x))
                 .collect(Collectors.toList()));
     }
 

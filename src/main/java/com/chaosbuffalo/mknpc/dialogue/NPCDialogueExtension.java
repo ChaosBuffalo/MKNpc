@@ -38,5 +38,6 @@ public class NPCDialogueExtension implements IDialogueExtension {
         DialogueManager.putConditionDeserializer(HasTrainedAbilitiesCondition.conditionTypeName, HasTrainedAbilitiesCondition::new);
         DialogueManager.putConditionDeserializer(ObjectivesCompleteCondition.conditionTypeName, ObjectivesCompleteCondition::new);
         DialogueManager.putConditionDeserializer(HasEntitlementCondition.conditionTypeName, HasEntitlementCondition::new);
+        DialogueManager.putConditionDeserializer(CanStartQuestCondition.conditionTypeName, CanStartQuestCondition::new);
     }
 }

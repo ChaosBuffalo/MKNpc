@@ -7,6 +7,7 @@ import com.chaosbuffalo.mkchat.dialogue.DialogueTree;
 import com.chaosbuffalo.mknpc.MKNpc;
 import com.chaosbuffalo.mknpc.quest.QuestDefinition;
 import com.chaosbuffalo.mknpc.quest.QuestDefinitionManager;
+import com.chaosbuffalo.mknpc.quest.dialogue.conditions.CanStartQuestCondition;
 import com.chaosbuffalo.mknpc.quest.dialogue.conditions.OnQuestChainCondition;
 import com.chaosbuffalo.mknpc.quest.dialogue.effects.StartQuestChainEffect;
 import com.chaosbuffalo.mknpc.quest.requirements.QuestRequirement;
@@ -61,7 +62,7 @@ public class QuestOfferingEntry implements INBTSerializable<CompoundNBT> {
         DialogueTree giverTree = new DialogueTree(new ResourceLocation(MKNpc.MODID, String.format("give_quest.%s", questId.toString())));
         DialoguePrompt hailPrompt = new DialoguePrompt("hail");
         DialogueResponse hailResp = new DialogueResponse(hailQuest.getId()).addCondition(
-                new OnQuestChainCondition(questId, definition.isRepeatable()).setInvert(true));
+                new CanStartQuestCondition(questId, definition.isRepeatable()));
         for (QuestRequirement req : definition.getRequirements()){
             hailResp.addCondition(req.getDialogueCondition());
         }

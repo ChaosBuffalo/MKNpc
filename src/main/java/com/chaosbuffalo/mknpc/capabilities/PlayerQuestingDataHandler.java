@@ -29,6 +29,12 @@ import java.util.*;
 
 public class PlayerQuestingDataHandler implements IPlayerQuestingData {
 
+    public enum QuestStatus {
+        NOT_ON,
+        IN_PROGRESS,
+        COMPLETED
+    }
+
     private PlayerEntity player;
     private MKPlayerData playerData;
 
@@ -86,8 +92,8 @@ public class PlayerQuestingDataHandler implements IPlayerQuestingData {
     }
 
     @Override
-    public boolean isOnQuest(UUID questId, boolean allowRepeat) {
-        return getPersonaData().isOnQuest(questId, allowRepeat);
+    public QuestStatus getQuestStatus(UUID questId) {
+        return getPersonaData().getQuestStatus(questId);
     }
 
     @Override
@@ -147,15 +153,15 @@ public class PlayerQuestingDataHandler implements IPlayerQuestingData {
             return Optional.of(questChain.getCurrentQuests());
         }
 
-        public boolean isOnQuest(UUID questId, boolean allowRepeat){
+        public QuestStatus getQuestStatus(UUID questId){
             PlayerQuestChainInstance questChain = questChains.get(questId);
             if (questChain == null){
-                return false;
+                return QuestStatus.NOT_ON;
             }
-            if (allowRepeat && questChain.isQuestComplete()){
-                return false;
+            if (questChain.isQuestComplete()) {
+                return QuestStatus.COMPLETED;
             }
-            return !questChain.isQuestComplete();
+            return QuestStatus.IN_PROGRESS;
         }
 
         public void startQuest(PlayerEntity player, IWorldNpcData worldHandler, QuestChainInstance questChain){

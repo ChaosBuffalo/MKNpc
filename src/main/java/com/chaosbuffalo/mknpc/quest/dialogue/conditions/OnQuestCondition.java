@@ -2,6 +2,7 @@ package com.chaosbuffalo.mknpc.quest.dialogue.conditions;
 
 import com.chaosbuffalo.mkchat.dialogue.conditions.DialogueCondition;
 import com.chaosbuffalo.mknpc.MKNpc;
+import com.chaosbuffalo.mknpc.capabilities.PlayerQuestingDataHandler;
 import com.google.common.collect.ImmutableMap;
 import com.mojang.serialization.Dynamic;
 import com.mojang.serialization.DynamicOps;
@@ -10,7 +11,6 @@ import net.minecraft.entity.player.ServerPlayerEntity;
 import net.minecraft.util.ResourceLocation;
 
 import java.util.ArrayList;
-import java.util.List;
 import java.util.UUID;
 
 public class OnQuestCondition extends DialogueCondition {
@@ -32,7 +32,8 @@ public class OnQuestCondition extends DialogueCondition {
     @Override
     public boolean meetsCondition(ServerPlayerEntity player, LivingEntity source) {
         return MKNpc.getPlayerQuestData(player).map(
-                x -> x.isOnQuest(questId, false) && x.getCurrentQuestSteps(questId).orElse(new ArrayList<>()).contains(questStep))
+                x -> x.getQuestStatus(questId) == PlayerQuestingDataHandler.QuestStatus.IN_PROGRESS
+                        && x.getCurrentQuestSteps(questId).orElse(new ArrayList<>()).contains(questStep))
                 .orElse(false);
     }
 
