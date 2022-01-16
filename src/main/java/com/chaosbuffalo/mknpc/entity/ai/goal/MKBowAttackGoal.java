@@ -10,6 +10,7 @@ import com.chaosbuffalo.mkweapons.items.MKBow;
 import net.minecraft.entity.LivingEntity;
 import net.minecraft.entity.ai.brain.Brain;
 import net.minecraft.entity.ai.goal.Goal;
+import net.minecraft.entity.ai.goal.RangedBowAttackGoal;
 import net.minecraft.item.BowItem;
 import net.minecraft.item.ItemStack;
 import net.minecraft.util.Hand;
@@ -27,6 +28,7 @@ public class MKBowAttackGoal extends Goal {
     private boolean strafingClockwise;
     private boolean strafingBackwards;
     private int strafingTime = -1;
+    protected static int SEE_TIME_TIMEOUT = 60;
 
     public MKBowAttackGoal(MKEntity mob, int attackCooldownIn, float maxAttackDistanceIn) {
         this.entity = mob;
@@ -53,7 +55,7 @@ public class MKBowAttackGoal extends Goal {
         Optional<LivingEntity> targetOpt = brain.getMemory(MKMemoryModuleTypes.THREAT_TARGET);
         if (targetOpt.isPresent()) {
             LivingEntity target = targetOpt.get();
-            if (isInReach(target)) {
+            if (isInReach(target) && entity.getEntitySenses().canSee(target)) {
                 this.target = target;
                 return true;
             }
@@ -69,7 +71,7 @@ public class MKBowAttackGoal extends Goal {
     public boolean shouldContinueExecuting() {
         Brain<?> brain = entity.getBrain();
         Optional<LivingEntity> targetOpt = brain.getMemory(MKMemoryModuleTypes.THREAT_TARGET);
-        return target != null && ItemUtils.isRangedWeapon(entity.getHeldItemMainhand()) && targetOpt.map(
+        return target != null && seeTime >= -SEE_TIME_TIMEOUT && ItemUtils.isRangedWeapon(entity.getHeldItemMainhand()) && targetOpt.map(
                 (ent) -> ent.isEntityEqual(target) && isInReach(ent)).orElse(false);
     }
 
@@ -169,7 +171,7 @@ public class MKBowAttackGoal extends Goal {
             }
 
             if (this.entity.isHandActive()) {
-                if (!canSee && this.seeTime < -60) {
+                if (!canSee && this.seeTime < -SEE_TIME_TIMEOUT) {
                     this.entity.resetActiveHand();
                 } else if (canSee) {
                     int useTicks = this.entity.getItemInUseMaxCount();
@@ -186,7 +188,7 @@ public class MKBowAttackGoal extends Goal {
                         this.attackTime = fullCooldown ? entity.getAttackComboCooldown() : defaultCooldown;
                     }
                 }
-            } else if (--this.attackTime <= 0 && this.seeTime >= -60) {
+            } else if (--this.attackTime <= 0 && this.seeTime >= -SEE_TIME_TIMEOUT) {
                 this.entity.setActiveHand(Hand.MAIN_HAND);
             }
 

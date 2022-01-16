@@ -15,14 +15,16 @@ import java.util.EnumSet;
 import java.util.Optional;
 
 public class UseAbilityGoal extends Goal {
-
+    public static final int CAN_SEE_TIMEOUT = 10;
     private final MKEntity entity;
     private MKAbility currentAbility;
     private LivingEntity target;
+    private int ticksSinceSeenTarget;
 
     public UseAbilityGoal(MKEntity entity) {
         this.entity = entity;
         this.setMutexFlags(EnumSet.of(Flag.MOVE, Flag.LOOK));
+        ticksSinceSeenTarget = 0;
     }
 
     @Override
@@ -68,7 +70,7 @@ public class UseAbilityGoal extends Goal {
     }
 
     public boolean shouldContinueExecuting() {
-        return entity.getCapability(CoreCapabilities.ENTITY_CAPABILITY).map(
+        return ticksSinceSeenTarget < CAN_SEE_TIMEOUT && entity.getCapability(CoreCapabilities.ENTITY_CAPABILITY).map(
                 (entityData) -> entityData.getAbilityExecutor().isCasting()).orElse(false) && entity.getBrain()
                 .getMemory(MKAbilityMemories.ABILITY_TARGET).map(tar -> tar.isAlive()
                         && tar.isEntityEqual(target)).orElse(false) && entity.getBrain().getMemory(MKMemoryModuleTypes.CURRENT_ABILITY)
@@ -92,6 +94,11 @@ public class UseAbilityGoal extends Goal {
         if (!target.isEntityEqual(entity)){
             entity.faceEntity(target, 50.0f, 50.0f);
             entity.getLookController().setLookPositionWithEntity(target, 50.0f, 50.0f);
+            if (entity.getEntitySenses().canSee(target)){
+                ticksSinceSeenTarget = 0;
+            } else {
+                ticksSinceSeenTarget++;
+            }
         }
     }
 
@@ -103,6 +110,7 @@ public class UseAbilityGoal extends Goal {
         entity.getBrain().removeMemory(MKMemoryModuleTypes.CURRENT_ABILITY);
         entity.getBrain().removeMemory(MKAbilityMemories.ABILITY_TARGET);
         entity.returnToDefaultMovementState();
+        ticksSinceSeenTarget = 0;
 
     }
 }
