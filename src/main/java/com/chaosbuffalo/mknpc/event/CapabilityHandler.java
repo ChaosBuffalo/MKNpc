@@ -24,7 +24,7 @@ public class CapabilityHandler {
         if (!(e.getObject() instanceof PlayerEntity) && e.getObject() instanceof LivingEntity) {
             e.addCapability(NpcCapabilities.MK_NPC_CAP_ID, new EntityNpcDataProvider((LivingEntity) e.getObject()));
         }
-        if (e.getObject() instanceof PlayerEntity){
+        if (e.getObject() instanceof PlayerEntity) {
             e.addCapability(NpcCapabilities.MK_QUEST_CAP_ID, new PlayerQuestingDataProvider((PlayerEntity) e.getObject()));
         }
     }
@@ -32,7 +32,8 @@ public class CapabilityHandler {
     @SuppressWarnings("unused")
     @SubscribeEvent
     public static void attachWorldCapability(AttachCapabilitiesEvent<World> e) {
-        e.addCapability(NpcCapabilities.MK_WORLD_NPC_CAP_ID, new WorldNpcDataProvider(e.getObject()));
+        WorldNpcDataProvider provider = new WorldNpcDataProvider(e.getObject());
+        attachCap(NpcCapabilities.MK_WORLD_NPC_CAP_ID, provider, e);
     }
 
     @SubscribeEvent
@@ -42,8 +43,8 @@ public class CapabilityHandler {
     }
 
     @SubscribeEvent
-    public static void attachChestCapability(AttachCapabilitiesEvent<TileEntity> e){
-        if (e.getObject() instanceof ChestTileEntity){
+    public static void attachChestCapability(AttachCapabilitiesEvent<TileEntity> e) {
+        if (e.getObject() instanceof ChestTileEntity) {
             e.addCapability(NpcCapabilities.MK_CHEST_CAP_ID, new ChestNpcDataProvider((ChestTileEntity) e.getObject()));
         }
     }

@@ -57,8 +57,7 @@ public class NpcCapabilities {
         CoreCapabilities.registerLivingEntity(e -> e instanceof MKEntity);
         CapabilityManager.INSTANCE.register(IEntityNpcData.class, new NBTStorage<>(),
                 EntityNpcDataHandler::new);
-        CapabilityManager.INSTANCE.register(IWorldNpcData.class, new NBTStorage<>(),
-                WorldNpcDataHandler::new);
+        CapabilityManager.INSTANCE.register(IWorldNpcData.class, new NBTStorage<>(), () -> null);
         CapabilityManager.INSTANCE.register(IChunkNpcData.class, new NBTStorage<>(), () -> null);
         CapabilityManager.INSTANCE.register(IChestNpcData.class, new NBTStorage<>(),
                 ChestNpcDataHandler::new);

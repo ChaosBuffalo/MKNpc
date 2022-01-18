@@ -20,8 +20,6 @@ import java.util.UUID;
 
 public interface IWorldNpcData extends INBTSerializable<CompoundNBT> {
 
-    void attach(World world);
-
     boolean hasEntityOptionEntry(NpcDefinition definition, WorldPermanentOption attribute, Entity entity);
 
     boolean hasEntityOptionEntry(NpcDefinition definition, WorldPermanentOption attribute, UUID spawnId);
