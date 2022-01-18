@@ -10,8 +10,11 @@ import net.minecraft.util.ResourceLocation;
 import net.minecraftforge.common.capabilities.Capability;
 import net.minecraftforge.common.capabilities.CapabilityInject;
 import net.minecraftforge.common.capabilities.CapabilityManager;
+import net.minecraftforge.common.capabilities.ICapabilitySerializable;
 import net.minecraftforge.common.util.INBTSerializable;
+import net.minecraftforge.common.util.LazyOptional;
 
+import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
 
 public class NpcCapabilities {
@@ -56,12 +59,46 @@ public class NpcCapabilities {
                 EntityNpcDataHandler::new);
         CapabilityManager.INSTANCE.register(IWorldNpcData.class, new NBTStorage<>(),
                 WorldNpcDataHandler::new);
-        CapabilityManager.INSTANCE.register(IChunkNpcData.class, new NBTStorage<>(),
-                ChunkNpcDataHandler::new);
+        CapabilityManager.INSTANCE.register(IChunkNpcData.class, new NBTStorage<>(), () -> null);
         CapabilityManager.INSTANCE.register(IChestNpcData.class, new NBTStorage<>(),
                 ChestNpcDataHandler::new);
         CapabilityManager.INSTANCE.register(IPlayerQuestingData.class, new NBTStorage<>(),
                 PlayerQuestingDataHandler::new);
+    }
+
+    public abstract static class Provider<TE, TP extends INBTSerializable<CompoundNBT>> implements ICapabilitySerializable<CompoundNBT> {
+
+        private final TP data;
+        private final LazyOptional<TP> capOpt;
+
+        public Provider(TE chunk) {
+            data = makeData(chunk);
+            capOpt = LazyOptional.of(() -> data);
+        }
+
+        abstract TP makeData(TE attached);
+
+        abstract Capability<TP> getCapability();
+
+        @Nonnull
+        @Override
+        public <T> LazyOptional<T> getCapability(@Nonnull Capability<T> cap, @Nullable Direction side) {
+            return getCapability().orEmpty(cap, capOpt);
+        }
+
+        public void invalidate() {
+            capOpt.invalidate();
+        }
+
+        @Override
+        public CompoundNBT serializeNBT() {
+            return data.serializeNBT();
+        }
+
+        @Override
+        public void deserializeNBT(CompoundNBT nbt) {
+            data.deserializeNBT(nbt);
+        }
     }
 
     public static class NBTStorage<T extends INBTSerializable<CompoundNBT>> implements Capability.IStorage<T> {

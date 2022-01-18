@@ -7,6 +7,7 @@ import net.minecraft.entity.LivingEntity;
 import net.minecraft.entity.player.PlayerEntity;
 import net.minecraft.tileentity.ChestTileEntity;
 import net.minecraft.tileentity.TileEntity;
+import net.minecraft.util.ResourceLocation;
 import net.minecraft.world.World;
 import net.minecraft.world.chunk.Chunk;
 import net.minecraftforge.event.AttachCapabilitiesEvent;
@@ -36,7 +37,8 @@ public class CapabilityHandler {
 
     @SubscribeEvent
     public static void attachChunkCapability(AttachCapabilitiesEvent<Chunk> e) {
-        e.addCapability(NpcCapabilities.MK_CHUNK_NPC_CAP_ID, new ChunkNpcDataProvider(e.getObject()));
+        ChunkNpcDataProvider provider = new ChunkNpcDataProvider(e.getObject());
+        attachCap(NpcCapabilities.MK_CHUNK_NPC_CAP_ID, provider, e);
     }
 
     @SubscribeEvent
@@ -46,4 +48,8 @@ public class CapabilityHandler {
         }
     }
 
+    private static void attachCap(ResourceLocation capId, NpcCapabilities.Provider<?, ?> provider, AttachCapabilitiesEvent<?> event) {
+        event.addCapability(capId, provider);
+        event.addListener(provider::invalidate);
+    }
 }

@@ -1,18 +1,12 @@
 package com.chaosbuffalo.mknpc.capabilities;
 
 import net.minecraft.nbt.CompoundNBT;
-import net.minecraft.nbt.INBT;
-import net.minecraft.util.Direction;
 import net.minecraft.world.chunk.Chunk;
-import net.minecraftforge.common.capabilities.Capability;
 
-import javax.annotation.Nullable;
+public class ChunkNpcDataHandler implements IChunkNpcData {
+    private final Chunk chunk;
 
-public class ChunkNpcDataHandler implements IChunkNpcData{
-    private Chunk chunk;
-
-    @Override
-    public void attach(Chunk chunk) {
+    public ChunkNpcDataHandler(Chunk chunk) {
         this.chunk = chunk;
     }
 
