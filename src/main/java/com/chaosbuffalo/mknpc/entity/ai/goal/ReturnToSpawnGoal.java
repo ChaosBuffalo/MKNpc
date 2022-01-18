@@ -83,7 +83,7 @@ public class ReturnToSpawnGoal extends Goal {
 
     public boolean shouldContinueExecuting() {
         Optional<BlockPos> blockPosOpt = entity.getBrain().getMemory(MKMemoryModuleTypes.SPAWN_POINT);
-        return blockPosOpt.map((pos) -> pos.manhattanDistance(entity.getPosition()) > MIN_RANGE).orElse(false) && !this.entity.getNavigator().noPath();
+        return blockPosOpt.map((pos) -> pos.manhattanDistance(entity.getPosition()) > MIN_RANGE).orElse(false);
     }
 
     public void startExecuting() {
