@@ -46,6 +46,9 @@ public class FactionNameOption extends WorldPermanentOption implements INameProv
     public StringTextComponent getEntityName(NpcDefinition definition, World world, UUID spawnId) {
         return world.getCapability(NpcCapabilities.WORLD_NPC_DATA_CAPABILITY).map(
                 cap->{
+                    if (!cap.hasEntityOptionEntry(definition, this, spawnId)){
+                        cap.addEntityOptionEntry(definition, this, spawnId, makeOptionEntry(definition, world.getRandom()));
+                    }
                     INpcOptionEntry entry = cap.getEntityOptionEntry(definition, this, spawnId);
                     if (entry instanceof INameEntry){
                         return ((INameEntry) entry).getName();
