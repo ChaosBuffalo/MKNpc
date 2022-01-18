@@ -265,25 +265,4 @@ public class WorldNpcDataHandler implements IWorldNpcData{
             quests.put(inst.getQuestId(), inst);
         }
     }
-
-    public static class Storage implements Capability.IStorage<IWorldNpcData> {
-
-
-        @Nullable
-        @Override
-        public INBT writeNBT(Capability<IWorldNpcData> capability, IWorldNpcData instance, Direction side) {
-            if (instance == null){
-                return null;
-            }
-            return instance.serializeNBT();
-        }
-
-        @Override
-        public void readNBT(Capability<IWorldNpcData> capability, IWorldNpcData instance, Direction side, INBT nbt) {
-            if (nbt instanceof CompoundNBT && instance != null) {
-                CompoundNBT tag = (CompoundNBT) nbt;
-                instance.deserializeNBT(tag);
-            }
-        }
-    }
 }

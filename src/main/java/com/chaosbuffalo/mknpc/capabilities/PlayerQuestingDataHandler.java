@@ -306,25 +306,4 @@ public class PlayerQuestingDataHandler implements IPlayerQuestingData {
             return factory;
         });
     }
-
-    public static class Storage implements Capability.IStorage<IPlayerQuestingData> {
-
-
-        @Nullable
-        @Override
-        public INBT writeNBT(Capability<IPlayerQuestingData> capability, IPlayerQuestingData instance, Direction side) {
-            if (instance == null){
-                return null;
-            }
-            return instance.serializeNBT();
-        }
-
-        @Override
-        public void readNBT(Capability<IPlayerQuestingData> capability, IPlayerQuestingData instance, Direction side, INBT nbt) {
-            if (nbt instanceof CompoundNBT && instance != null) {
-                CompoundNBT tag = (CompoundNBT) nbt;
-                instance.deserializeNBT(tag);
-            }
-        }
-    }
 }

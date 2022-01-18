@@ -3,10 +3,16 @@ package com.chaosbuffalo.mknpc.capabilities;
 import com.chaosbuffalo.mkcore.CoreCapabilities;
 import com.chaosbuffalo.mknpc.MKNpc;
 import com.chaosbuffalo.mknpc.entity.MKEntity;
+import net.minecraft.nbt.CompoundNBT;
+import net.minecraft.nbt.INBT;
+import net.minecraft.util.Direction;
 import net.minecraft.util.ResourceLocation;
 import net.minecraftforge.common.capabilities.Capability;
 import net.minecraftforge.common.capabilities.CapabilityInject;
 import net.minecraftforge.common.capabilities.CapabilityManager;
+import net.minecraftforge.common.util.INBTSerializable;
+
+import javax.annotation.Nullable;
 
 public class NpcCapabilities {
     public static ResourceLocation MK_NPC_CAP_ID = new ResourceLocation(MKNpc.MODID,
@@ -17,7 +23,6 @@ public class NpcCapabilities {
             "chunk_npc_data");
     public static ResourceLocation MK_CHEST_CAP_ID = new ResourceLocation(MKNpc.MODID,
             "chest_npc_data");
-
     public static ResourceLocation MK_QUEST_CAP_ID = new ResourceLocation(MKNpc.MODID,
             "player_quest_data");
 
@@ -37,7 +42,6 @@ public class NpcCapabilities {
     public static final Capability<IPlayerQuestingData> PLAYER_QUEST_DATA_CAPABILITY;
 
 
-
     static {
         ENTITY_NPC_DATA_CAPABILITY = null;
         WORLD_NPC_DATA_CAPABILITY = null;
@@ -48,14 +52,35 @@ public class NpcCapabilities {
 
     public static void registerCapabilities() {
         CoreCapabilities.registerLivingEntity(e -> e instanceof MKEntity);
-        CapabilityManager.INSTANCE.register(IEntityNpcData.class, new EntityNpcDataHandler.Storage(), EntityNpcDataHandler::new);
-        CapabilityManager.INSTANCE.register(IWorldNpcData.class, new WorldNpcDataHandler.Storage(),
+        CapabilityManager.INSTANCE.register(IEntityNpcData.class, new NBTStorage<>(),
+                EntityNpcDataHandler::new);
+        CapabilityManager.INSTANCE.register(IWorldNpcData.class, new NBTStorage<>(),
                 WorldNpcDataHandler::new);
-        CapabilityManager.INSTANCE.register(IChunkNpcData.class, new ChunkNpcDataHandler.Storage(),
+        CapabilityManager.INSTANCE.register(IChunkNpcData.class, new NBTStorage<>(),
                 ChunkNpcDataHandler::new);
-        CapabilityManager.INSTANCE.register(IChestNpcData.class, new ChestNpcDataHandler.Storage(), ChestNpcDataHandler::new);
-        CapabilityManager.INSTANCE.register(IPlayerQuestingData.class, new PlayerQuestingDataHandler.Storage(), PlayerQuestingDataHandler::new);
+        CapabilityManager.INSTANCE.register(IChestNpcData.class, new NBTStorage<>(),
+                ChestNpcDataHandler::new);
+        CapabilityManager.INSTANCE.register(IPlayerQuestingData.class, new NBTStorage<>(),
+                PlayerQuestingDataHandler::new);
     }
 
+    public static class NBTStorage<T extends INBTSerializable<CompoundNBT>> implements Capability.IStorage<T> {
 
+        @Nullable
+        @Override
+        public INBT writeNBT(Capability<T> capability, T instance, Direction side) {
+            if (instance == null) {
+                return null;
+            }
+            return instance.serializeNBT();
+        }
+
+        @Override
+        public void readNBT(Capability<T> capability, T instance, Direction side, INBT nbt) {
+            if (nbt instanceof CompoundNBT && instance != null) {
+                CompoundNBT tag = (CompoundNBT) nbt;
+                instance.deserializeNBT(tag);
+            }
+        }
+    }
 }

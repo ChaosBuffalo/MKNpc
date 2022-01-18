@@ -214,24 +214,4 @@ public class ChestNpcDataHandler implements IChestNpcData{
     public Container createMenu(int guiWindow, PlayerInventory playerInventory, PlayerEntity player) {
         return PsuedoChestContainer.createGeneric9X3(guiWindow, playerInventory, getQuestInventoryForPlayer(player), entity);
     }
-
-    public static class Storage implements Capability.IStorage<IChestNpcData> {
-
-        @Nullable
-        @Override
-        public INBT writeNBT(Capability<IChestNpcData> capability, IChestNpcData instance, Direction side) {
-            if (instance == null){
-                return null;
-            }
-            return instance.serializeNBT();
-        }
-
-        @Override
-        public void readNBT(Capability<IChestNpcData> capability, IChestNpcData instance, Direction side, INBT nbt) {
-            if (nbt instanceof CompoundNBT && instance != null) {
-                CompoundNBT tag = (CompoundNBT) nbt;
-                instance.deserializeNBT(tag);
-            }
-        }
-    }
 }

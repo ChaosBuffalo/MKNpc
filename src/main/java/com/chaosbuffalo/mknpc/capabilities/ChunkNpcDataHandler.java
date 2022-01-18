@@ -25,24 +25,4 @@ public class ChunkNpcDataHandler implements IChunkNpcData{
     public void deserializeNBT(CompoundNBT nbt) {
 
     }
-
-    public static class Storage implements Capability.IStorage<IChunkNpcData> {
-
-        @Nullable
-        @Override
-        public INBT writeNBT(Capability<IChunkNpcData> capability, IChunkNpcData instance, Direction side) {
-            if (instance == null){
-                return null;
-            }
-            return instance.serializeNBT();
-        }
-
-        @Override
-        public void readNBT(Capability<IChunkNpcData> capability, IChunkNpcData instance, Direction side, INBT nbt) {
-            if (nbt instanceof CompoundNBT && instance != null) {
-                CompoundNBT tag = (CompoundNBT) nbt;
-                instance.deserializeNBT(tag);
-            }
-        }
-    }
 }
