@@ -3,8 +3,8 @@ package com.chaosbuffalo.mknpc.capabilities;
 import com.chaosbuffalo.mkchat.capabilities.ChatCapabilities;
 import com.chaosbuffalo.mkcore.GameConstants;
 import com.chaosbuffalo.mknpc.MKNpc;
-import com.chaosbuffalo.mknpc.npc.NpcDefinitionManager;
 import com.chaosbuffalo.mknpc.npc.NpcDefinition;
+import com.chaosbuffalo.mknpc.npc.NpcDefinitionManager;
 import com.chaosbuffalo.mknpc.npc.entries.LootOptionEntry;
 import com.chaosbuffalo.mknpc.npc.entries.QuestOfferingEntry;
 import com.chaosbuffalo.mknpc.quest.QuestChainInstance;
@@ -20,21 +20,17 @@ import net.minecraft.entity.LivingEntity;
 import net.minecraft.entity.item.ItemEntity;
 import net.minecraft.item.ItemStack;
 import net.minecraft.nbt.CompoundNBT;
-import net.minecraft.nbt.INBT;
 import net.minecraft.server.MinecraftServer;
 import net.minecraft.util.DamageSource;
-import net.minecraft.util.Direction;
 import net.minecraft.util.ResourceLocation;
 import net.minecraft.util.math.BlockPos;
 import net.minecraft.world.World;
-import net.minecraftforge.common.capabilities.Capability;
 
 import javax.annotation.Nonnull;
-import javax.annotation.Nullable;
 import java.util.*;
 
 public class EntityNpcDataHandler implements IEntityNpcData {
-    private LivingEntity entity;
+    private final LivingEntity entity;
     private NpcDefinition definition;
     private boolean mkSpawned;
     private int bonusXp;
@@ -51,7 +47,8 @@ public class EntityNpcDataHandler implements IEntityNpcData {
     private final Queue<QuestOfferingEntry> questRequests = new ArrayDeque<>();
     private int questGenCd;
 
-    public EntityNpcDataHandler(){
+    public EntityNpcDataHandler(LivingEntity entity) {
+        this.entity = entity;
         mkSpawned = false;
         bonusXp = 0;
         notable = false;
@@ -183,12 +180,6 @@ public class EntityNpcDataHandler implements IEntityNpcData {
         questRequests.add(entry);
     }
 
-
-    @Override
-    public void attach(LivingEntity entity) {
-        this.entity = entity;
-    }
-
     @Override
     public LivingEntity getEntity() {
         return entity;
@@ -304,26 +295,6 @@ public class EntityNpcDataHandler implements IEntityNpcData {
             NpcDefinition def = NpcDefinitionManager.getDefinition(defName);
             this.definition = def;
             needsDefinitionApplied = true;
-        }
-    }
-
-    public static class Storage implements Capability.IStorage<IEntityNpcData> {
-
-        @Nullable
-        @Override
-        public INBT writeNBT(Capability<IEntityNpcData> capability, IEntityNpcData instance, Direction side) {
-            if (instance == null){
-                return null;
-            }
-            return instance.serializeNBT();
-        }
-
-        @Override
-        public void readNBT(Capability<IEntityNpcData> capability, IEntityNpcData instance, Direction side, INBT nbt) {
-            if (nbt instanceof CompoundNBT && instance != null) {
-                CompoundNBT tag = (CompoundNBT) nbt;
-                instance.deserializeNBT(tag);
-            }
         }
     }
 }

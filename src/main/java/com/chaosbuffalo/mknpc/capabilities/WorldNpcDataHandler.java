@@ -7,8 +7,8 @@ import com.chaosbuffalo.mknpc.init.MKNpcWorldGen;
 import com.chaosbuffalo.mknpc.npc.*;
 import com.chaosbuffalo.mknpc.npc.option_entries.INpcOptionEntry;
 import com.chaosbuffalo.mknpc.npc.options.WorldPermanentOption;
-import com.chaosbuffalo.mknpc.quest.QuestDefinition;
 import com.chaosbuffalo.mknpc.quest.QuestChainInstance;
+import com.chaosbuffalo.mknpc.quest.QuestDefinition;
 import com.chaosbuffalo.mknpc.spawn.MKSpawnerTileEntity;
 import com.chaosbuffalo.mknpc.world.gen.IStructurePlaced;
 import com.chaosbuffalo.mknpc.world.gen.feature.structure.MKSingleJigsawPiece;
@@ -17,7 +17,6 @@ import net.minecraft.entity.Entity;
 import net.minecraft.nbt.CompoundNBT;
 import net.minecraft.nbt.INBT;
 import net.minecraft.nbt.ListNBT;
-import net.minecraft.util.Direction;
 import net.minecraft.util.ResourceLocation;
 import net.minecraft.util.math.BlockPos;
 import net.minecraft.util.math.ChunkPos;
@@ -27,11 +26,9 @@ import net.minecraft.world.gen.feature.structure.Structure;
 import net.minecraft.world.gen.feature.structure.StructurePiece;
 import net.minecraft.world.gen.feature.structure.StructureStart;
 import net.minecraft.world.server.ServerWorld;
-import net.minecraftforge.common.capabilities.Capability;
 import net.minecraftforge.common.util.Constants;
 import net.minecraftforge.registries.ForgeRegistries;
 
-import javax.annotation.Nullable;
 import java.util.*;
 import java.util.stream.Collectors;
 
@@ -43,10 +40,10 @@ public class WorldNpcDataHandler implements IWorldNpcData{
     private final HashMap<UUID, QuestChainInstance> quests;
     private final HashMap<UUID, NotableChestEntry> notableChests;
     private final HashMap<UUID, NotableNpcEntry> notableNpcs;
+    private final World world;
 
-    private World world;
-
-    public WorldNpcDataHandler(){
+    public WorldNpcDataHandler(World world) {
+        this.world = world;
         worldPermanentSpawnConfigurations = new HashMap<>();
         structureIndex = new HashMap<>();
         structureToInstanceIndex = new HashMap<>();
@@ -58,11 +55,6 @@ public class WorldNpcDataHandler implements IWorldNpcData{
     @Override
     public QuestChainInstance getQuest(UUID questId){
         return quests.get(questId);
-    }
-
-    @Override
-    public void attach(World world) {
-        this.world = world;
     }
 
     @Override
@@ -263,27 +255,6 @@ public class WorldNpcDataHandler implements IWorldNpcData{
         for (INBT questNbt : questsNbt){
             QuestChainInstance inst = new QuestChainInstance((CompoundNBT) questNbt);
             quests.put(inst.getQuestId(), inst);
-        }
-    }
-
-    public static class Storage implements Capability.IStorage<IWorldNpcData> {
-
-
-        @Nullable
-        @Override
-        public INBT writeNBT(Capability<IWorldNpcData> capability, IWorldNpcData instance, Direction side) {
-            if (instance == null){
-                return null;
-            }
-            return instance.serializeNBT();
-        }
-
-        @Override
-        public void readNBT(Capability<IWorldNpcData> capability, IWorldNpcData instance, Direction side, INBT nbt) {
-            if (nbt instanceof CompoundNBT && instance != null) {
-                CompoundNBT tag = (CompoundNBT) nbt;
-                instance.deserializeNBT(tag);
-            }
         }
     }
 }

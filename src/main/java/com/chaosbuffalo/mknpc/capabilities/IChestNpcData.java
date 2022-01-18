@@ -13,7 +13,6 @@ import java.util.UUID;
 
 public interface IChestNpcData extends INBTSerializable<CompoundNBT>, IStructurePlaced, INamedContainerProvider {
 
-
     Inventory getQuestInventoryForPlayer(PlayerEntity player);
 
     boolean hasQuestInventoryForPlayer(PlayerEntity player);
@@ -23,8 +22,6 @@ public interface IChestNpcData extends INBTSerializable<CompoundNBT>, IStructure
 
     @Nullable
     String getChestLabel();
-
-    void attach(ChestTileEntity entity);
 
     ChestTileEntity getTileEntity();
 
