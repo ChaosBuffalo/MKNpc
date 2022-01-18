@@ -59,25 +59,24 @@ public class NpcCapabilities {
                 EntityNpcDataHandler::new);
         CapabilityManager.INSTANCE.register(IWorldNpcData.class, new NBTStorage<>(), () -> null);
         CapabilityManager.INSTANCE.register(IChunkNpcData.class, new NBTStorage<>(), () -> null);
-        CapabilityManager.INSTANCE.register(IChestNpcData.class, new NBTStorage<>(),
-                ChestNpcDataHandler::new);
+        CapabilityManager.INSTANCE.register(IChestNpcData.class, new NBTStorage<>(), () -> null);
         CapabilityManager.INSTANCE.register(IPlayerQuestingData.class, new NBTStorage<>(),
                 PlayerQuestingDataHandler::new);
     }
 
-    public abstract static class Provider<TE, TP extends INBTSerializable<CompoundNBT>> implements ICapabilitySerializable<CompoundNBT> {
+    public abstract static class Provider<CapTarget, CapType extends INBTSerializable<CompoundNBT>> implements ICapabilitySerializable<CompoundNBT> {
 
-        private final TP data;
-        private final LazyOptional<TP> capOpt;
+        private final CapType data;
+        private final LazyOptional<CapType> capOpt;
 
-        public Provider(TE chunk) {
+        public Provider(CapTarget chunk) {
             data = makeData(chunk);
             capOpt = LazyOptional.of(() -> data);
         }
 
-        abstract TP makeData(TE attached);
+        abstract CapType makeData(CapTarget attached);
 
-        abstract Capability<TP> getCapability();
+        abstract Capability<CapType> getCapability();
 
         @Nonnull
         @Override

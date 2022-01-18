@@ -45,7 +45,8 @@ public class CapabilityHandler {
     @SubscribeEvent
     public static void attachChestCapability(AttachCapabilitiesEvent<TileEntity> e) {
         if (e.getObject() instanceof ChestTileEntity) {
-            e.addCapability(NpcCapabilities.MK_CHEST_CAP_ID, new ChestNpcDataProvider((ChestTileEntity) e.getObject()));
+            ChestNpcDataProvider provider = new ChestNpcDataProvider((ChestTileEntity) e.getObject());
+            attachCap(NpcCapabilities.MK_CHEST_CAP_ID, provider, e);
         }
     }
 

@@ -4,20 +4,15 @@ import com.chaosbuffalo.mknpc.inventories.PsuedoChestContainer;
 import com.chaosbuffalo.mknpc.inventories.QuestChestInventory;
 import net.minecraft.entity.player.PlayerEntity;
 import net.minecraft.entity.player.PlayerInventory;
-import net.minecraft.inventory.Inventory;
-import net.minecraft.inventory.container.ChestContainer;
 import net.minecraft.inventory.container.Container;
 import net.minecraft.nbt.CompoundNBT;
-import net.minecraft.nbt.INBT;
 import net.minecraft.server.MinecraftServer;
 import net.minecraft.tileentity.ChestTileEntity;
-import net.minecraft.util.Direction;
 import net.minecraft.util.ResourceLocation;
 import net.minecraft.util.math.BlockPos;
 import net.minecraft.util.text.ITextComponent;
 import net.minecraft.util.text.StringTextComponent;
 import net.minecraft.world.World;
-import net.minecraftforge.common.capabilities.Capability;
 import net.minecraftforge.common.util.Constants;
 
 import javax.annotation.Nullable;
@@ -32,7 +27,7 @@ public class ChestNpcDataHandler implements IChestNpcData{
     private UUID chestId;
     private boolean needsUploadToWorld;
     private boolean placedByStructure;
-    private ChestTileEntity entity;
+    private final ChestTileEntity entity;
     @Nullable
     private String chestLabel;
     @Nullable
@@ -40,7 +35,8 @@ public class ChestNpcDataHandler implements IChestNpcData{
 
     private final HashMap<UUID, QuestChestInventory> questInventories = new HashMap<>();
 
-    public ChestNpcDataHandler(){
+    public ChestNpcDataHandler(ChestTileEntity entity) {
+        this.entity = entity;
         structureId = null;
         chestId = null;
         needsUploadToWorld = false;
@@ -113,11 +109,6 @@ public class ChestNpcDataHandler implements IChestNpcData{
     @Override
     public World getStructureWorld() {
         return getTileEntity().getWorld();
-    }
-
-    @Override
-    public void attach(ChestTileEntity entity) {
-        this.entity = entity;
     }
 
     @Override
