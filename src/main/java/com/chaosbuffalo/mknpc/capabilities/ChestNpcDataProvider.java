@@ -5,8 +5,8 @@ import net.minecraftforge.common.capabilities.Capability;
 
 public class ChestNpcDataProvider extends NpcCapabilities.Provider<ChestTileEntity, IChestNpcData> {
 
-    public ChestNpcDataProvider(ChestTileEntity chunk) {
-        super(chunk);
+    public ChestNpcDataProvider(ChestTileEntity entity) {
+        super(entity);
     }
 
     @Override

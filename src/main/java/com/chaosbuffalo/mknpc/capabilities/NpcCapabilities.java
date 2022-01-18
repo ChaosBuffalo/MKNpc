@@ -55,8 +55,7 @@ public class NpcCapabilities {
 
     public static void registerCapabilities() {
         CoreCapabilities.registerLivingEntity(e -> e instanceof MKEntity);
-        CapabilityManager.INSTANCE.register(IEntityNpcData.class, new NBTStorage<>(),
-                EntityNpcDataHandler::new);
+        CapabilityManager.INSTANCE.register(IEntityNpcData.class, new NBTStorage<>(), () -> null);
         CapabilityManager.INSTANCE.register(IWorldNpcData.class, new NBTStorage<>(), () -> null);
         CapabilityManager.INSTANCE.register(IChunkNpcData.class, new NBTStorage<>(), () -> null);
         CapabilityManager.INSTANCE.register(IChestNpcData.class, new NBTStorage<>(), () -> null);
@@ -69,8 +68,8 @@ public class NpcCapabilities {
         private final CapType data;
         private final LazyOptional<CapType> capOpt;
 
-        public Provider(CapTarget chunk) {
-            data = makeData(chunk);
+        public Provider(CapTarget attached) {
+            data = makeData(attached);
             capOpt = LazyOptional.of(() -> data);
         }
 

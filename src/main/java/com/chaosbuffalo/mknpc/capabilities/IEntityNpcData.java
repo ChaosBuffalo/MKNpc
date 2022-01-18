@@ -19,8 +19,6 @@ import java.util.UUID;
 
 public interface IEntityNpcData extends INBTSerializable<CompoundNBT> {
 
-    void attach(LivingEntity entity);
-
     LivingEntity getEntity();
 
     @Nullable

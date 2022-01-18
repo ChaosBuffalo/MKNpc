@@ -6,8 +6,8 @@ import net.minecraftforge.common.capabilities.Capability;
 public class WorldNpcDataProvider extends NpcCapabilities.Provider<World, IWorldNpcData> {
 
 
-    public WorldNpcDataProvider(World chunk) {
-        super(chunk);
+    public WorldNpcDataProvider(World world) {
+        super(world);
     }
 
     @Override
