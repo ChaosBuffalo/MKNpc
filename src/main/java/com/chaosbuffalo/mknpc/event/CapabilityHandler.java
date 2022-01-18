@@ -23,7 +23,8 @@ public class CapabilityHandler {
     public static void attachEntityCapability(AttachCapabilitiesEvent<Entity> e) {
         if (e.getObject() instanceof LivingEntity) {
             if (e.getObject() instanceof PlayerEntity) {
-                e.addCapability(NpcCapabilities.MK_QUEST_CAP_ID, new PlayerQuestingDataProvider((PlayerEntity) e.getObject()));
+                PlayerQuestingDataProvider provider = new PlayerQuestingDataProvider((PlayerEntity) e.getObject());
+                attachCap(NpcCapabilities.MK_QUEST_CAP_ID, provider, e);
             } else {
                 EntityNpcDataProvider provider = new EntityNpcDataProvider((LivingEntity) e.getObject());
                 attachCap(NpcCapabilities.MK_NPC_CAP_ID, provider, e);

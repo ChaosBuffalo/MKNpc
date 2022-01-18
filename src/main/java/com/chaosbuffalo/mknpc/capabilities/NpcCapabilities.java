@@ -59,8 +59,7 @@ public class NpcCapabilities {
         CapabilityManager.INSTANCE.register(IWorldNpcData.class, new NBTStorage<>(), () -> null);
         CapabilityManager.INSTANCE.register(IChunkNpcData.class, new NBTStorage<>(), () -> null);
         CapabilityManager.INSTANCE.register(IChestNpcData.class, new NBTStorage<>(), () -> null);
-        CapabilityManager.INSTANCE.register(IPlayerQuestingData.class, new NBTStorage<>(),
-                PlayerQuestingDataHandler::new);
+        CapabilityManager.INSTANCE.register(IPlayerQuestingData.class, new NBTStorage<>(), () -> null);
     }
 
     public abstract static class Provider<CapTarget, CapType extends INBTSerializable<CompoundNBT>> implements ICapabilitySerializable<CompoundNBT> {

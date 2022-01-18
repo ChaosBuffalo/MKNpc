@@ -17,17 +17,14 @@ import net.minecraft.entity.player.PlayerEntity;
 import net.minecraft.nbt.CompoundNBT;
 import net.minecraft.nbt.INBT;
 import net.minecraft.nbt.ListNBT;
-import net.minecraft.util.Direction;
 import net.minecraft.util.ResourceLocation;
 import net.minecraft.util.SoundCategory;
 import net.minecraft.util.Util;
 import net.minecraft.util.text.TextFormatting;
 import net.minecraft.util.text.TranslationTextComponent;
-import net.minecraftforge.common.capabilities.Capability;
 import net.minecraftforge.common.util.Constants;
 import net.minecraftforge.fml.InterModComms;
 
-import javax.annotation.Nullable;
 import java.util.*;
 
 public class PlayerQuestingDataHandler implements IPlayerQuestingData {
@@ -38,13 +35,10 @@ public class PlayerQuestingDataHandler implements IPlayerQuestingData {
         COMPLETED
     }
 
-    private PlayerEntity player;
+    private final PlayerEntity player;
     private MKPlayerData playerData;
 
-    public PlayerQuestingDataHandler() {
-    }
-
-    public void attach(PlayerEntity player) {
+    public PlayerQuestingDataHandler(PlayerEntity player) {
         // Do not attempt to access any persona-specific data here because at this time
         // it's impossible to get a copy of MKPlayerData
         this.player = player;
