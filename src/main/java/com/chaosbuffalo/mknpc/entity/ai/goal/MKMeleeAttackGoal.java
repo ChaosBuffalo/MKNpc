@@ -64,7 +64,7 @@ public class MKMeleeAttackGoal extends Goal {
         entity.getLookController().setLookPositionWithEntity(target, 30.0f, 30.0f);
         double cooldownPeriod = EntityUtils.getCooldownPeriod(entity);
         int ticksSinceSwing = entity.getTicksSinceLastSwing();
-        if (ticksSinceSwing >= cooldownPeriod && isInReach(target)) {
+        if (ticksSinceSwing >= cooldownPeriod && isInReach(target) && entity.getEntitySenses().canSee(target)) {
             performAttack(target);
         }
 
