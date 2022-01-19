@@ -35,7 +35,7 @@ public class CanStartQuestCondition extends DialogueCondition {
             if (status == PlayerQuestingDataHandler.QuestStatus.NOT_ON){
                 return true;
             } else {
-                return allowRepeat && status == PlayerQuestingDataHandler.QuestStatus.COMPLETED;
+                return allowRepeat && status != PlayerQuestingDataHandler.QuestStatus.IN_PROGRESS;
             }
         }).orElse(false);
     }

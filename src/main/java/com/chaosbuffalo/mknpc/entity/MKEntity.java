@@ -147,7 +147,8 @@ public abstract class MKEntity extends CreatureEntity implements IModelLookProvi
                 .createMutableAttribute(Attributes.MOVEMENT_SPEED, movementSpeed)
                 .createMutableAttribute(NpcAttributes.AGGRO_RANGE, 6)
                 .createMutableAttribute(Attributes.ATTACK_SPEED)
-                .createMutableAttribute(Attributes.FOLLOW_RANGE, 32.0D);
+                .createMutableAttribute(Attributes.FOLLOW_RANGE, 32.0D)
+                .createMutableAttribute(Attributes.KNOCKBACK_RESISTANCE, 1.0);
     }
 
     @Override

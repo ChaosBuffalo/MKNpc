@@ -15,8 +15,8 @@ import java.util.stream.Collectors;
 
 public class ThreatSensor extends Sensor<MKEntity> {
     private static final float THREAT_FALLOFF_2 = 225.0f;
-    private static final float BONUS_THREAT_FIRST_SIGHT = 1000.0f;
-    private static final float MAX_THREAT_FROM_DISTANCE = 100.0f;
+    private static final float BONUS_THREAT_FIRST_SIGHT = 750.0f;
+    private static final float MAX_THREAT_FROM_DISTANCE = 250.0f;
     private static final float ADD_THREAT = 125.0f;
     private static final float REMOVE_DIST_2 = 400.0f;
 
