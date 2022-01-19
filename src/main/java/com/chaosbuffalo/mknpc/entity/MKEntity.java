@@ -268,6 +268,11 @@ public abstract class MKEntity extends CreatureEntity implements IModelLookProvi
         restoreComboDefaults();
     }
 
+    @Override
+    public boolean canDespawn(double distanceToClosestPlayer) {
+        return false;
+    }
+
     public void restoreComboDefaults(){
         setAttackComboCount(comboCountDefault);
         setAttackComboCooldown(comboCooldownDefault);

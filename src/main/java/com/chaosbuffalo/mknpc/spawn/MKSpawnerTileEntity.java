@@ -43,7 +43,8 @@ public class MKSpawnerTileEntity extends TileEntity implements ITickableTileEnti
     private int ticksSinceDeath;
     private int ticksSincePlayer;
     private boolean wasAlive;
-    private final static double SPAWN_RANGE = 75.0;
+    private final static double SPAWN_RANGE = 100.0;
+    private final static double DESPAWN_RANGE = 150.0;
     private static final int IDLE_TIME = GameConstants.TICKS_PER_SECOND * 10;
     private final RandomCollection<NpcDefinition> randomSpawns;
     private MKEntity.NonCombatMoveType moveType;
@@ -184,6 +185,10 @@ public class MKSpawnerTileEntity extends TileEntity implements ITickableTileEnti
         return entity instanceof LivingEntity && ((LivingEntity) entity).getHealth() <= 0 && !entity.isAlive();
     }
 
+    public static double getDespawnRange(){
+        return DESPAWN_RANGE;
+    }
+
     public static double getSpawnRange() {
         return SPAWN_RANGE;
     }
@@ -274,6 +279,19 @@ public class MKSpawnerTileEntity extends TileEntity implements ITickableTileEnti
         return false;
     }
 
+    private boolean isPlayerInDespawnRange(){
+        if (getWorld() == null){
+            return false;
+        }
+        Vector3d loc = Vector3d.copy(getPos());
+        for (PlayerEntity player : getWorld().getPlayers()){
+            if (player.getDistanceSq(loc) < getDespawnRange() * getDespawnRange()){
+                return true;
+            }
+        }
+        return false;
+    }
+
     public void clearSpawn(){
         if (entity != null){
             entity.remove();
@@ -319,12 +337,12 @@ public class MKSpawnerTileEntity extends TileEntity implements ITickableTileEnti
                 ticksSinceDeath--;
             }
 
-            if (isPlayerInRange()){
+            if (isPlayerInDespawnRange()){
                 if (!isAlive){
                     if (wasAlive && isSpawnDead()){
                         ticksSinceDeath = getRespawnTime();
                     }
-                    if (ticksSinceDeath <= 0){
+                    if (ticksSinceDeath <= 0 && isPlayerInRange()){
                         spawnEntity();
                         isAlive = true;
                     }
