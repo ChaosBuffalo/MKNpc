@@ -53,6 +53,7 @@ public class QuestOfferingEntry implements INBTSerializable<CompoundNBT> {
     public void setQuestId(@Nullable UUID questId) {
         this.questId = questId;
         if (questId == null){
+            MKNpc.LOGGER.debug("Set quest id called in quest generation with null id {}", questDef);
             return;
         }
         QuestDefinition definition = QuestDefinitionManager.getDefinition(questDef);
@@ -73,6 +74,7 @@ public class QuestOfferingEntry implements INBTSerializable<CompoundNBT> {
         giverTree.addNode(startQuest);
         giverTree.addNode(hailQuest);
         giverTree.bake();
+        MKNpc.LOGGER.debug("Generated Start Quest Dialogue for {} id {}", questDef, questId);
         this.tree = giverTree;
 
     }

@@ -137,6 +137,7 @@ public class EntityNpcDataHandler implements IEntityNpcData {
         MinecraftServer server = getEntity().getServer();
         QuestDefinition npcDef = QuestDefinitionManager.getDefinition(entry.getQuestDef());
         if (npcDef == null){
+            MKNpc.LOGGER.debug("Can't find definition for quest {}", entry.getQuestDef());
             questRequests.add(entry);
             return;
         }
@@ -148,17 +149,25 @@ public class EntityNpcDataHandler implements IEntityNpcData {
                 if (quest.isPresent()) {
                     QuestChainInstance newQuest = quest.get();
                     MKNpc.getNpcData(entity).ifPresent(x -> newQuest.setQuestSourceNpc(x.getSpawnID()));
+                    MKNpc.LOGGER.debug("Assigning quest {}({}) to {}", newQuest.getDefinition().getName(), newQuest.getQuestId(), entity);
                     entry.setQuestId(newQuest.getQuestId());
                 }
             }
         }
         if (entry.getQuestId() != null){
+            MKNpc.LOGGER.debug("Adding offering for start quest {} to {}", entry.getQuestDef(), entity);
             addQuestOffering(entry.getQuestDef(), entry.getQuestId());
+            if (entry.getTree() == null){
+                MKNpc.LOGGER.debug("{} has quest offering for {} but no dialogue tree, attempting regen", entity, entry.getQuestDef());
+                entry.setQuestId(entry.getQuestId());
+            }
             if (entry.getTree() != null){
+                MKNpc.LOGGER.debug("Adding dialogue offering for start quest {} to {}", entry.getQuestDef(), entity);
                 entity.getCapability(ChatCapabilities.NPC_DIALOGUE_CAPABILITY).ifPresent(
                         chat -> chat.addAdditionalDialogueTree(entry.getTree()));
             }
         } else {
+            MKNpc.LOGGER.debug("Failed to generate quest request for: {} entity is {}", entry.getQuestDef(), entity);
             questRequests.add(entry);
         }
     }
@@ -177,6 +186,7 @@ public class EntityNpcDataHandler implements IEntityNpcData {
 
     @Override
     public void requestQuest(QuestOfferingEntry entry) {
+        MKNpc.LOGGER.debug("Adding quest request for {} to {}", entry.getQuestDef(), entity);
         questRequests.add(entry);
     }
 

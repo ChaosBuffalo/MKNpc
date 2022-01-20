@@ -24,7 +24,7 @@ import java.util.Set;
 public class AbilityUseSensor extends Sensor<MKEntity> {
 
     public AbilityUseSensor() {
-        super(40);
+        super(5);
     }
 
     @Override

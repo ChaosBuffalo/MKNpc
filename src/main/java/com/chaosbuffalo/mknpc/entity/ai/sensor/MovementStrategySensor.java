@@ -22,6 +22,10 @@ public class MovementStrategySensor extends Sensor<MKEntity> {
 
     }
 
+    public MovementStrategySensor(){
+        super(5);
+    }
+
     @Override
     public Set<MemoryModuleType<?>> getUsedMemories() {
         return ImmutableSet.of(MKMemoryModuleTypes.THREAT_TARGET, MKMemoryModuleTypes.VISIBLE_ENEMIES,
