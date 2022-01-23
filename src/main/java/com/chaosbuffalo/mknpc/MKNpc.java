@@ -92,9 +92,9 @@ public class MKNpc {
     public static double getDifficultyScale(LivingEntity entity) {
         switch (entity.getEntityWorld().getDifficulty()) {
             case EASY:
-                return 0.75;
+                return 0.5;
             case NORMAL:
-                return 0.875;
+                return 0.75;
             case HARD:
                 return 1.0;
             case PEACEFUL:
