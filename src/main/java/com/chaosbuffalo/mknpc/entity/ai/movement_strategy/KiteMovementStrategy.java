@@ -25,6 +25,9 @@ public class KiteMovementStrategy extends MovementStrategy {
         Brain<?> brain = entity.getBrain();
         Optional<LivingEntity> targetOpt = brain.getMemory(MKMemoryModuleTypes.MOVEMENT_TARGET);
         Optional<WalkTarget> walkTargetOptional = brain.getMemory(MemoryModuleType.WALK_TARGET);
+        if (entity.getRNG().nextInt(20) == 0){
+            return;
+        }
         if (targetOpt.isPresent()) {
             LivingEntity target = targetOpt.get();
             if (target.isEntityEqual(entity)) {

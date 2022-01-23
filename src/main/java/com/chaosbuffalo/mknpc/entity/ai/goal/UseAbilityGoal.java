@@ -15,7 +15,7 @@ import java.util.EnumSet;
 import java.util.Optional;
 
 public class UseAbilityGoal extends Goal {
-    public static final int CAN_SEE_TIMEOUT = 10;
+    public static final int CAN_SEE_TIMEOUT = 30;
     private final MKEntity entity;
     private MKAbility currentAbility;
     private LivingEntity target;
