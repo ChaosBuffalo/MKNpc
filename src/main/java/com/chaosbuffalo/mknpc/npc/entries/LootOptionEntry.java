@@ -38,8 +38,11 @@ public class LootOptionEntry {
 
     public boolean isValidConfiguration(){
         return !lootSlotName.equals(LootSlotManager.INVALID_LOOT_SLOT) &&
-                !lootTierName.equals(LootTierManager.INVALID_LOOT_TIER) &&
-                !templateName.equals(LootTierManager.INVALID_RANDOMIZATION_TEMPLATE);
+                !lootTierName.equals(LootTierManager.INVALID_LOOT_TIER);
+    }
+
+    public boolean hasTemplate(){
+        return !templateName.equals(LootTierManager.INVALID_RANDOMIZATION_TEMPLATE);
     }
 
     public <D> D serialize(DynamicOps<D> ops) {

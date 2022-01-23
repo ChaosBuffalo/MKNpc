@@ -26,6 +26,10 @@ public class ThreatSensor extends Sensor<MKEntity> {
         return (float) (aggroDist * aggroDist);
     }
 
+    public ThreatSensor(){
+        super(10);
+    }
+
     @Override
     protected void update(ServerWorld worldIn, MKEntity entityIn) {
         Optional<List<LivingEntity>> enemyOpt = entityIn.getBrain().getMemory(MKMemoryModuleTypes.VISIBLE_ENEMIES);

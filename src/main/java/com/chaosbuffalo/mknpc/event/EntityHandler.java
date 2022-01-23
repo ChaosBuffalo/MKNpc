@@ -156,12 +156,14 @@ public class EntityHandler {
             return;
         }
         World overWorld = server.getWorld(World.OVERWORLD);
+        MKNpc.LOGGER.debug("Setting up dialogue between {} and {}", event.getSpeaker(), event.getPlayer());
         if (overWorld != null) {
            overWorld.getCapability(NpcCapabilities.WORLD_NPC_DATA_CAPABILITY).ifPresent(
                     worldData -> MKNpc.getPlayerQuestData(event.getPlayer()).ifPresent(x -> x.getQuestChains().forEach(
                             pQuestChain -> {
                                 QuestChainInstance questChainInstance = worldData.getQuest(pQuestChain.getQuestId());
                                 if (questChainInstance != null){
+                                    MKNpc.LOGGER.debug("Adding quest chain dialogue for {}", questChainInstance.getDefinition().getName());
                                     questChainInstance.getTreeForEntity(event.getSpeaker()).ifPresent(event::addTree);
                                 }
                             })));
