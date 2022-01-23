@@ -115,7 +115,9 @@ public class EntityNpcDataHandler implements IEntityNpcData {
                     LootSlot lootSlot = LootSlotManager.getSlotFromName(selected.lootSlotName);
                     LootTier lootTier = LootTierManager.getTierFromName(selected.lootTierName);
                     if (lootSlot != null && lootTier != null){
-                        LootConstructor constructor = lootTier.generateConstructorForSlot(entity.getRNG(), lootSlot, selected.templateName);
+                        LootConstructor constructor = selected.hasTemplate() ? lootTier.generateConstructorForSlot(
+                                entity.getRNG(), lootSlot, selected.templateName) : lootTier.generateConstructorForSlot(
+                                        entity.getRNG(), lootSlot);
                         if (constructor != null){
                             ItemStack item = constructor.constructItem();
                             if (!item.isEmpty()){
