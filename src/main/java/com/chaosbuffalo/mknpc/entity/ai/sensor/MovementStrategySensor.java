@@ -14,7 +14,7 @@ public class MovementStrategySensor extends Sensor<MKEntity> {
 
     @Override
     protected void update(ServerWorld worldIn, MKEntity entityIn) {
-        if ((entityIn.avoidsWater() && entityIn.isInWater())) {
+        if ((entityIn.avoidsWater() && entityIn.isInWater()) || entityIn.getBrain().getMemory(MKMemoryModuleTypes.IS_RETURNING).orElse(false)) {
             return;
         }
         entityIn.getBrain().getMemory(MKMemoryModuleTypes.MOVEMENT_STRATEGY).ifPresent(

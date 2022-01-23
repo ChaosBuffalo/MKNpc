@@ -34,6 +34,15 @@ public class ReturnToSpawnGoal extends Goal {
             blockPosOpt.ifPresent(blockPos -> entity.setPositionAndUpdate(blockPos.getX() + 0.5,
                     blockPos.getY(), blockPos.getZ() + 0.5));
         }
+        if (this.entity.getNavigator().noPath()){
+            Optional<BlockPos> blockPosOpt = entity.getBrain().getMemory(MKMemoryModuleTypes.SPAWN_POINT);
+            if (blockPosOpt.isPresent()) {
+                BlockPos spawn = blockPosOpt.get();
+                Path path = entity.getNavigator().getPathToPos(spawn, 1);
+                entity.getNavigator().setPath(path, 1.0);
+                entity.getBrain().setMemory(MemoryModuleType.PATH, path);
+            }
+        }
         entity.returnToSpawnTick();
     }
 
