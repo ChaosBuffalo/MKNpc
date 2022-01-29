@@ -6,6 +6,7 @@ import com.chaosbuffalo.mkcore.GameConstants;
 import com.chaosbuffalo.mkcore.abilities.MKAbility;
 import com.chaosbuffalo.mkcore.abilities.MKAbilityMemories;
 import com.chaosbuffalo.mkcore.abilities.ai.AbilityTargetingDecision;
+import com.chaosbuffalo.mkcore.core.MKAttributes;
 import com.chaosbuffalo.mkcore.core.player.ParticleEffectInstanceTracker;
 import com.chaosbuffalo.mkcore.core.player.SyncComponent;
 import com.chaosbuffalo.mkcore.entities.IUpdateEngineProvider;
@@ -106,6 +107,7 @@ public abstract class MKEntity extends CreatureEntity implements IModelLookProvi
         super(type, worldIn);
         if (!worldIn.isRemote()){
             setAttackComboStatsAndDefault(1, GameConstants.TICKS_PER_SECOND);
+            setupDifficulty(worldIn.getDifficulty());
         }
         entityTradeContainer = new EntityTradeContainer(this);
         castAnimTimer = 0;
@@ -122,6 +124,28 @@ public abstract class MKEntity extends CreatureEntity implements IModelLookProvi
             mkEntityData.getAbilityExecutor().setStartCastCallback(this::startCast);
             mkEntityData.getAbilityExecutor().setCompleteAbilityCallback(this::endCast);
         }));
+
+
+    }
+
+    protected double getCastingSpeedForDifficulty(Difficulty difficulty){
+        switch (difficulty){
+            case NORMAL:
+                return 0.5;
+            case HARD:
+                return 0.75;
+            case EASY:
+            default:
+                return 0.25;
+        }
+    }
+
+    protected void setupDifficulty(Difficulty difficulty){
+        ModifiableAttributeInstance inst = getAttribute(MKAttributes.CASTING_SPEED);
+        if (inst != null){
+            inst.applyNonPersistentModifier(new AttributeModifier("difficulty",
+                    getCastingSpeedForDifficulty(difficulty), AttributeModifier.Operation.MULTIPLY_TOTAL));
+        }
     }
 
     public ParticleEffectInstanceTracker getParticleEffectTracker() {
