@@ -118,12 +118,10 @@ public class ChestNpcDataHandler implements IChestNpcData{
 
     @Override
     public void generateChestId(String chestLabel) {
-        if (chestId == null){
-            needsUploadToWorld = true;
-            placedByStructure = true;
-            chestId = UUID.randomUUID();
-            this.chestLabel = chestLabel;
-        }
+        needsUploadToWorld = true;
+        placedByStructure = true;
+        chestId = UUID.randomUUID();
+        this.chestLabel = chestLabel;
     }
 
     @Override
