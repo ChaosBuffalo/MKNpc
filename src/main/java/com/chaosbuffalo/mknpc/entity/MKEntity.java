@@ -26,6 +26,7 @@ import com.chaosbuffalo.mknpc.entity.ai.movement_strategy.MovementStrategy;
 import com.chaosbuffalo.mknpc.entity.ai.movement_strategy.StationaryMovementStrategy;
 import com.chaosbuffalo.mknpc.entity.ai.sensor.MKSensorTypes;
 import com.chaosbuffalo.mknpc.entity.attributes.NpcAttributes;
+import com.chaosbuffalo.mknpc.entity.boss.BossStage;
 import com.chaosbuffalo.mknpc.inventories.QuestGiverInventoryContainer;
 import com.chaosbuffalo.mkweapons.items.MKBow;
 import com.chaosbuffalo.targeting_api.Targeting;
@@ -59,10 +60,7 @@ import net.minecraft.world.*;
 import net.minecraft.world.server.ServerWorld;
 
 import javax.annotation.Nullable;
-import java.util.Collection;
-import java.util.HashMap;
-import java.util.Map;
-import java.util.Optional;
+import java.util.*;
 import java.util.function.Predicate;
 
 @SuppressWarnings("EntityConstructor")
@@ -84,6 +82,8 @@ public abstract class MKEntity extends CreatureEntity implements IModelLookProvi
     private final EntityUpdateEngine updateEngine;
     private final ParticleEffectInstanceTracker particleEffectTracker;
     private final EntityTradeContainer entityTradeContainer;
+    private final List<BossStage> bossStages = new ArrayList<>();
+    private int currentStage;
 
 
     public enum CombatMoveType {
@@ -111,6 +111,7 @@ public abstract class MKEntity extends CreatureEntity implements IModelLookProvi
         }
         entityTradeContainer = new EntityTradeContainer(this);
         castAnimTimer = 0;
+        currentStage = 0;
         visualCastState = VisualCastState.NONE;
         castingAbility = null;
         lungeSpeed = .25;
@@ -126,6 +127,22 @@ public abstract class MKEntity extends CreatureEntity implements IModelLookProvi
         }));
 
 
+    }
+
+    public boolean hasBossStages(){
+        return !bossStages.isEmpty();
+    }
+
+    public int getCurrentStage() {
+        return currentStage;
+    }
+
+    public boolean hasNextStage(){
+        return bossStages.size() > getCurrentStage() + 1;
+    }
+
+    public BossStage getNextStage(){
+        return bossStages.get(getCurrentStage() + 1);
     }
 
     protected double getCastingSpeedForDifficulty(Difficulty difficulty){
@@ -578,6 +595,18 @@ public abstract class MKEntity extends CreatureEntity implements IModelLookProvi
             addThreat((LivingEntity) source.getTrueSource(), amount * 100.0f);
         }
         return super.attackEntityFrom(source, amount);
+    }
+
+    @Override
+    public void onDeath(DamageSource cause) {
+        if (hasNextStage()){
+            BossStage next = getNextStage();
+            next.apply(this);
+            setHealth(getMaxHealth());
+            currentStage++;
+            return;
+        }
+        super.onDeath(cause);
     }
 
     public void addTargetToThreat(@Nullable LivingEntity target, float baseThreat){
