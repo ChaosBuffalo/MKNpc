@@ -6,6 +6,7 @@ import com.chaosbuffalo.mkcore.GameConstants;
 import com.chaosbuffalo.mkcore.abilities.MKAbility;
 import com.chaosbuffalo.mkcore.abilities.MKAbilityMemories;
 import com.chaosbuffalo.mkcore.abilities.ai.AbilityTargetingDecision;
+import com.chaosbuffalo.mkcore.core.IMKEntityData;
 import com.chaosbuffalo.mkcore.core.MKAttributes;
 import com.chaosbuffalo.mkcore.core.player.ParticleEffectInstanceTracker;
 import com.chaosbuffalo.mkcore.core.player.SyncComponent;
@@ -15,6 +16,7 @@ import com.chaosbuffalo.mkcore.utils.EntityUtils;
 import com.chaosbuffalo.mkcore.utils.ItemUtils;
 import com.chaosbuffalo.mkfaction.capabilities.FactionCapabilities;
 import com.chaosbuffalo.mknpc.MKNpc;
+import com.chaosbuffalo.mknpc.capabilities.IEntityNpcData;
 import com.chaosbuffalo.mknpc.capabilities.NpcCapabilities;
 import com.chaosbuffalo.mknpc.entity.ai.controller.MovementStrategyController;
 import com.chaosbuffalo.mknpc.entity.ai.goal.*;
@@ -26,7 +28,9 @@ import com.chaosbuffalo.mknpc.entity.ai.movement_strategy.MovementStrategy;
 import com.chaosbuffalo.mknpc.entity.ai.movement_strategy.StationaryMovementStrategy;
 import com.chaosbuffalo.mknpc.entity.ai.sensor.MKSensorTypes;
 import com.chaosbuffalo.mknpc.entity.attributes.NpcAttributes;
+import com.chaosbuffalo.mknpc.entity.boss.BossStage;
 import com.chaosbuffalo.mknpc.inventories.QuestGiverInventoryContainer;
+import com.chaosbuffalo.mknpc.npc.NpcDefinition;
 import com.chaosbuffalo.mkweapons.items.MKBow;
 import com.chaosbuffalo.targeting_api.Targeting;
 import com.google.common.collect.ImmutableList;
@@ -59,10 +63,7 @@ import net.minecraft.world.*;
 import net.minecraft.world.server.ServerWorld;
 
 import javax.annotation.Nullable;
-import java.util.Collection;
-import java.util.HashMap;
-import java.util.Map;
-import java.util.Optional;
+import java.util.*;
 import java.util.function.Predicate;
 
 @SuppressWarnings("EntityConstructor")
@@ -84,6 +85,8 @@ public abstract class MKEntity extends CreatureEntity implements IModelLookProvi
     private final EntityUpdateEngine updateEngine;
     private final ParticleEffectInstanceTracker particleEffectTracker;
     private final EntityTradeContainer entityTradeContainer;
+    private final List<BossStage> bossStages = new ArrayList<>();
+    private int currentStage;
 
 
     public enum CombatMoveType {
@@ -111,6 +114,7 @@ public abstract class MKEntity extends CreatureEntity implements IModelLookProvi
         }
         entityTradeContainer = new EntityTradeContainer(this);
         castAnimTimer = 0;
+        currentStage = 0;
         visualCastState = VisualCastState.NONE;
         castingAbility = null;
         lungeSpeed = .25;
@@ -124,8 +128,29 @@ public abstract class MKEntity extends CreatureEntity implements IModelLookProvi
             mkEntityData.getAbilityExecutor().setStartCastCallback(this::startCast);
             mkEntityData.getAbilityExecutor().setCompleteAbilityCallback(this::endCast);
         }));
+    }
 
+    public boolean hasBossStages(){
+        return !bossStages.isEmpty();
+    }
 
+    public int getCurrentStage() {
+        return currentStage;
+    }
+
+    public void addBossStage(BossStage stage){
+        if (!hasBossStages()){
+            stage.apply(this);
+        }
+        bossStages.add(stage);
+    }
+
+    public boolean hasNextStage(){
+        return bossStages.size() > getCurrentStage() + 1;
+    }
+
+    public BossStage getNextStage(){
+        return bossStages.get(getCurrentStage() + 1);
     }
 
     protected double getCastingSpeedForDifficulty(Difficulty difficulty){
@@ -578,6 +603,19 @@ public abstract class MKEntity extends CreatureEntity implements IModelLookProvi
             addThreat((LivingEntity) source.getTrueSource(), amount * 100.0f);
         }
         return super.attackEntityFrom(source, amount);
+    }
+
+    @Override
+    public void onDeath(DamageSource cause) {
+        if (hasNextStage()){
+            BossStage next = getNextStage();
+            next.apply(this);
+            next.transition(this);
+            setHealth(getMaxHealth());
+            currentStage++;
+            return;
+        }
+        super.onDeath(cause);
     }
 
     public void addTargetToThreat(@Nullable LivingEntity target, float baseThreat){

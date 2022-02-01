@@ -49,6 +49,11 @@ public class AttributesOption extends NpcDefinitionOption{
     }
 
     @Override
+    public boolean canBeBossStage() {
+        return true;
+    }
+
+    @Override
     public void applyToEntity(NpcDefinition definition, Entity entity) {
         if (entity instanceof LivingEntity){
             AttributeModifierManager manager = ((LivingEntity)entity).getAttributeManager();

@@ -62,4 +62,9 @@ public class ParticleEffectsOption extends SimpleOption<List<ParticleEffectInsta
         }
         setValue(val);
     }
+
+    @Override
+    public boolean canBeBossStage() {
+        return true;
+    }
 }

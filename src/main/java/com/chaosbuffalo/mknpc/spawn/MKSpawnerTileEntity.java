@@ -194,9 +194,11 @@ public class MKSpawnerTileEntity extends TileEntity implements ITickableTileEnti
     }
 
     public void regenerateSpawnID(){
-        this.spawnUUID = UUID.randomUUID();
-        this.needsUploadToWorld = true;
-        this.placedByStructure = true;
+        if (!placedByStructure){
+            this.spawnUUID = UUID.randomUUID();
+            this.needsUploadToWorld = true;
+            this.placedByStructure = true;
+        }
     }
 
     @Override

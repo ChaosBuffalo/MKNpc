@@ -48,4 +48,8 @@ public abstract class NpcDefinitionOption {
     }
 
     public abstract void applyToEntity(NpcDefinition definition, Entity entity);
+
+    public boolean canBeBossStage(){
+        return false;
+    }
 }

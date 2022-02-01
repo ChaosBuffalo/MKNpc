@@ -76,7 +76,9 @@ public class MKSingleJigsawPiece extends SingleJigsawPiece implements IMKJigsawP
             for(Template.BlockInfo blockinfo : Template.processBlockInfos(
                     seedReader, structurePos, blockPos, processSettings,
                     dataMarkers, template)) {
-                mkHandleDataMarker(seedReader, blockinfo, blockinfo.pos, rot, rand, boundingBox, parent);
+                if (boundingBox.isVecInside(blockinfo.pos)){
+                    mkHandleDataMarker(seedReader, blockinfo, blockinfo.pos, rot, rand, boundingBox, parent);
+                }
             }
             return true;
         }
