@@ -6,6 +6,7 @@ import com.chaosbuffalo.mkcore.GameConstants;
 import com.chaosbuffalo.mkcore.abilities.MKAbility;
 import com.chaosbuffalo.mkcore.abilities.MKAbilityMemories;
 import com.chaosbuffalo.mkcore.abilities.ai.AbilityTargetingDecision;
+import com.chaosbuffalo.mkcore.core.IMKEntityData;
 import com.chaosbuffalo.mkcore.core.MKAttributes;
 import com.chaosbuffalo.mkcore.core.player.ParticleEffectInstanceTracker;
 import com.chaosbuffalo.mkcore.core.player.SyncComponent;
@@ -15,6 +16,7 @@ import com.chaosbuffalo.mkcore.utils.EntityUtils;
 import com.chaosbuffalo.mkcore.utils.ItemUtils;
 import com.chaosbuffalo.mkfaction.capabilities.FactionCapabilities;
 import com.chaosbuffalo.mknpc.MKNpc;
+import com.chaosbuffalo.mknpc.capabilities.IEntityNpcData;
 import com.chaosbuffalo.mknpc.capabilities.NpcCapabilities;
 import com.chaosbuffalo.mknpc.entity.ai.controller.MovementStrategyController;
 import com.chaosbuffalo.mknpc.entity.ai.goal.*;
@@ -28,6 +30,7 @@ import com.chaosbuffalo.mknpc.entity.ai.sensor.MKSensorTypes;
 import com.chaosbuffalo.mknpc.entity.attributes.NpcAttributes;
 import com.chaosbuffalo.mknpc.entity.boss.BossStage;
 import com.chaosbuffalo.mknpc.inventories.QuestGiverInventoryContainer;
+import com.chaosbuffalo.mknpc.npc.NpcDefinition;
 import com.chaosbuffalo.mkweapons.items.MKBow;
 import com.chaosbuffalo.targeting_api.Targeting;
 import com.google.common.collect.ImmutableList;
@@ -125,8 +128,6 @@ public abstract class MKEntity extends CreatureEntity implements IModelLookProvi
             mkEntityData.getAbilityExecutor().setStartCastCallback(this::startCast);
             mkEntityData.getAbilityExecutor().setCompleteAbilityCallback(this::endCast);
         }));
-
-
     }
 
     public boolean hasBossStages(){
@@ -135,6 +136,13 @@ public abstract class MKEntity extends CreatureEntity implements IModelLookProvi
 
     public int getCurrentStage() {
         return currentStage;
+    }
+
+    public void addBossStage(BossStage stage){
+        if (!hasBossStages()){
+            stage.apply(this);
+        }
+        bossStages.add(stage);
     }
 
     public boolean hasNextStage(){
@@ -602,6 +610,7 @@ public abstract class MKEntity extends CreatureEntity implements IModelLookProvi
         if (hasNextStage()){
             BossStage next = getNextStage();
             next.apply(this);
+            next.transition(this);
             setHealth(getMaxHealth());
             currentStage++;
             return;

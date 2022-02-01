@@ -20,4 +20,9 @@ public class MKSizeOption extends FloatOption{
             ((MKEntity) entity).setRenderScale(value);
         }
     }
+
+    @Override
+    public boolean canBeBossStage() {
+        return true;
+    }
 }
