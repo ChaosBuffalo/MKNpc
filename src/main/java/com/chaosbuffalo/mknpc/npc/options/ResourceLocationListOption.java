@@ -15,19 +15,17 @@ public abstract class ResourceLocationListOption extends SimpleOption<List<Resou
     }
 
     @Override
-    public <D> D serialize(DynamicOps<D> ops) {
-        D sup = super.serialize(ops);
-        return ops.mergeToMap(sup, ImmutableMap.of(
-                ops.createString("value"), ops.createList(getValue().stream().map(
-                        x -> ops.createString(x.toString())))
-        )).result().orElse(sup);
+    public <D> void writeAdditionalData(DynamicOps<D> ops, ImmutableMap.Builder<D, D> builder) {
+        super.writeAdditionalData(ops, builder);
+        builder.put(ops.createString("value"), ops.createList(getValue().stream().map(
+                x -> ops.createString(x.toString()))));
     }
 
     @Override
-    public <D> void deserialize(Dynamic<D> dynamic) {
+    public <D> void readAdditionalData(Dynamic<D> dynamic) {
         List<ResourceLocation> val = new ArrayList<>();
         List<DataResult<String>> decoded = dynamic.get("value").asList(Dynamic::asString);
-        for (DataResult<String> data : decoded){
+        for (DataResult<String> data : decoded) {
             data.result().ifPresent(s -> val.add(new ResourceLocation(s)));
         }
         setValue(val);

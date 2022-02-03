@@ -4,6 +4,7 @@ import com.chaosbuffalo.mknpc.MKNpc;
 import com.chaosbuffalo.mknpc.entity.MKEntity;
 import com.chaosbuffalo.mknpc.entity.boss.BossStage;
 import com.chaosbuffalo.mknpc.npc.NpcDefinition;
+import com.google.common.collect.ImmutableMap;
 import com.mojang.serialization.Dynamic;
 import com.mojang.serialization.DynamicOps;
 import net.minecraft.entity.Entity;
@@ -12,7 +13,7 @@ import net.minecraft.util.ResourceLocation;
 import java.util.ArrayList;
 import java.util.List;
 
-public class BossStageOption extends NpcDefinitionOption{
+public class BossStageOption extends NpcDefinitionOption {
     public static final ResourceLocation NAME = new ResourceLocation(MKNpc.MODID, "boss_stage");
     private final List<BossStage> stages = new ArrayList<>();
 
@@ -22,17 +23,17 @@ public class BossStageOption extends NpcDefinitionOption{
     }
 
 
-    public void addStage(BossStage stage){
+    public void addStage(BossStage stage) {
         this.stages.add(stage);
     }
 
-    public BossStageOption withStage(BossStage stage){
+    public BossStageOption withStage(BossStage stage) {
         addStage(stage);
         return this;
     }
 
     @Override
-    public <D> void deserialize(Dynamic<D> dynamic) {
+    public <D> void readAdditionalData(Dynamic<D> dynamic) {
         stages.clear();
         stages.addAll(dynamic.get("stages").asList(x -> {
             BossStage newStage = new BossStage();
@@ -42,18 +43,15 @@ public class BossStageOption extends NpcDefinitionOption{
     }
 
     @Override
-    public <D> D serialize(DynamicOps<D> ops) {
-        D sup = super.serialize(ops);
-        return ops.mergeToMap(sup,
-                ops.createString("stages"),
-                ops.createList(stages.stream().map(x -> x.serialize(ops)))
-        ).result().orElse(sup);
+    public <D> void writeAdditionalData(DynamicOps<D> ops, ImmutableMap.Builder<D, D> builder) {
+        super.writeAdditionalData(ops, builder);
+        builder.put(ops.createString("stages"), ops.createList(stages.stream().map(x -> x.serialize(ops))));
     }
 
     @Override
     public void applyToEntity(NpcDefinition definition, Entity entity) {
-        if (entity instanceof MKEntity){
-            for (BossStage stage : stages){
+        if (entity instanceof MKEntity) {
+            for (BossStage stage : stages) {
                 BossStage copy = stage.copy();
                 copy.setDefinition(definition);
                 ((MKEntity) entity).addBossStage(copy);

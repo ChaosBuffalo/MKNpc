@@ -12,15 +12,13 @@ public abstract class FloatOption extends SimpleOption<Float> {
     }
 
     @Override
-    public <D> D serialize(DynamicOps<D> ops) {
-        D sup = super.serialize(ops);
-        return ops.mergeToMap(sup, ImmutableMap.of(
-                ops.createString("value"), ops.createFloat(getValue())
-        )).result().orElse(sup);
+    public <D> void writeAdditionalData(DynamicOps<D> ops, ImmutableMap.Builder<D, D> builder) {
+        super.writeAdditionalData(ops, builder);
+        builder.put(ops.createString("value"), ops.createFloat(getValue()));
     }
 
     @Override
-    public <D> void deserialize(Dynamic<D> dynamic) {
+    public <D> void readAdditionalData(Dynamic<D> dynamic) {
         setValue(dynamic.get("value").asFloat(1.0f));
     }
 }

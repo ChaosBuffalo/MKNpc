@@ -6,7 +6,7 @@ import com.chaosbuffalo.mknpc.npc.NpcDefinition;
 import net.minecraft.entity.Entity;
 import net.minecraft.util.ResourceLocation;
 
-public class RenderGroupOption extends StringOption{
+public class RenderGroupOption extends StringOption {
     public static final ResourceLocation NAME = new ResourceLocation(MKNpc.MODID, "render_group");
 
     public RenderGroupOption() {
@@ -15,7 +15,7 @@ public class RenderGroupOption extends StringOption{
 
     @Override
     public void applyToEntity(NpcDefinition definition, Entity entity, String value) {
-        if (entity instanceof IModelLookProvider){
+        if (entity instanceof IModelLookProvider) {
             ((IModelLookProvider) entity).setCurrentModelLook(value);
         }
     }

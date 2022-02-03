@@ -17,7 +17,7 @@ public abstract class SimpleOption<T> extends NpcDefinitionOption {
         return value;
     }
 
-    public SimpleOption<T> setValue(T value){
+    public SimpleOption<T> setValue(T value) {
         this.value = value;
         return this;
     }

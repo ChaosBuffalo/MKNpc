@@ -3,7 +3,6 @@ package com.chaosbuffalo.mknpc.npc.options;
 import com.chaosbuffalo.mknpc.MKNpc;
 import com.chaosbuffalo.mknpc.npc.NpcDefinition;
 import net.minecraft.entity.Entity;
-import net.minecraft.entity.LivingEntity;
 import net.minecraft.util.ResourceLocation;
 import net.minecraft.util.text.StringTextComponent;
 import net.minecraft.world.World;
@@ -13,6 +12,7 @@ import java.util.UUID;
 
 public class NameOption extends StringOption implements INameProvider {
     public static final ResourceLocation NAME = new ResourceLocation(MKNpc.MODID, "name");
+
     public NameOption() {
         super(NAME);
     }
@@ -24,7 +24,7 @@ public class NameOption extends StringOption implements INameProvider {
 
     @Override
     public void applyToEntity(NpcDefinition definition, Entity entity, String value) {
-        if (!value.equals("")){
+        if (!value.isEmpty()) {
             entity.setCustomName(new StringTextComponent(value));
         }
     }

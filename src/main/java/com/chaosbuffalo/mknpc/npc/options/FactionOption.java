@@ -8,6 +8,7 @@ import net.minecraft.util.ResourceLocation;
 
 public class FactionOption extends ResourceLocationOption {
     public static final ResourceLocation NAME = new ResourceLocation(MKNpc.MODID, "faction");
+
     public FactionOption() {
         super(NAME);
     }
@@ -15,6 +16,6 @@ public class FactionOption extends ResourceLocationOption {
     @Override
     public void applyToEntity(NpcDefinition definition, Entity entity, ResourceLocation value) {
         entity.getCapability(FactionCapabilities.MOB_FACTION_CAPABILITY)
-                .ifPresent((cap) -> cap.setFactionName(value));
+                .ifPresent(cap -> cap.setFactionName(value));
     }
 }

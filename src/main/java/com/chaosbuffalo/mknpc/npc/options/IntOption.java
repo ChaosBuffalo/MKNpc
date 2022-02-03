@@ -1,12 +1,9 @@
 package com.chaosbuffalo.mknpc.npc.options;
 
-import com.chaosbuffalo.mknpc.npc.NpcDefinition;
 import com.google.common.collect.ImmutableMap;
 import com.mojang.serialization.Dynamic;
 import com.mojang.serialization.DynamicOps;
-import net.minecraft.entity.Entity;
 import net.minecraft.util.ResourceLocation;
-import org.apache.logging.log4j.util.TriConsumer;
 
 
 public abstract class IntOption extends SimpleOption<Integer> {
@@ -16,15 +13,13 @@ public abstract class IntOption extends SimpleOption<Integer> {
     }
 
     @Override
-    public <D> D serialize(DynamicOps<D> ops) {
-        D sup = super.serialize(ops);
-        return ops.mergeToMap(sup, ImmutableMap.of(
-                ops.createString("value"), ops.createInt(getValue())
-        )).result().orElse(sup);
+    public <D> void writeAdditionalData(DynamicOps<D> ops, ImmutableMap.Builder<D, D> builder) {
+        super.writeAdditionalData(ops, builder);
+        builder.put(ops.createString("value"), ops.createInt(getValue()));
     }
 
     @Override
-    public <D> void deserialize(Dynamic<D> dynamic) {
+    public <D> void readAdditionalData(Dynamic<D> dynamic) {
         setValue(dynamic.get("value").asInt(0));
     }
 }

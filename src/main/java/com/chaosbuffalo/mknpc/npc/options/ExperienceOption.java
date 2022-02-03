@@ -8,7 +8,7 @@ import net.minecraft.util.ResourceLocation;
 public class ExperienceOption extends IntOption {
     public static final ResourceLocation NAME = new ResourceLocation(MKNpc.MODID, "experience");
 
-    public ExperienceOption(){
+    public ExperienceOption() {
         super(NAME);
     }
 

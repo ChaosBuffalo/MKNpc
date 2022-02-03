@@ -2,7 +2,6 @@ package com.chaosbuffalo.mknpc.npc.options;
 
 import com.chaosbuffalo.mkchat.capabilities.ChatCapabilities;
 import com.chaosbuffalo.mknpc.MKNpc;
-import com.chaosbuffalo.mknpc.entity.MKEntity;
 import com.chaosbuffalo.mknpc.npc.NpcDefinition;
 import net.minecraft.entity.Entity;
 import net.minecraft.util.ResourceLocation;

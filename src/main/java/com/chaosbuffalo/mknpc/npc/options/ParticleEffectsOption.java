@@ -22,42 +22,40 @@ public class ParticleEffectsOption extends SimpleOption<List<ParticleEffectInsta
         super(NAME);
     }
 
-    public ParticleEffectsOption withEffects(List<ParticleEffectInstance> effectInstances){
+    public ParticleEffectsOption withEffects(List<ParticleEffectInstance> effectInstances) {
         setValue(effectInstances);
         return this;
     }
 
     @Override
     public void applyToEntity(NpcDefinition definition, Entity entity, List<ParticleEffectInstance> value) {
-        if (entity instanceof MKEntity){
-            for (ParticleEffectInstance inst : value){
+        if (entity instanceof MKEntity) {
+            for (ParticleEffectInstance inst : value) {
                 ((MKEntity) entity).getParticleEffectTracker().addParticleInstance(inst);
             }
         }
     }
 
     @Override
-    public <D> D serialize(DynamicOps<D> ops) {
-        D sup = super.serialize(ops);
-        return ops.mergeToMap(sup, ImmutableMap.of(
-                ops.createString("value"), ops.createList(getValue().stream().map(
-                        x -> x.serialize(ops))))
-        ).result().orElse(sup);
+    public <D> void writeAdditionalData(DynamicOps<D> ops, ImmutableMap.Builder<D, D> builder) {
+        super.writeAdditionalData(ops, builder);
+        builder.put(ops.createString("value"), ops.createList(getValue().stream().map(
+                x -> x.serialize(ops))));
     }
 
     @Override
-    public <D> void deserialize(Dynamic<D> dynamic) {
+    public <D> void readAdditionalData(Dynamic<D> dynamic) {
         List<ParticleEffectInstance> val = new ArrayList<>();
         List<DataResult<ParticleEffectInstance>> decoded = dynamic.get("value").asList(x -> {
             ResourceLocation type = ParticleEffectInstance.getType(x);
             ParticleEffectInstance inst = ParticleAnimationManager.getEffectInstance(type);
-            if (inst != null){
+            if (inst != null) {
                 inst.deserialize(x);
                 return DataResult.success(inst);
             }
             return DataResult.error(String.format("Failed to decode effect type %s", type.toString()));
         });
-        for (DataResult<ParticleEffectInstance> data : decoded){
+        for (DataResult<ParticleEffectInstance> data : decoded) {
             data.result().ifPresent(val::add);
         }
         setValue(val);
