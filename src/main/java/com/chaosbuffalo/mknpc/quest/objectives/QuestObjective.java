@@ -1,5 +1,6 @@
 package com.chaosbuffalo.mknpc.quest.objectives;
 
+import com.chaosbuffalo.mkcore.serialization.IDynamicMapTypedSerializer;
 import com.chaosbuffalo.mkcore.serialization.ISerializableAttributeContainer;
 import com.chaosbuffalo.mkcore.serialization.attributes.ISerializableAttribute;
 import com.chaosbuffalo.mkcore.serialization.attributes.StringAttribute;
@@ -10,7 +11,6 @@ import com.chaosbuffalo.mknpc.quest.data.QuestData;
 import com.chaosbuffalo.mknpc.quest.data.objective.ObjectiveInstanceData;
 import com.chaosbuffalo.mknpc.quest.data.player.PlayerQuestObjectiveData;
 import com.google.common.collect.ImmutableMap;
-import com.mojang.datafixers.util.Pair;
 import com.mojang.serialization.Dynamic;
 import com.mojang.serialization.DynamicOps;
 import net.minecraft.nbt.CompoundNBT;
@@ -20,18 +20,19 @@ import net.minecraft.util.text.ITextComponent;
 import net.minecraft.util.text.StringTextComponent;
 
 import java.util.*;
-import java.util.function.Function;
 import java.util.stream.Collectors;
 
-public abstract class QuestObjective<T extends ObjectiveInstanceData> implements ISerializableAttributeContainer {
+public abstract class QuestObjective<T extends ObjectiveInstanceData>
+        implements ISerializableAttributeContainer, IDynamicMapTypedSerializer {
 
+    private static final String TYPE_NAME_FIELD = "objectiveType";
     public final static ResourceLocation INVALID_OPTION = new ResourceLocation(MKNpc.MODID, "quest_objective.invalid");
+    protected static final IFormattableTextComponent defaultDescription = new StringTextComponent("Placeholder");
 
     private final List<ISerializableAttribute<?>> attributes;
     private final ResourceLocation typeName;
     protected final StringAttribute objectiveName = new StringAttribute("objectiveName", "invalid");
     protected List<IFormattableTextComponent> description = new ArrayList<>();
-    protected static final IFormattableTextComponent defaultDescription = new StringTextComponent("Placeholder");
 
     public QuestObjective(ResourceLocation typeName, String name, IFormattableTextComponent... description){
         this.attributes = new ArrayList<>();
@@ -65,53 +66,8 @@ public abstract class QuestObjective<T extends ObjectiveInstanceData> implements
         attributes.addAll(Arrays.asList(iSerializableAttributes));
     }
 
-    public <D> D serialize(DynamicOps<D> ops){
-        ImmutableMap.Builder<D, D> builder = ImmutableMap.builder();
-        builder.put(ops.createString("objectiveType"), ops.createString(getTypeName().toString()));
-        builder.put(ops.createString("description"), ops.createList(description.stream().map(x ->
-                ops.createString(ITextComponent.Serializer.toJson(x)))));
-        builder.put(ops.createString("attributes"),
-                ops.createMap(attributes.stream().map(attr ->
-                        Pair.of(ops.createString(attr.getName()), attr.serialize(ops))
-                ).collect(Collectors.toMap(Pair::getFirst, Pair::getSecond))));
-        writeAdditionalData(ops, builder);
-
-        return ops.createMap(builder.build());
-    }
-
-    public <D> void writeAdditionalData(DynamicOps<D> ops, ImmutableMap.Builder<D, D> builder){
-
-    }
-
     public String getObjectiveName() {
         return objectiveName.getValue();
-    }
-
-    public ResourceLocation getTypeName() {
-        return typeName;
-    }
-
-    public static <D> ResourceLocation getType(Dynamic<D> dynamic){
-        return new ResourceLocation(dynamic.get("objectiveType").asString().result().orElse(INVALID_OPTION.toString()));
-    }
-
-    public <D> void readAdditionalData(Dynamic<D> dynamic){
-
-    }
-
-    public <D> void deserialize(Dynamic<D> dynamic){
-        Map<String, Dynamic<D>> map = dynamic.get("attributes").asMap(d -> d.asString(""), Function.identity());
-        description = dynamic.get("description").asList(x -> x.asString().result()).stream()
-                .filter(Optional::isPresent)
-                .map(Optional::get)
-                .map(ITextComponent.Serializer::getComponentFromJson).collect(Collectors.toList());
-        getAttributes().forEach(attr -> {
-            Dynamic<D> attrValue = map.get(attr.getName());
-            if (attrValue != null) {
-                attr.deserialize(attrValue);
-            }
-        });
-        readAdditionalData(dynamic);
     }
 
     // return true if it works or you dont care
@@ -153,5 +109,38 @@ public abstract class QuestObjective<T extends ObjectiveInstanceData> implements
 
     public List<IFormattableTextComponent> getDescription(){
         return description;
+    }
+
+    @Override
+    public <D> void writeAdditionalData(DynamicOps<D> ops, ImmutableMap.Builder<D, D> builder) {
+        builder.put(ops.createString("description"),
+                ops.createList(description.stream()
+                        .map(x -> ops.createString(ITextComponent.Serializer.toJson(x)))));
+        builder.put(ops.createString("attributes"), serializeAttributeMap(ops));
+    }
+
+    @Override
+    public <D> void readAdditionalData(Dynamic<D> dynamic) {
+        description = dynamic.get("description")
+                .asList(x -> x.asString().resultOrPartial(MKNpc.LOGGER::error).orElseThrow(IllegalArgumentException::new))
+                .stream()
+                .map(ITextComponent.Serializer::getComponentFromJson)
+                .collect(Collectors.toList());
+
+        deserializeAttributeMap(dynamic, "attributes");
+    }
+
+    @Override
+    public ResourceLocation getTypeName() {
+        return typeName;
+    }
+
+    @Override
+    public String getTypeEntryName() {
+        return TYPE_NAME_FIELD;
+    }
+
+    public static <D> ResourceLocation getType(Dynamic<D> dynamic) {
+        return IDynamicMapTypedSerializer.getType(dynamic, TYPE_NAME_FIELD).orElse(INVALID_OPTION);
     }
 }
