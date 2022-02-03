@@ -50,33 +50,41 @@ public class QuestOfferingEntry implements INBTSerializable<CompoundNBT> {
         return questId;
     }
 
+    private ResourceLocation makeTreeId(UUID questId) {
+        return new ResourceLocation(MKNpc.MODID, String.format("give_quest.%s", questId));
+    }
+
     public void setQuestId(@Nullable UUID questId) {
         this.questId = questId;
-        if (questId == null){
+        if (questId == null) {
             MKNpc.LOGGER.debug("Set quest id called in quest generation with null id {}", questDef);
             return;
         }
+
         QuestDefinition definition = QuestDefinitionManager.getDefinition(questDef);
+
         DialogueNode startQuest = definition.getStartQuestResponse().copy();
-        DialogueNode hailQuest = definition.getStartQuestHail().copy();
         startQuest.addEffect(new StartQuestChainEffect(questId));
-        DialogueTree giverTree = new DialogueTree(new ResourceLocation(MKNpc.MODID, String.format("give_quest.%s", questId.toString())));
-        DialoguePrompt hailPrompt = new DialoguePrompt("hail");
-        DialogueResponse hailResp = new DialogueResponse(hailQuest.getId()).addCondition(
-                new CanStartQuestCondition(questId, definition.isRepeatable()));
-        for (QuestRequirement req : definition.getRequirements()){
+
+        // Create a duplicate DialogueNode, so we can specialize it for the questId
+        DialogueNode hailQuest = definition.getStartQuestHail().copy();
+        DialogueResponse hailResp = new DialogueResponse(hailQuest)
+                .addCondition(new CanStartQuestCondition(questId, definition.isRepeatable()));
+        for (QuestRequirement req : definition.getRequirements()) {
             hailResp.addCondition(req.getDialogueCondition());
         }
+        DialoguePrompt hailPrompt = new DialoguePrompt("hail");
         hailPrompt.addResponse(hailResp);
+
+        DialogueTree giverTree = new DialogueTree(makeTreeId(questId));
+        giverTree.addNode(startQuest);
+        giverTree.addNode(hailQuest);
         giverTree.addPrompt(definition.getHailPrompt().copy());
         giverTree.addPrompt(hailPrompt);
         giverTree.setHailPrompt(hailPrompt);
-        giverTree.addNode(startQuest);
-        giverTree.addNode(hailQuest);
-        giverTree.bake();
+
         MKNpc.LOGGER.debug("Generated Start Quest Dialogue for {} id {}", questDef, questId);
         this.tree = giverTree;
-
     }
 
     @Override
@@ -99,9 +107,8 @@ public class QuestOfferingEntry implements INBTSerializable<CompoundNBT> {
             questId = nbt.getUniqueId("questId");
         }
         if (nbt.contains("dialogue")){
-            tree = new DialogueTree(new ResourceLocation(MKNpc.MODID, String.format("give_quest.%s", questId.toString())));
+            tree = new DialogueTree(makeTreeId(questId));
             tree.deserialize(new Dynamic<>(NBTDynamicOps.INSTANCE, nbt.get("dialogue")));
-            tree.bake();
         }
     }
 }

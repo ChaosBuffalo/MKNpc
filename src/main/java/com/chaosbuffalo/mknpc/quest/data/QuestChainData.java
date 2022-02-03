@@ -47,7 +47,6 @@ public class QuestChainData implements IQuestInstanceData{
             definition.getQuestChain().forEach(quest ->
                     quest.generateDialogueForNpc(questChain, entry.getKey(), entry.getValue(), tree, questStructures, definition)
             );
-            tree.bake();
             npcTrees.put(entry.getValue(), tree);
         }
     }

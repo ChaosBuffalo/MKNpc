@@ -1,9 +1,6 @@
 package com.chaosbuffalo.mknpc.quest.objectives;
 
-import com.chaosbuffalo.mkchat.dialogue.DialogueNode;
-import com.chaosbuffalo.mkchat.dialogue.DialoguePrompt;
-import com.chaosbuffalo.mkchat.dialogue.DialogueResponse;
-import com.chaosbuffalo.mkchat.dialogue.DialogueTree;
+import com.chaosbuffalo.mkchat.dialogue.*;
 import com.chaosbuffalo.mkchat.dialogue.conditions.DialogueCondition;
 import com.chaosbuffalo.mkchat.dialogue.effects.DialogueEffect;
 import com.chaosbuffalo.mkcore.serialization.attributes.ResourceLocationAttribute;
@@ -50,28 +47,17 @@ public class TalkToNpcObjective extends StructureInstanceObjective<UUIDInstanceD
             return ops.createMap(builder.build());
         }
 
-        public <D> void deserialize(Dynamic<D> dynamic){
-            Optional<DialogueNode> nodeResult = dynamic.get("node").into(x -> {
-                DialogueNode newNode = new DialogueNode();
-                newNode.deserialize(x);
-                return newNode;
-            }).result();
-            nodeResult.ifPresent(dialogueNode -> this.node = dialogueNode);
-            Optional<DialogueResponse> responseResult = dynamic.get("response").into(x -> {
-                DialogueResponse newResponse = new DialogueResponse();
-                newResponse.deserialize(x);
-                return newResponse;
-            }).result();
-            responseResult.ifPresent(dialogueResponse -> this.response = dialogueResponse);
+        public <D> void deserialize(Dynamic<D> dynamic) {
+            node = DialogueNode.fromDynamicField(dynamic.get("node"));
+            response = DialogueResponse.fromDynamicField(dynamic.get("response"));
         }
-
-
     }
+
     public static final ResourceLocation NAME = new ResourceLocation(MKNpc.MODID, "objective.talk_to_npc");
     protected ResourceLocationAttribute npcDefinition = new ResourceLocationAttribute("npcDefinition", NpcDefinitionManager.INVALID_NPC_DEF);
     protected List<HailEntry> hailResponses = new ArrayList<>();
     protected List<DialogueNode> additionalNodes = new ArrayList<>();
-    protected List<DialoguePrompt> additionalPrompts= new ArrayList<>();
+    protected List<DialoguePrompt> additionalPrompts = new ArrayList<>();
 
     public TalkToNpcObjective(String name, ResourceLocation structure, int index, ResourceLocation npcDefinition, IFormattableTextComponent... description){
         super(NAME, name, structure, index, description);
@@ -121,20 +107,13 @@ public class TalkToNpcObjective extends StructureInstanceObjective<UUIDInstanceD
     @Override
     public <D> void readAdditionalData(Dynamic<D> dynamic) {
         super.readAdditionalData(dynamic);
-        List<DialogueNode> nodes = dynamic.get("nodes").asList(x -> {
-            DialogueNode node = new DialogueNode();
-            node.deserialize(x);
-            return node;
-        });
         additionalNodes.clear();
-        this.additionalNodes.addAll(nodes);
-        List<DialoguePrompt> prompts = dynamic.get("prompts").asList(x -> {
-            DialoguePrompt prompt = new DialoguePrompt();
-            prompt.deserialize(x);
-            return prompt;
-        });
+        dynamic.get("nodes").asList(DialogueNode::fromDynamic)
+                .forEach(dr -> dr.resultOrPartial(DialogueUtils::throwParseException).ifPresent(additionalNodes::add));
+
         additionalPrompts.clear();
-        additionalPrompts.addAll(prompts);
+        dynamic.get("prompts").asList(DialoguePrompt::fromDynamic)
+                .forEach(dr -> dr.resultOrPartial(DialogueUtils::throwParseException).ifPresent(additionalPrompts::add));
         List<HailEntry> hailResponses = dynamic.get("hailResponses").asList(HailEntry::new);
         this.hailResponses.clear();
         this.hailResponses.addAll(hailResponses);
