@@ -25,7 +25,7 @@ public class QuestDefinition {
     }
 
 
-    private ResourceLocation name;
+    private final ResourceLocation name;
     private final List<Quest> questChain;
     private final Map<String, Quest> questIndex;
     private boolean repeatable;
@@ -149,7 +149,7 @@ public class QuestDefinition {
         return ops.createMap(builder.build());
     }
 
-    public <D> void deserialize(Dynamic<D> dynamic){
+    public <D> void deserialize(Dynamic<D> dynamic) {
         List<Quest> dQuests = dynamic.get("quests").asList(d -> {
             Quest q = new Quest();
             q.deserialize(d);
@@ -158,13 +158,10 @@ public class QuestDefinition {
         questIndex.clear();
         questChain.clear();
         repeatable = dynamic.get("repeatable").asBoolean(false);
-        startQuestResponse = new DialogueNode();
-        dynamic.get("startQuestResponse").result().ifPresent(x -> startQuestResponse.deserialize(x));
-        startQuestHail = new DialogueNode();
-        dynamic.get("hailQuestResponse").result().ifPresent(x -> startQuestHail.deserialize(x));
-        hailPrompt = new DialoguePrompt();
-        dynamic.get("hailPrompt").result().ifPresent(x -> hailPrompt.deserialize(x));
-        for (Quest quest : dQuests){
+        startQuestResponse = DialogueNode.fromDynamicField(dynamic.get("startQuestResponse"));
+        startQuestHail = DialogueNode.fromDynamicField(dynamic.get("hailQuestResponse"));
+        hailPrompt = DialoguePrompt.fromDynamicField(dynamic.get("hailPrompt"));
+        for (Quest quest : dQuests) {
             addQuest(quest);
         }
         questName = ITextComponent.Serializer.getComponentFromJson(
