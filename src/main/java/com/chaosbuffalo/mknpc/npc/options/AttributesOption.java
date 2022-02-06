@@ -3,6 +3,7 @@ package com.chaosbuffalo.mknpc.npc.options;
 import com.chaosbuffalo.mknpc.MKNpc;
 import com.chaosbuffalo.mknpc.npc.NpcAttributeEntry;
 import com.chaosbuffalo.mknpc.npc.NpcDefinition;
+import com.google.common.collect.ImmutableMap;
 import com.mojang.serialization.Dynamic;
 import com.mojang.serialization.DynamicOps;
 import net.minecraft.entity.Entity;
@@ -14,22 +15,22 @@ import net.minecraft.util.ResourceLocation;
 import java.util.ArrayList;
 import java.util.List;
 
-public class AttributesOption extends NpcDefinitionOption{
+public class AttributesOption extends NpcDefinitionOption {
     public static final ResourceLocation NAME = new ResourceLocation(MKNpc.MODID, "attributes");
     private final List<NpcAttributeEntry> attributes;
 
-    public AttributesOption(){
+    public AttributesOption() {
         super(NAME, ApplyOrder.MIDDLE);
         attributes = new ArrayList<>();
     }
 
-    public AttributesOption addAttributeEntry(NpcAttributeEntry entry){
+    public AttributesOption addAttributeEntry(NpcAttributeEntry entry) {
         attributes.add(entry);
         return this;
     }
 
     @Override
-    public <D> void deserialize(Dynamic<D> dynamic) {
+    public <D> void readAdditionalData(Dynamic<D> dynamic) {
         List<NpcAttributeEntry> entries = dynamic.get("attributes").asList(d -> {
             NpcAttributeEntry entry = new NpcAttributeEntry();
             entry.deserialize(d);
@@ -40,12 +41,9 @@ public class AttributesOption extends NpcDefinitionOption{
     }
 
     @Override
-    public <D> D serialize(DynamicOps<D> ops) {
-        D sup = super.serialize(ops);
-        return ops.mergeToMap(sup,
-                ops.createString("attributes"),
-                ops.createList(attributes.stream().map(x -> x.serialize(ops)))
-        ).result().orElse(sup);
+    public <D> void writeAdditionalData(DynamicOps<D> ops, ImmutableMap.Builder<D, D> builder) {
+        super.writeAdditionalData(ops, builder);
+        builder.put(ops.createString("attributes"), ops.createList(attributes.stream().map(x -> x.serialize(ops))));
     }
 
     @Override
@@ -55,11 +53,11 @@ public class AttributesOption extends NpcDefinitionOption{
 
     @Override
     public void applyToEntity(NpcDefinition definition, Entity entity) {
-        if (entity instanceof LivingEntity){
-            AttributeModifierManager manager = ((LivingEntity)entity).getAttributeManager();
-            for (NpcAttributeEntry entry : attributes){
+        if (entity instanceof LivingEntity) {
+            AttributeModifierManager manager = ((LivingEntity) entity).getAttributeManager();
+            for (NpcAttributeEntry entry : attributes) {
                 ModifiableAttributeInstance instance = manager.createInstanceIfAbsent(entry.getAttribute());
-                if (instance != null){
+                if (instance != null) {
                     instance.setBaseValue(entry.getValue());
                 }
             }

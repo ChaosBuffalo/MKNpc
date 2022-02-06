@@ -8,6 +8,7 @@ import com.chaosbuffalo.mkcore.abilities.MKAbilityInfo;
 import com.chaosbuffalo.mknpc.MKNpc;
 import com.chaosbuffalo.mknpc.npc.NpcAbilityEntry;
 import com.chaosbuffalo.mknpc.npc.NpcDefinition;
+import com.google.common.collect.ImmutableMap;
 import com.mojang.serialization.Dynamic;
 import com.mojang.serialization.DynamicOps;
 import net.minecraft.entity.Entity;
@@ -21,38 +22,18 @@ public class TempAbilitiesOption extends NpcDefinitionOption {
     public static final ResourceLocation NAME = new ResourceLocation(MKNpc.MODID, "temp_abilities");
     private final List<NpcAbilityEntry> abilities;
 
-    public TempAbilitiesOption(){
+    public TempAbilitiesOption() {
         super(NAME, ApplyOrder.MIDDLE);
         abilities = new ArrayList<>();
     }
 
-    protected void addAbilityEntry(NpcAbilityEntry entry){
+    protected void addAbilityEntry(NpcAbilityEntry entry) {
         abilities.add(entry);
     }
 
-    public TempAbilitiesOption withAbilityOption(MKAbility ability, int priority, double chance){
+    public TempAbilitiesOption withAbilityOption(MKAbility ability, int priority, double chance) {
         addAbilityEntry(new NpcAbilityEntry(ability.getAbilityId(), priority, chance));
         return this;
-    }
-
-    @Override
-    public <D> D serialize(DynamicOps<D> ops) {
-        D sup = super.serialize(ops);
-        return ops.mergeToMap(sup,
-                ops.createString("options"),
-                ops.createList(abilities.stream().map(x -> x.serialize(ops)))
-        ).result().orElse(sup);
-    }
-
-    @Override
-    public <D> void deserialize(Dynamic<D> dynamic) {
-        List<NpcAbilityEntry> entries = dynamic.get("options").asList(d -> {
-            NpcAbilityEntry entry = new NpcAbilityEntry();
-            entry.deserialize(d);
-            return entry;
-        });
-        abilities.clear();
-        abilities.addAll(entries);
     }
 
     @Override
@@ -69,7 +50,7 @@ public class TempAbilitiesOption extends NpcDefinitionOption {
                 for (MKAbilityInfo ability : cap.getKnowledge().getAllAbilities()) {
                     toUnlearn.add(ability.getId());
                 }
-                for (ResourceLocation loc : toUnlearn){
+                for (ResourceLocation loc : toUnlearn) {
                     cap.getKnowledge().getAbilityKnowledge().unlearnAbility(loc, AbilitySource.TRAINED);
                 }
                 for (NpcAbilityEntry entry : abilities) {
@@ -81,5 +62,22 @@ public class TempAbilitiesOption extends NpcDefinitionOption {
             });
         }
     }
-}
 
+    @Override
+    public <D> void writeAdditionalData(DynamicOps<D> ops, ImmutableMap.Builder<D, D> builder) {
+        super.writeAdditionalData(ops, builder);
+        builder.put(ops.createString("options"),
+                ops.createList(abilities.stream().map(x -> x.serialize(ops))));
+    }
+
+    @Override
+    public <D> void readAdditionalData(Dynamic<D> dynamic) {
+        List<NpcAbilityEntry> entries = dynamic.get("options").asList(d -> {
+            NpcAbilityEntry entry = new NpcAbilityEntry();
+            entry.deserialize(d);
+            return entry;
+        });
+        abilities.clear();
+        abilities.addAll(entries);
+    }
+}

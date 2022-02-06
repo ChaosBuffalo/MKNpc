@@ -30,12 +30,12 @@ public class FactionNameOption extends WorldPermanentOption implements INameProv
         hasLastName = false;
     }
 
-    public FactionNameOption setTitle(String title){
+    public FactionNameOption setTitle(String title) {
         this.title = title;
         return this;
     }
 
-    public FactionNameOption setHasLastName(boolean value){
+    public FactionNameOption setHasLastName(boolean value) {
         this.hasLastName = value;
         return this;
     }
@@ -45,12 +45,12 @@ public class FactionNameOption extends WorldPermanentOption implements INameProv
     @Nullable
     public StringTextComponent getEntityName(NpcDefinition definition, World world, UUID spawnId) {
         return world.getCapability(NpcCapabilities.WORLD_NPC_DATA_CAPABILITY).map(
-                cap->{
-                    if (!cap.hasEntityOptionEntry(definition, this, spawnId)){
+                cap -> {
+                    if (!cap.hasEntityOptionEntry(definition, this, spawnId)) {
                         cap.addEntityOptionEntry(definition, this, spawnId, makeOptionEntry(definition, world.getRandom()));
                     }
                     INpcOptionEntry entry = cap.getEntityOptionEntry(definition, this, spawnId);
-                    if (entry instanceof INameEntry){
+                    if (entry instanceof INameEntry) {
                         return ((INameEntry) entry).getName();
                     } else {
                         return new StringTextComponent("Name Error");
@@ -62,12 +62,12 @@ public class FactionNameOption extends WorldPermanentOption implements INameProv
     @Override
     public String getDisplayName() {
         String name = "";
-        if (title != null){
+        if (title != null) {
             name += title;
         }
         name += " ";
         name += "[First]";
-        if (hasLastName){
+        if (hasLastName) {
             name += " ";
             name += "[Last]";
         }
@@ -76,9 +76,9 @@ public class FactionNameOption extends WorldPermanentOption implements INameProv
 
 
     @Nullable
-    private static <T> T getRandomEntry(Random random, Set<T> set){
+    private static <T> T getRandomEntry(Random random, Set<T> set) {
         List<T> list = new ArrayList<>(set);
-        if (list.size() <= 0){
+        if (list.size() <= 0) {
             return null;
         }
         return list.get(random.nextInt(list.size()));
@@ -87,21 +87,21 @@ public class FactionNameOption extends WorldPermanentOption implements INameProv
     @Override
     protected INpcOptionEntry makeOptionEntry(NpcDefinition definition, Random random) {
         String name = "";
-        if (title != null){
+        if (title != null) {
             name += title;
         }
         MKFaction faction = MKFactionRegistry.getFaction(definition.getFactionName());
-        if (faction != null){
+        if (faction != null) {
             name += " ";
             String firstName = getRandomEntry(random, faction.getFirstNames());
-            if (firstName == null){
+            if (firstName == null) {
                 firstName = "No Name";
             }
             name += firstName;
-            if (hasLastName){
+            if (hasLastName) {
                 name += " ";
                 String lastName = getRandomEntry(random, faction.getLastNames());
-                if (lastName == null){
+                if (lastName == null) {
                     lastName = "Unknown";
                 }
                 name += lastName;
@@ -112,18 +112,15 @@ public class FactionNameOption extends WorldPermanentOption implements INameProv
 
 
     @Override
-    public <D> void deserialize(Dynamic<D> dynamic) {
+    public <D> void readAdditionalData(Dynamic<D> dynamic) {
         this.title = dynamic.get("title").asString(null);
         this.hasLastName = dynamic.get("hasLastName").asBoolean(false);
     }
 
     @Override
-    public <D> D serialize(DynamicOps<D> ops) {
-        D sup = super.serialize(ops);
-        return ops.mergeToMap(sup, ImmutableMap.of(
-                ops.createString("title"), ops.createString(title),
-                ops.createString("hasLastName"), ops.createBoolean(hasLastName)
-        )).result().orElse(sup);
+    public <D> void writeAdditionalData(DynamicOps<D> ops, ImmutableMap.Builder<D, D> builder) {
+        super.writeAdditionalData(ops, builder);
+        builder.put(ops.createString("title"), ops.createString(title));
+        builder.put(ops.createString("hasLastName"), ops.createBoolean(hasLastName));
     }
-
 }

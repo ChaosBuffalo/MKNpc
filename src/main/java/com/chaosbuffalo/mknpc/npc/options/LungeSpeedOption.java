@@ -6,7 +6,7 @@ import com.chaosbuffalo.mknpc.npc.NpcDefinition;
 import net.minecraft.entity.Entity;
 import net.minecraft.util.ResourceLocation;
 
-public class LungeSpeedOption extends DoubleOption{
+public class LungeSpeedOption extends DoubleOption {
     public static final ResourceLocation NAME = new ResourceLocation(MKNpc.MODID, "lunge_speed");
 
     public LungeSpeedOption() {
@@ -15,7 +15,7 @@ public class LungeSpeedOption extends DoubleOption{
 
     @Override
     public void applyToEntity(NpcDefinition definition, Entity entity, Double value) {
-        if (entity instanceof MKEntity){
+        if (entity instanceof MKEntity) {
             ((MKEntity) entity).setLungeSpeed(value);
         }
     }

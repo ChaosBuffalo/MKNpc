@@ -16,38 +16,37 @@ public abstract class WorldPermanentOption extends NpcDefinitionOption {
         super(name, order);
     }
 
-    public WorldPermanentOption(ResourceLocation name){
+    public WorldPermanentOption(ResourceLocation name) {
         this(name, ApplyOrder.MIDDLE);
     }
 
     @Override
     public void applyToEntity(NpcDefinition definition, Entity entity) {
-        MKNpc.getWorldNpcData(entity.getEntityWorld()).ifPresent((worldCap) -> {
+        MKNpc.getWorldNpcData(entity.getEntityWorld()).ifPresent(worldCap -> {
             ensureGenerated(definition, WorldNpcDataHandler.getSpawnIdForEntity(entity), worldCap);
             applyFromWorld(definition, entity, worldCap);
         });
     }
 
-    private void ensureGenerated(NpcDefinition definition, UUID spawnId, IWorldNpcData worldNpcData){
-        if (!worldNpcData.hasEntityOptionEntry(definition, this, spawnId)){
+    private void ensureGenerated(NpcDefinition definition, UUID spawnId, IWorldNpcData worldNpcData) {
+        if (!worldNpcData.hasEntityOptionEntry(definition, this, spawnId)) {
             generateWorldEntry(definition, spawnId, worldNpcData);
         }
     }
 
-    protected void applyFromWorld(NpcDefinition definition, Entity entity, IWorldNpcData worldData){
+    protected void applyFromWorld(NpcDefinition definition, Entity entity, IWorldNpcData worldData) {
         worldData.getEntityOptionEntry(definition, this, entity).applyToEntity(entity);
     }
 
-    public INpcOptionEntry getOptionEntry(NpcDefinition definition, UUID entityId, IWorldNpcData worldNpcData){
+    public INpcOptionEntry getOptionEntry(NpcDefinition definition, UUID entityId, IWorldNpcData worldNpcData) {
         ensureGenerated(definition, entityId, worldNpcData);
         return worldNpcData.getEntityOptionEntry(definition, this, entityId);
     }
 
     protected abstract INpcOptionEntry makeOptionEntry(NpcDefinition definition, Random random);
 
-    protected void generateWorldEntry(NpcDefinition definition, UUID spawnId, IWorldNpcData worldNpcData){
-        worldNpcData.addEntityOptionEntry(definition, this, spawnId, makeOptionEntry(definition,
-                worldNpcData.getWorld().rand));
+    protected void generateWorldEntry(NpcDefinition definition, UUID spawnId, IWorldNpcData worldNpcData) {
+        worldNpcData.addEntityOptionEntry(definition, this, spawnId,
+                makeOptionEntry(definition, worldNpcData.getWorld().getRandom()));
     }
-
 }

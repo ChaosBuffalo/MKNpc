@@ -20,35 +20,33 @@ public class MKComboSettingsOption extends NpcDefinitionOption {
         comboCount = 1;
     }
 
-    public MKComboSettingsOption setComboCount(int comboCount){
+    public MKComboSettingsOption setComboCount(int comboCount) {
         this.comboCount = comboCount;
         return this;
     }
 
-    public MKComboSettingsOption setComboDelay(int ticks){
+    public MKComboSettingsOption setComboDelay(int ticks) {
         this.ticks = ticks;
         return this;
     }
 
     @Override
-    public <D> void deserialize(Dynamic<D> dynamic) {
-        setComboCount(dynamic.get("count").asInt(1));
-        setComboDelay(dynamic.get("cooldown").asInt(20));
-    }
-
-    @Override
     public void applyToEntity(NpcDefinition definition, Entity entity) {
-        if (entity instanceof MKEntity){
+        if (entity instanceof MKEntity) {
             ((MKEntity) entity).setAttackComboStatsAndDefault(comboCount, ticks);
         }
     }
 
     @Override
-    public <D> D serialize(DynamicOps<D> ops) {
-        D sup = super.serialize(ops);
-        return ops.mergeToMap(sup, ImmutableMap.of(
-                ops.createString("count"), ops.createInt(comboCount),
-                ops.createString("cooldown"), ops.createInt(ticks)
-        )).result().orElse(sup);
+    public <D> void writeAdditionalData(DynamicOps<D> ops, ImmutableMap.Builder<D, D> builder) {
+        super.writeAdditionalData(ops, builder);
+        builder.put(ops.createString("count"), ops.createInt(comboCount));
+        builder.put(ops.createString("cooldown"), ops.createInt(ticks));
+    }
+
+    @Override
+    public <D> void readAdditionalData(Dynamic<D> dynamic) {
+        setComboCount(dynamic.get("count").asInt(1));
+        setComboDelay(dynamic.get("cooldown").asInt(20));
     }
 }

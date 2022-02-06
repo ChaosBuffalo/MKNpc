@@ -6,17 +6,16 @@ import com.chaosbuffalo.mknpc.npc.NpcDefinition;
 import net.minecraft.entity.Entity;
 import net.minecraft.util.ResourceLocation;
 
-public class MKSizeOption extends FloatOption{
+public class MKSizeOption extends FloatOption {
     public static final ResourceLocation NAME = new ResourceLocation(MKNpc.MODID, "mk_size");
 
-    public MKSizeOption(){
+    public MKSizeOption() {
         super(NAME);
     }
 
-
     @Override
     public void applyToEntity(NpcDefinition definition, Entity entity, Float value) {
-        if (entity instanceof MKEntity){
+        if (entity instanceof MKEntity) {
             ((MKEntity) entity).setRenderScale(value);
         }
     }

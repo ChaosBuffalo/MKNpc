@@ -22,7 +22,6 @@ public class ExtraLootOption extends NpcDefinitionOption {
     private double noLootIncrease;
 
 
-
     public ExtraLootOption() {
         super(NAME, ApplyOrder.MIDDLE);
         lootOptions = new ArrayList<>();
@@ -31,66 +30,60 @@ public class ExtraLootOption extends NpcDefinitionOption {
         noLootIncrease = 0.0;
     }
 
-    public ExtraLootOption(double noLootChance, int dropChances, double noLootIncrease){
+    public ExtraLootOption(double noLootChance, int dropChances, double noLootIncrease) {
         this();
         this.noLootChance = noLootChance;
         this.dropChances = dropChances;
         this.noLootIncrease = noLootIncrease;
     }
 
-    public ExtraLootOption withLootOptions(LootOptionEntry... entries){
+    public ExtraLootOption withLootOptions(LootOptionEntry... entries) {
         lootOptions.addAll(Arrays.asList(entries));
         return this;
     }
 
-    public ExtraLootOption withDropChances(int chances){
+    public ExtraLootOption withDropChances(int chances) {
         dropChances = chances;
         return this;
     }
 
-    public ExtraLootOption withNoLootIncrease(double chanceIncrease){
+    public ExtraLootOption withNoLootIncrease(double chanceIncrease) {
         noLootIncrease = chanceIncrease;
         return this;
     }
 
-    public ExtraLootOption withNoLootChance(double chance){
+    public ExtraLootOption withNoLootChance(double chance) {
         noLootChance = chance;
         return this;
     }
 
-
-
-
     @Override
-    public <D> D serialize(DynamicOps<D> ops) {
-        ImmutableMap.Builder<D, D> builder = ImmutableMap.builder();
+    public <D> void writeAdditionalData(DynamicOps<D> ops, ImmutableMap.Builder<D, D> builder) {
+        super.writeAdditionalData(ops, builder);
         builder.put(ops.createString("noLootChance"), ops.createDouble(noLootChance));
         builder.put(ops.createString("dropChances"), ops.createInt(dropChances));
         builder.put(ops.createString("noLootIncrease"), ops.createDouble(noLootIncrease));
         builder.put(ops.createString("lootOptions"), ops.createList(lootOptions.stream().map(x -> x.serialize(ops))));
-        D sup = super.serialize(ops);
-        return ops.mergeToMap(sup, builder.build()).result().orElse(sup);
     }
 
     @Override
-    public <D> void deserialize(Dynamic<D> dynamic) {
+    public <D> void readAdditionalData(Dynamic<D> dynamic) {
         noLootChance = dynamic.get("noLootChance").asDouble(0);
         dropChances = dynamic.get("dropChances").asInt(1);
         noLootIncrease = dynamic.get("noLootIncrease").asDouble(0.0);
         List<Optional<LootOptionEntry>> lootOpts = dynamic.get("lootOptions").asList(x -> {
             LootOptionEntry newEntry = new LootOptionEntry();
             newEntry.deserialize(x);
-            if (newEntry.isValidConfiguration()){
+            if (newEntry.isValidConfiguration()) {
                 return Optional.of(newEntry);
             } else {
                 return Optional.empty();
             }
         });
         lootOptions.clear();
-        for (Optional<LootOptionEntry> entry : lootOpts){
+        for (Optional<LootOptionEntry> entry : lootOpts) {
             entry.ifPresent(lootOptions::add);
         }
-
     }
 
     @Override
@@ -98,7 +91,7 @@ public class ExtraLootOption extends NpcDefinitionOption {
         MKNpc.getNpcData(entity).ifPresent(x -> {
             x.setChanceNoLoot(noLootChance);
             x.setDropChances(dropChances);
-            for (LootOptionEntry entry : lootOptions){
+            for (LootOptionEntry entry : lootOptions) {
                 x.addLootOption(entry);
                 x.setNoLootChanceIncrease(noLootChance);
             }
