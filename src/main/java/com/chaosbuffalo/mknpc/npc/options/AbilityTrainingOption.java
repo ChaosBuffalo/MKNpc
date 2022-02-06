@@ -1,10 +1,10 @@
 package com.chaosbuffalo.mknpc.npc.options;
 
 import com.chaosbuffalo.mkcore.MKCoreRegistry;
-import com.chaosbuffalo.mkcore.abilities.AbilityManager;
 import com.chaosbuffalo.mkcore.abilities.MKAbility;
 import com.chaosbuffalo.mkcore.abilities.training.AbilityTrainingEntry;
 import com.chaosbuffalo.mkcore.abilities.training.AbilityTrainingRequirement;
+import com.chaosbuffalo.mkcore.abilities.training.IAbilityTrainer;
 import com.chaosbuffalo.mkcore.abilities.training.IAbilityTrainingEntity;
 import com.chaosbuffalo.mknpc.MKNpc;
 import com.chaosbuffalo.mknpc.npc.NpcDefinition;
@@ -17,8 +17,7 @@ import net.minecraft.util.ResourceLocation;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
-import java.util.Optional;
-import java.util.function.Function;
+import java.util.NoSuchElementException;
 
 public class AbilityTrainingOption extends SimpleOption<List<AbilityTrainingOption.AbilityTrainingOptionEntry>> {
     public static final ResourceLocation NAME = new ResourceLocation(MKNpc.MODID, "ability_trainings");
@@ -44,25 +43,22 @@ public class AbilityTrainingOption extends SimpleOption<List<AbilityTrainingOpti
         }
 
         public <D> void deserialize(Dynamic<D> dynamic) {
-
-            ability = dynamic.get("ability").asString()
+            ResourceLocation abilityId = dynamic.get("ability").asString()
                     .resultOrPartial(MKNpc.LOGGER::error)
                     .map(ResourceLocation::new)
-                    .map(MKCoreRegistry::getAbility)
-                    .orElseThrow(IllegalArgumentException::new);
+                    .orElseThrow(() -> new IllegalArgumentException("Failed to parse field 'ability' from " + dynamic));
 
-            List<Optional<AbilityTrainingRequirement>> optReqs = dynamic.get("reqs").asList(x -> {
-                ResourceLocation typeName = AbilityTrainingRequirement.getType(x);
-                Function<Dynamic<?>, AbilityTrainingRequirement> deserializer = AbilityManager.getAbilityTrainingReqDeserializer(typeName);
-                if (deserializer != null) {
-                    return Optional.of(deserializer.apply(x));
-                } else {
-                    return Optional.empty();
-                }
-            });
-            for (Optional<AbilityTrainingRequirement> optReq : optReqs) {
-                optReq.ifPresent(requirements::add);
+            ability = MKCoreRegistry.getAbility(abilityId);
+            if (ability == null) {
+                throw new NoSuchElementException(String.format("Ability '%s' does not exist", abilityId));
             }
+
+            requirements.clear();
+            requirements.addAll(dynamic.get("reqs").asList(x -> AbilityTrainingRequirement.fromDynamic(x)
+                    .resultOrPartial(error -> {
+                        throw new IllegalArgumentException(String.format("Failed to parse training requirement for " +
+                                "ability '%s': %s", ability.getAbilityId(), error));
+                    }).orElseThrow(IllegalStateException::new)));
         }
     }
 
@@ -91,15 +87,14 @@ public class AbilityTrainingOption extends SimpleOption<List<AbilityTrainingOpti
     @Override
     public void applyToEntity(NpcDefinition definition, Entity entity, List<AbilityTrainingOptionEntry> value) {
         if (entity instanceof IAbilityTrainingEntity) {
+            IAbilityTrainer trainer = ((IAbilityTrainingEntity) entity).getAbilityTrainer();
             for (AbilityTrainingOptionEntry entry : value) {
                 if (entry.ability != null) {
-                    AbilityTrainingEntry trainingEntry = ((IAbilityTrainingEntity) entity).getAbilityTrainer()
-                            .addTrainedAbility(entry.ability);
+                    AbilityTrainingEntry trainingEntry = trainer.addTrainedAbility(entry.ability);
                     for (AbilityTrainingRequirement req : entry.requirements) {
                         trainingEntry.addRequirement(req);
                     }
                 }
-
             }
         }
     }
