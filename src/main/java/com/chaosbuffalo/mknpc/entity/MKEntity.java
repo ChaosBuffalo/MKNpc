@@ -52,6 +52,7 @@ import net.minecraft.inventory.EquipmentSlotType;
 import net.minecraft.inventory.container.INamedContainerProvider;
 import net.minecraft.item.*;
 import net.minecraft.nbt.CompoundNBT;
+import net.minecraft.network.PacketBuffer;
 import net.minecraft.network.datasync.DataParameter;
 import net.minecraft.network.datasync.DataSerializers;
 import net.minecraft.network.datasync.EntityDataManager;
@@ -61,6 +62,7 @@ import net.minecraft.util.math.vector.Vector3d;
 import net.minecraft.util.text.ITextComponent;
 import net.minecraft.world.*;
 import net.minecraft.world.server.ServerWorld;
+import net.minecraftforge.fml.common.registry.IEntityAdditionalSpawnData;
 
 import javax.annotation.Nullable;
 import java.util.*;
@@ -70,6 +72,8 @@ import java.util.function.Predicate;
 public abstract class MKEntity extends CreatureEntity implements IModelLookProvider, IRangedAttackMob, IUpdateEngineProvider {
     private static final DataParameter<String> LOOK_STYLE = EntityDataManager.createKey(MKEntity.class, DataSerializers.STRING);
     private static final DataParameter<Float> SCALE = EntityDataManager.createKey(MKEntity.class, DataSerializers.FLOAT);
+    private static final DataParameter<Boolean> IS_GHOST = EntityDataManager.createKey(MKEntity.class, DataSerializers.BOOLEAN);
+    private static final DataParameter<Float> GHOST_TRANSLUCENCY = EntityDataManager.createKey(MKEntity.class, DataSerializers.FLOAT);
     private final SyncComponent animSync = new SyncComponent("anim");
     private int castAnimTimer;
     private VisualCastState visualCastState;
@@ -104,6 +108,22 @@ public abstract class MKEntity extends CreatureEntity implements IModelLookProvi
         NONE,
         CASTING,
         RELEASE,
+    }
+
+    public void setGhost(boolean ghost) {
+        getDataManager().set(IS_GHOST, ghost);
+    }
+
+    public boolean isGhost() {
+        return getDataManager().get(IS_GHOST);
+    }
+
+    public void setGhostTranslucency(float ghostTranslucency) {
+        getDataManager().set(GHOST_TRANSLUCENCY, ghostTranslucency);
+    }
+
+    public float getGhostTranslucency() {
+        return getDataManager().get(GHOST_TRANSLUCENCY);
     }
 
     protected MKEntity(EntityType<? extends CreatureEntity> type, World worldIn) {
@@ -145,6 +165,16 @@ public abstract class MKEntity extends CreatureEntity implements IModelLookProvi
         bossStages.add(stage);
     }
 
+    @Override
+    public boolean isInvisibleToPlayer(PlayerEntity player) {
+        return !isGhost() && super.isInvisibleToPlayer(player);
+    }
+
+    @Override
+    public boolean isInvisible() {
+        return isGhost() || super.isInvisible();
+    }
+
     public boolean hasNextStage(){
         return bossStages.size() > getCurrentStage() + 1;
     }
@@ -172,6 +202,14 @@ public abstract class MKEntity extends CreatureEntity implements IModelLookProvi
                     getCastingSpeedForDifficulty(difficulty), AttributeModifier.Operation.MULTIPLY_TOTAL));
         }
     }
+
+
+    public float getTranslucency(){
+        // vanilla value is 0.15f
+        return isGhost() ? getGhostTranslucency() : 0.15f;
+    }
+
+
 
     public ParticleEffectInstanceTracker getParticleEffectTracker() {
         return particleEffectTracker;
@@ -205,6 +243,8 @@ public abstract class MKEntity extends CreatureEntity implements IModelLookProvi
         super.registerData();
         this.dataManager.register(LOOK_STYLE, "default");
         this.dataManager.register(SCALE, 1.0f);
+        this.dataManager.register(IS_GHOST, false);
+        this.dataManager.register(GHOST_TRANSLUCENCY, 1.0f);
     }
 
     @Override

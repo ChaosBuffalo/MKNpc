@@ -30,8 +30,13 @@ public class MKAdditionalBipedLayer<T extends MKEntity, M extends EntityModel<T>
         this.style = style;
     }
 
-    protected static <T extends LivingEntity> void renderCopyTranslucent(EntityModel<T> modelParentIn, EntityModel<T> modelIn, ResourceLocation textureLocationIn, MatrixStack matrixStackIn, IRenderTypeBuffer bufferIn, int packedLightIn, T entityIn, float limbSwing, float limbSwingAmount, float ageInTicks, float netHeadYaw, float headPitch, float partialTicks, float red, float green, float blue) {
-        if (!entityIn.isInvisible()) {
+    protected static <T extends MKEntity> void renderCopyTranslucent(EntityModel<T> modelParentIn, EntityModel<T> modelIn,
+                                                                     ResourceLocation textureLocationIn, MatrixStack matrixStackIn,
+                                                                     IRenderTypeBuffer bufferIn, int packedLightIn, T entityIn,
+                                                                     float limbSwing, float limbSwingAmount, float ageInTicks,
+                                                                     float netHeadYaw, float headPitch, float partialTicks,
+                                                                     float red, float green, float blue) {
+        if (!entityIn.isInvisible() || entityIn.isGhost()) {
             modelParentIn.copyModelAttributesTo(modelIn);
             modelIn.setLivingAnimations(entityIn, limbSwing, limbSwingAmount, partialTicks);
             modelIn.setRotationAngles(entityIn, limbSwing, limbSwingAmount, ageInTicks, netHeadYaw, headPitch);
@@ -40,9 +45,24 @@ public class MKAdditionalBipedLayer<T extends MKEntity, M extends EntityModel<T>
 
     }
 
-    protected static <T extends LivingEntity> void renderTranslucentModel(EntityModel<T> modelIn, ResourceLocation textureLocationIn, MatrixStack matrixStackIn, IRenderTypeBuffer bufferIn, int packedLightIn, T entityIn, float red, float green, float blue) {
+    protected static <T extends MKEntity> void renderTranslucentModel(EntityModel<T> modelIn, ResourceLocation textureLocationIn, MatrixStack matrixStackIn, IRenderTypeBuffer bufferIn, int packedLightIn, T entityIn, float red, float green, float blue) {
         IVertexBuilder ivertexbuilder = bufferIn.getBuffer(RenderType.getEntityTranslucent(textureLocationIn, false));
         modelIn.render(matrixStackIn, ivertexbuilder, packedLightIn, LivingRenderer.getPackedOverlay(entityIn, 0.0F), red, green, blue, 1.0F);
+    }
+
+    protected static <T extends MKEntity> void renderCopyCutoutModel(EntityModel<T> modelParentIn, EntityModel<T> modelIn,
+                                                                     ResourceLocation textureLocationIn, MatrixStack matrixStackIn,
+                                                                     IRenderTypeBuffer bufferIn, int packedLightIn, T entityIn,
+                                                                     float limbSwing, float limbSwingAmount, float ageInTicks,
+                                                                     float netHeadYaw, float headPitch, float partialTicks,
+                                                                     float red, float green, float blue) {
+        if (!entityIn.isInvisible() || entityIn.isGhost()) {
+            modelParentIn.copyModelAttributesTo(modelIn);
+            modelIn.setLivingAnimations(entityIn, limbSwing, limbSwingAmount, partialTicks);
+            modelIn.setRotationAngles(entityIn, limbSwing, limbSwingAmount, ageInTicks, netHeadYaw, headPitch);
+            renderCutoutModel(modelIn, textureLocationIn, matrixStackIn, bufferIn, packedLightIn, entityIn, red, green, blue);
+        }
+
     }
 
     @Override
