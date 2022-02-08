@@ -7,5 +7,8 @@
     "WorldGenMixins",
     "StructureMixins"
   ],
+  "client": [
+    "LivingRendererMixins"
+  ],
   "minVersion": "0.8"
 }
