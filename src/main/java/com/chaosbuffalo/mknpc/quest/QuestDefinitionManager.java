@@ -90,6 +90,7 @@ public class QuestDefinitionManager extends JsonReloadListener {
         putRewardDeserializer(XpReward.TYPE_NAME, XpReward::new);
         putRewardDeserializer(MKLootReward.TYPE_NAME, MKLootReward::new);
         putRequirementDeserializer(HasEntitlementRequirement.TYPE_NAME, HasEntitlementRequirement::new);
+        putObjectiveDeserializer(KillNotableNpcObjective.NAME, KillNotableNpcObjective::new);
     }
 
     @Override

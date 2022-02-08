@@ -13,5 +13,7 @@
   "mknpc.trade.item_needed": "Trade %d %s",
   "mknpc.quest.start_quest": "Started Quest: %s",
   "mknpc.quest.cant_start_quest": "Unable to Start Quest: %s",
-  "mknpc.quest.complete_chain": "Completed Quest: %s"
+  "mknpc.quest.complete_chain": "Completed Quest: %s",
+  "mknpc.objective.kill_notable.desc": "Kill %s",
+  "mknpc.objective.kill_notable.complete": "You Killed %s";
 }

@@ -22,6 +22,8 @@ import com.mojang.serialization.Dynamic;
 import com.mojang.serialization.DynamicOps;
 import net.minecraft.util.ResourceLocation;
 import net.minecraft.util.text.IFormattableTextComponent;
+import net.minecraft.util.text.ITextComponent;
+import net.minecraft.util.text.StringTextComponent;
 
 import java.util.*;
 
@@ -141,6 +143,66 @@ public class TalkToNpcObjective extends StructureInstanceObjective<UUIDInstanceD
         return hrResponse;
     }
 
+    private void handleQuestRawMessageManipulation(DialogueNode node,
+                                                   Map<ResourceLocation, List<MKStructureEntry>> questStructures,
+                                                   QuestChainInstance questChain){
+        String rawMsg = node.getRawMessage();
+        String newMsg = parseQuestDialogueMessage(rawMsg, questStructures, questChain);
+        node.setRawMessage(newMsg);
+    }
+
+    private static String parseQuestDialogueMessage(String text,
+                                                    Map<ResourceLocation, List<MKStructureEntry>> questStructures,
+                                                    QuestChainInstance questChain) {
+        String parsing = text;
+        StringBuilder ret = new StringBuilder();
+        while (!parsing.isEmpty()) {
+            if (parsing.contains("{") && parsing.contains("}")) {
+                int index = parsing.indexOf("{");
+                int endIndex = parsing.indexOf("}");
+                ret.append(parsing, 0, index);
+                String parsee = parsing.substring(index, endIndex + 1);
+                if (parsee.startsWith("{mk_quest")){
+                    ret.append(handleMKQuestEntry(parsee, questStructures, questChain));
+                } else {
+                    ret.append(parsee);
+                }
+                parsing = parsing.substring(endIndex + 1);
+            } else {
+                ret.append(parsing);
+                parsing = "";
+            }
+        }
+        return ret.toString();
+    }
+
+    public static String getNotableNpcRaw(ResourceLocation structureName, int index, ResourceLocation defName){
+        return String.format("{mk_quest_notable:%s#%s#%s}", structureName.toString(), index, defName.toString());
+    }
+
+    private static String handleMKQuestEntry(String parsee,
+                                             Map<ResourceLocation, List<MKStructureEntry>> questStructures,
+                                             QuestChainInstance questChain){
+        String request = parsee.replace("{", "").replace("}", "");
+        if (request.contains(":")) {
+            String[] requestSplit = request.split(":", 2);
+            String reqName = requestSplit[0];
+            String args = requestSplit[1];
+            String[] splitArgs = args.split("#");
+            if (reqName.equals("mk_quest_notable")){
+                ResourceLocation structureName = new ResourceLocation(splitArgs[0]);
+                int index = Integer.parseInt(splitArgs[1]);
+                ResourceLocation defName = new ResourceLocation(splitArgs[2]);
+                Optional<NotableNpcEntry> npc = questStructures.get(structureName).get(index)
+                        .getFirstNotableOfType(defName);
+                return npc.map(x -> String.format("{notable:%s}", x.getSpawnerId())).orElse("#notable.not_found#");
+            }
+            return parsee;
+        } else {
+            return parsee;
+        }
+    }
+
     public void generateDialogueForNpc(Quest quest, QuestChainInstance questChain, ResourceLocation npcDefinitionName,
                                        UUID npcId, DialogueTree tree,
                                        Map<ResourceLocation, List<MKStructureEntry>> questStructures,
@@ -154,9 +216,10 @@ public class TalkToNpcObjective extends StructureInstanceObjective<UUIDInstanceD
                 hailPrompt.addResponse(hrResponse);
             }
         }
-
         for (DialogueNode node : additionalNodes){
-            tree.addNode(copyNodeAndSetUUID(node, questChain.getQuestId()));
+            DialogueNode newNode = copyNodeAndSetUUID(node, questChain.getQuestId());
+            handleQuestRawMessageManipulation(newNode, questStructures, questChain);
+            tree.addNode(newNode);
         }
         for (DialoguePrompt prompt : additionalPrompts){
             DialoguePrompt copyPrompt = prompt.copy();
