@@ -54,6 +54,7 @@ public class KillNotableNpcObjective extends StructureInstanceObjective<UUIDInst
                 player.sendMessage(new TranslationTextComponent("mknpc.objective.kill_notable.complete",
                         event.getEntityLiving().getDisplayName()).mergeStyle(TextFormatting.GOLD), Util.DUMMY_UUID);
                 signalCompleted(objectiveData);
+                playerChain.notifyDirty();
             }
         }
     }
@@ -86,7 +87,7 @@ public class KillNotableNpcObjective extends StructureInstanceObjective<UUIDInst
         UUIDInstanceData objData = getInstanceData(questData);
         PlayerQuestObjectiveData newObj = playerDataFactory();
         NotableNpcEntry notable = worldData.getNotableNpc(objData.getUuid());
-        newObj.setDescription((new TranslationTextComponent("mknpc.objective.kill_notable", notable.getName())));
+        newObj.setDescription((new TranslationTextComponent("mknpc.objective.kill_notable.desc", notable.getName())));
         newObj.putBlockPos("npcPos", notable.getLocation());
         newObj.putBool("hasKilled", false);
         return newObj;

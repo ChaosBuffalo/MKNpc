@@ -38,22 +38,18 @@ public class NPCDialogueExtension implements IDialogueExtension {
         InterModComms.sendTo(MKChat.MODID, MKChat.REGISTER_DIALOGUE_EXTENSION, NPCDialogueExtension::new);
     }
 
-
-
     private static final BiFunction<String, DialogueTree, ITextComponent> notableProvider =
-            (name, tree) -> {
-                 return new ContextAwareTextComponent("%s", (context) -> {
-                     if (context.getPlayer().getServer() != null){
-                         World overworld = context.getPlayer().getServer().getWorld(World.OVERWORLD);
-                         if (overworld != null){
-                             return Collections.singletonList(overworld.getCapability(NpcCapabilities.WORLD_NPC_DATA_CAPABILITY).map(x ->
-                                     x.getNotableNpc(UUID.fromString(name)).getName()).orElse(
-                                     new StringTextComponent(String.format("notable:%s", name))));
-                         }
-                     }
-                     return Collections.singletonList(new StringTextComponent(String.format("notable:%s", name)));
-                 });
-            };
+            (name, tree) -> new ContextAwareTextComponent("mkchat.simple_context.msg", (context) -> {
+                if (context.getPlayer().getServer() != null){
+                    World overworld = context.getPlayer().getServer().getWorld(World.OVERWORLD);
+                    if (overworld != null){
+                        return Collections.singletonList(overworld.getCapability(NpcCapabilities.WORLD_NPC_DATA_CAPABILITY).map(x ->
+                                x.getNotableNpc(UUID.fromString(name)).getName()).orElse(
+                                new StringTextComponent(String.format("notable:%s", name))));
+                    }
+                }
+                return Collections.singletonList(new StringTextComponent(String.format("notable:%s", name)));
+            });
 
     @Override
     public void registerDialogueExtension() {

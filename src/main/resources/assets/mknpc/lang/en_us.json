@@ -15,5 +15,6 @@
   "mknpc.quest.cant_start_quest": "Unable to Start Quest: %s",
   "mknpc.quest.complete_chain": "Completed Quest: %s",
   "mknpc.objective.kill_notable.desc": "Kill %s",
-  "mknpc.objective.kill_notable.complete": "You Killed %s";
+  "mknpc.objective.kill_notable.complete": "You Killed %s",
+  "mknpc.quest_reward.entitlement.message": "Grants Entitlement: %s"
 }
