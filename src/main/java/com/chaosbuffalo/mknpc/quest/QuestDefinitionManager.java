@@ -5,6 +5,7 @@ import com.chaosbuffalo.mknpc.npc.NpcDefinition;
 import com.chaosbuffalo.mknpc.quest.objectives.*;
 import com.chaosbuffalo.mknpc.quest.requirements.HasEntitlementRequirement;
 import com.chaosbuffalo.mknpc.quest.requirements.QuestRequirement;
+import com.chaosbuffalo.mknpc.quest.rewards.GrantEntitlementReward;
 import com.chaosbuffalo.mknpc.quest.rewards.MKLootReward;
 import com.chaosbuffalo.mknpc.quest.rewards.QuestReward;
 import com.chaosbuffalo.mknpc.quest.rewards.XpReward;
@@ -90,6 +91,8 @@ public class QuestDefinitionManager extends JsonReloadListener {
         putRewardDeserializer(XpReward.TYPE_NAME, XpReward::new);
         putRewardDeserializer(MKLootReward.TYPE_NAME, MKLootReward::new);
         putRequirementDeserializer(HasEntitlementRequirement.TYPE_NAME, HasEntitlementRequirement::new);
+        putObjectiveDeserializer(KillNotableNpcObjective.NAME, KillNotableNpcObjective::new);
+        putRewardDeserializer(GrantEntitlementReward.TYPE_NAME, GrantEntitlementReward::new);
     }
 
     @Override

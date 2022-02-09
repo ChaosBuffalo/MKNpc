@@ -12,6 +12,7 @@ import com.chaosbuffalo.mknpc.network.PacketHandler;
 import com.chaosbuffalo.mknpc.npc.INpcOptionExtension;
 import com.chaosbuffalo.mknpc.npc.NpcDefinitionManager;
 import com.chaosbuffalo.mknpc.quest.QuestDefinitionManager;
+import com.chaosbuffalo.mknpc.quest.dialogue.NpcDialogueUtils;
 import com.chaosbuffalo.mknpc.world.gen.feature.structure.TestJigsawStructurePools;
 import net.minecraft.entity.Entity;
 import net.minecraft.entity.LivingEntity;
@@ -49,6 +50,7 @@ public class MKNpc {
         FMLJavaModLoadingContext.get().getModEventBus().addListener(this::doClientStuff);
         MKNpcBlocks.register();
         MKNpcTileEntityTypes.register();
+        NpcDialogueUtils.setupMKNpcHandlers();
         npcDefinitionManager = new NpcDefinitionManager();
         questDefinitionManager = new QuestDefinitionManager();
         MKNpcWorldGen.registerStructurePieces();
