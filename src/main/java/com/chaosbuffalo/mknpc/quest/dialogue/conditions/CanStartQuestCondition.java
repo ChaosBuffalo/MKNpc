@@ -41,6 +41,11 @@ public class CanStartQuestCondition extends DialogueCondition {
     }
 
     @Override
+    public CanStartQuestCondition copy() {
+        return new CanStartQuestCondition(questId, allowRepeat);
+    }
+
+    @Override
     public <D> void readAdditionalData(Dynamic<D> dynamic) {
         super.readAdditionalData(dynamic);
         this.questId = UUID.fromString(dynamic.get("questId").asString(questId.toString()));

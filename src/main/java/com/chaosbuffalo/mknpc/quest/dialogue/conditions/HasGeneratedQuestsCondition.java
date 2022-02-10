@@ -22,5 +22,10 @@ public class HasGeneratedQuestsCondition extends DialogueCondition {
         return source.getCapability(NpcCapabilities.ENTITY_NPC_DATA_CAPABILITY).map(
                 IEntityNpcData::hasGeneratedQuest).orElse(false);
     }
+
+    @Override
+    public HasGeneratedQuestsCondition copy() {
+        return new HasGeneratedQuestsCondition();
+    }
 }
 
