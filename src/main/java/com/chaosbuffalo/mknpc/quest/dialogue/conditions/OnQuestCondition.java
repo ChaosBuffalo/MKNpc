@@ -38,6 +38,11 @@ public class OnQuestCondition extends DialogueCondition {
     }
 
     @Override
+    public OnQuestCondition copy() {
+        return new OnQuestCondition(questId, questStep);
+    }
+
+    @Override
     public <D> void writeAdditionalData(DynamicOps<D> ops, ImmutableMap.Builder<D, D> builder) {
         super.writeAdditionalData(ops, builder);
         builder.put(ops.createString("questId"), ops.createString(questId.toString()));

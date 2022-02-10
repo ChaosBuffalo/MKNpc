@@ -44,6 +44,11 @@ public class HasTrainedAbilitiesCondition extends DialogueCondition {
     }
 
     @Override
+    public HasTrainedAbilitiesCondition copy() {
+        return new HasTrainedAbilitiesCondition(allMatch, abilities.toArray(new ResourceLocation[0]));
+    }
+
+    @Override
     public <D> void readAdditionalData(Dynamic<D> dynamic) {
         super.readAdditionalData(dynamic);
         this.allMatch = dynamic.get("allMatch").asBoolean(false);

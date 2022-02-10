@@ -54,6 +54,11 @@ public class ObjectivesCompleteCondition extends DialogueCondition implements IR
     }
 
     @Override
+    public ObjectivesCompleteCondition copy() {
+        return new ObjectivesCompleteCondition(questName, objectiveNames.toArray(new String[0]));
+    }
+
+    @Override
     public <D> void writeAdditionalData(DynamicOps<D> ops, ImmutableMap.Builder<D, D> builder) {
         super.writeAdditionalData(ops, builder);
         builder.put(ops.createString("objectiveNames"), ops.createList(objectiveNames.stream().map(ops::createString)));

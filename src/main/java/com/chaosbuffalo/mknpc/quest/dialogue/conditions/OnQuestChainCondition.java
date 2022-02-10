@@ -17,19 +17,24 @@ public class OnQuestChainCondition extends DialogueCondition {
     public static final ResourceLocation conditionTypeName = new ResourceLocation(MKNpc.MODID, "on_quest_chain_condition");
     private UUID questId;
 
-    public OnQuestChainCondition(UUID questId, boolean allowRepeat){
+    public OnQuestChainCondition(UUID questId){
         super(conditionTypeName);
         this.questId = questId;
     }
 
     public OnQuestChainCondition(){
-        this(UUID.randomUUID(), false);
+        this(UUID.randomUUID());
     }
 
     @Override
     public boolean meetsCondition(ServerPlayerEntity player, LivingEntity source) {
         return MKNpc.getPlayerQuestData(player).map(x -> x.getQuestStatus(questId)
                 == PlayerQuestingDataHandler.QuestStatus.IN_PROGRESS).orElse(false);
+    }
+
+    @Override
+    public OnQuestChainCondition copy() {
+        return new OnQuestChainCondition(questId);
     }
 
     @Override

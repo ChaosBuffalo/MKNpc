@@ -36,6 +36,11 @@ public class HasSpentTalentPointsCondition extends DialogueCondition {
     }
 
     @Override
+    public HasSpentTalentPointsCondition copy() {
+        return new HasSpentTalentPointsCondition(talentCount);
+    }
+
+    @Override
     public <D> void writeAdditionalData(DynamicOps<D> ops, ImmutableMap.Builder<D, D> builder) {
         super.writeAdditionalData(ops, builder);
         builder.put(ops.createString("talentCount"), ops.createInt(talentCount));

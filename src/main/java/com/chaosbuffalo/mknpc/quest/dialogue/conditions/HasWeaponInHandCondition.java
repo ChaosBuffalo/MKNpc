@@ -20,5 +20,10 @@ public class HasWeaponInHandCondition extends DialogueCondition {
         Item mainHand = player.getHeldItemMainhand().getItem();
         return mainHand instanceof SwordItem || mainHand instanceof AxeItem || mainHand instanceof ShootableItem || mainHand instanceof TridentItem;
     }
+
+    @Override
+    public HasWeaponInHandCondition copy() {
+        return new HasWeaponInHandCondition();
+    }
 }
 

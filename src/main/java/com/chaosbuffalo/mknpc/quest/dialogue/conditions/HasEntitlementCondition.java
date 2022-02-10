@@ -34,6 +34,11 @@ public class HasEntitlementCondition extends DialogueCondition {
     }
 
     @Override
+    public HasEntitlementCondition copy() {
+        return new HasEntitlementCondition(entitlement);
+    }
+
+    @Override
     public <D> void writeAdditionalData(DynamicOps<D> ops, ImmutableMap.Builder<D, D> builder) {
         super.writeAdditionalData(ops, builder);
         builder.put(ops.createString("entitlement"), ops.createString(entitlement.getRegistryName().toString()));

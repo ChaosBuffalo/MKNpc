@@ -21,4 +21,9 @@ public class PendingGenerationCondition extends DialogueCondition {
         return source.getCapability(NpcCapabilities.ENTITY_NPC_DATA_CAPABILITY).map(
                 x -> x.shouldHaveQuest() && !x.hasGeneratedQuest()).orElse(false);
     }
+
+    @Override
+    public PendingGenerationCondition copy() {
+        return new PendingGenerationCondition();
+    }
 }
