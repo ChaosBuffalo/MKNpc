@@ -21,10 +21,10 @@ import net.minecraft.world.World;
 import java.util.UUID;
 
 public class AdvanceQuestChainEffect extends DialogueEffect implements IReceivesChainId {
-    public static ResourceLocation effectTypeName = new ResourceLocation(MKNpc.MODID, "advance_quest_chain");
+    public static final ResourceLocation effectTypeName = new ResourceLocation(MKNpc.MODID, "advance_quest_chain");
     private UUID chainId;
 
-    public AdvanceQuestChainEffect(UUID chainId){
+    public AdvanceQuestChainEffect(UUID chainId) {
         this();
         this.chainId = chainId;
     }
@@ -37,6 +37,11 @@ public class AdvanceQuestChainEffect extends DialogueEffect implements IReceives
     @Override
     public void setChainId(UUID chainId) {
         this.chainId = chainId;
+    }
+
+    @Override
+    public AdvanceQuestChainEffect copy() {
+        return new AdvanceQuestChainEffect(chainId);
     }
 
     @Override

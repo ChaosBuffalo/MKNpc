@@ -20,11 +20,11 @@ import net.minecraft.util.text.TranslationTextComponent;
 import java.util.UUID;
 
 public class GrantEntitlementEffect extends DialogueEffect {
-    public static ResourceLocation effectTypeName = new ResourceLocation(MKNpc.MODID, "grant_entitlement");
+    public static final ResourceLocation effectTypeName = new ResourceLocation(MKNpc.MODID, "grant_entitlement");
     private MKEntitlement entitlement;
 
     public GrantEntitlementEffect(MKEntitlement entitlement) {
-        super(effectTypeName);
+        this();
         this.entitlement = entitlement;
     }
 
@@ -33,8 +33,14 @@ public class GrantEntitlementEffect extends DialogueEffect {
     }
 
     @Override
+    public GrantEntitlementEffect copy() {
+        // No runtime mutable state
+        return new GrantEntitlementEffect(entitlement);
+    }
+
+    @Override
     public void applyEffect(ServerPlayerEntity serverPlayerEntity, LivingEntity livingEntity, DialogueNode dialogueNode) {
-        if (entitlement != null){
+        if (entitlement != null) {
             MKCore.getPlayer(serverPlayerEntity).ifPresent(x -> x.getEntitlements()
                     .addEntitlement(new EntitlementInstance(entitlement, UUID.randomUUID())));
             serverPlayerEntity.sendMessage(new TranslationTextComponent("mknpc.grant_entitlement.message",

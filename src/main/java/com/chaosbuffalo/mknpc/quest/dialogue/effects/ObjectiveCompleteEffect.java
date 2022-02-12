@@ -18,23 +18,22 @@ import net.minecraft.util.ResourceLocation;
 import net.minecraft.util.Util;
 import net.minecraft.world.World;
 
-import java.util.List;
 import java.util.UUID;
 
-public class ObjectiveCompleteEffect extends DialogueEffect implements IReceivesChainId{
-    public static ResourceLocation effectTypeName = new ResourceLocation(MKNpc.MODID, "objective_completion");
+public class ObjectiveCompleteEffect extends DialogueEffect implements IReceivesChainId {
+    public static final ResourceLocation effectTypeName = new ResourceLocation(MKNpc.MODID, "objective_completion");
     private UUID chainId;
     private String objectiveName;
     private String questName;
 
-    public ObjectiveCompleteEffect(UUID chainId, String objectiveName, String questName){
+    public ObjectiveCompleteEffect(UUID chainId, String objectiveName, String questName) {
         this();
         this.chainId = chainId;
         this.objectiveName = objectiveName;
         this.questName = questName;
     }
 
-    public ObjectiveCompleteEffect(String objectiveName, String questName){
+    public ObjectiveCompleteEffect(String objectiveName, String questName) {
         this(Util.DUMMY_UUID, objectiveName, questName);
     }
 
@@ -48,6 +47,11 @@ public class ObjectiveCompleteEffect extends DialogueEffect implements IReceives
     @Override
     public void setChainId(UUID chainId) {
         this.chainId = chainId;
+    }
+
+    @Override
+    public ObjectiveCompleteEffect copy() {
+        return new ObjectiveCompleteEffect(chainId, objectiveName, questName);
     }
 
     @Override
