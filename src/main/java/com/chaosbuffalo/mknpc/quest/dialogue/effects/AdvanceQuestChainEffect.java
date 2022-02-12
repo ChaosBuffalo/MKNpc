@@ -10,6 +10,7 @@ import com.chaosbuffalo.mknpc.quest.QuestChainInstance;
 import com.google.common.collect.ImmutableMap;
 import com.mojang.serialization.Dynamic;
 import com.mojang.serialization.DynamicOps;
+import com.mojang.serialization.JsonOps;
 import net.minecraft.entity.LivingEntity;
 import net.minecraft.entity.player.ServerPlayerEntity;
 import net.minecraft.server.MinecraftServer;
@@ -78,6 +79,8 @@ public class AdvanceQuestChainEffect extends DialogueEffect implements IReceives
     @Override
     public <D> void writeAdditionalData(DynamicOps<D> ops, ImmutableMap.Builder<D, D> builder) {
         super.writeAdditionalData(ops, builder);
-        builder.put(ops.createString("chainId"), ops.createString(chainId.toString()));
+        if (!(ops instanceof JsonOps)){
+            builder.put(ops.createString("chainId"), ops.createString(chainId.toString()));
+        }
     }
 }

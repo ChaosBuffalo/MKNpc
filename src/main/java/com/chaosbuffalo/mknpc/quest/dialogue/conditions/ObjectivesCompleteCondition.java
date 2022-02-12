@@ -9,6 +9,7 @@ import com.chaosbuffalo.mknpc.quest.dialogue.effects.IReceivesChainId;
 import com.google.common.collect.ImmutableMap;
 import com.mojang.serialization.Dynamic;
 import com.mojang.serialization.DynamicOps;
+import com.mojang.serialization.JsonOps;
 import net.minecraft.entity.LivingEntity;
 import net.minecraft.entity.player.ServerPlayerEntity;
 import net.minecraft.util.ResourceLocation;
@@ -62,7 +63,9 @@ public class ObjectivesCompleteCondition extends DialogueCondition implements IR
     public <D> void writeAdditionalData(DynamicOps<D> ops, ImmutableMap.Builder<D, D> builder) {
         super.writeAdditionalData(ops, builder);
         builder.put(ops.createString("objectiveNames"), ops.createList(objectiveNames.stream().map(ops::createString)));
-        builder.put(ops.createString("chainId"), ops.createString(chainId.toString()));
+        if (!(ops instanceof JsonOps)){
+            builder.put(ops.createString("chainId"), ops.createString(chainId.toString()));
+        }
         builder.put(ops.createString("questName"), ops.createString(questName));
     }
 
