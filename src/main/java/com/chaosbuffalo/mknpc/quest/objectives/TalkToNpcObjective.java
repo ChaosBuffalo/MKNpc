@@ -77,6 +77,11 @@ public class TalkToNpcObjective extends StructureInstanceObjective<UUIDInstanceD
         return this;
     }
 
+    public TalkToNpcObjective withTree(DialogueTree tree){
+        this.tree = tree;
+        return this;
+    }
+
     @Override
     public <D> void writeAdditionalData(DynamicOps<D> ops, ImmutableMap.Builder<D, D> builder) {
         super.writeAdditionalData(ops, builder);
@@ -123,12 +128,11 @@ public class TalkToNpcObjective extends StructureInstanceObjective<UUIDInstanceD
         return specializedTree;
     }
 
-    public void generateDialogueForNpc(Quest quest, QuestChainInstance questChain, ResourceLocation npcDefinitionName,
+    public DialogueTree generateDialogueForNpc(Quest quest, QuestChainInstance questChain, ResourceLocation npcDefinitionName,
                                        UUID npcId, DialogueTree tree,
                                        Map<ResourceLocation, List<MKStructureEntry>> questStructures,
                                        QuestDefinition definition){
-        tree.mergeTree(specializeTree(quest, questChain, questStructures));
-
+        return tree.merge(specializeTree(quest, questChain, questStructures));
     }
 
     @Override
