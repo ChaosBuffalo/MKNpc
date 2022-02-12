@@ -25,20 +25,23 @@ public abstract class QuestReward implements ISerializableAttributeContainer, ID
     private final ResourceLocation typeName;
     private final List<ISerializableAttribute<?>> attributes = new ArrayList<>();
 
-    public QuestReward(ResourceLocation typeName, IFormattableTextComponent description){
+    public QuestReward(ResourceLocation typeName, IFormattableTextComponent description) {
         this.description = description;
         this.typeName = typeName;
     }
 
-    public IFormattableTextComponent getDescription(){
+    public IFormattableTextComponent getDescription() {
         return description;
+    }
+
+    protected boolean hasPersistentDescription() {
+        return true;
     }
 
     @Override
     public List<ISerializableAttribute<?>> getAttributes() {
         return attributes;
     }
-
 
     @Override
     public void addAttribute(ISerializableAttribute<?> iSerializableAttribute) {
@@ -66,15 +69,19 @@ public abstract class QuestReward implements ISerializableAttributeContainer, ID
 
     @Override
     public <D> void writeAdditionalData(DynamicOps<D> ops, ImmutableMap.Builder<D, D> builder) {
-        builder.put(ops.createString("description"), ops.createString(ITextComponent.Serializer.toJson(description)));
+        if (hasPersistentDescription()) {
+            builder.put(ops.createString("description"), ops.createString(ITextComponent.Serializer.toJson(description)));
+        }
         builder.put(ops.createString("attributes"), serializeAttributeMap(ops));
     }
 
     public <D> void readAdditionalData(Dynamic<D> dynamic) {
-        description = dynamic.get("description").asString()
-                .resultOrPartial(MKNpc.LOGGER::error)
-                .map(ITextComponent.Serializer::getComponentFromJson)
-                .orElse(defaultDescription);
+        if (hasPersistentDescription()) {
+            description = dynamic.get("description").asString()
+                    .resultOrPartial(MKNpc.LOGGER::error)
+                    .map(ITextComponent.Serializer::getComponentFromJson)
+                    .orElse(defaultDescription);
+        }
 
         deserializeAttributeMap(dynamic, "attributes");
     }

@@ -26,7 +26,7 @@ public class MKLootReward extends QuestReward {
         addAttributes(this.lootTier, this.lootSlot);
     }
 
-    public MKLootReward(){
+    public MKLootReward() {
         super(TYPE_NAME, defaultDescription);
         addAttributes(this.lootTier, this.lootSlot);
     }
@@ -35,14 +35,12 @@ public class MKLootReward extends QuestReward {
     public void grantReward(PlayerEntity player) {
         LootTier tier = LootTierManager.getTierFromName(lootTier.getValue());
         LootSlot slot = LootSlotManager.getSlotFromName(lootSlot.getValue());
-        if (tier != null && slot != null){
+        if (tier != null && slot != null) {
             LootConstructor constructor = tier.generateConstructorForSlot(player.getRNG(), slot);
-            if (constructor != null){
+            if (constructor != null) {
                 ItemStack loot = constructor.constructItem();
                 player.inventory.placeItemBackInInventory(player.getEntityWorld(), loot);
             }
-
         }
-
     }
 }
