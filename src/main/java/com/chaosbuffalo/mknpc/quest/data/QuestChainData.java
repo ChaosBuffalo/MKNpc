@@ -44,9 +44,9 @@ public class QuestChainData implements IQuestInstanceData{
             DialoguePrompt hailPrompt = new DialoguePrompt("hail");
             tree.setHailPrompt(hailPrompt);
             tree.addPrompt(hailPrompt);
-            definition.getQuestChain().forEach(quest ->
-                    quest.generateDialogueForNpc(questChain, entry.getKey(), entry.getValue(), tree, questStructures, definition)
-            );
+            for (Quest quest : definition.getQuestChain()){
+                tree = quest.generateDialogueForNpc(questChain, entry.getKey(), entry.getValue(), tree, questStructures, definition);
+            }
             npcTrees.put(entry.getValue(), tree);
         }
     }

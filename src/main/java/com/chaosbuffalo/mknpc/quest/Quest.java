@@ -64,7 +64,7 @@ public class Quest {
         return questName;
     }
 
-    public void generateDialogueForNpc(QuestChainInstance questChain, ResourceLocation npcDefinitionName,
+    public DialogueTree generateDialogueForNpc(QuestChainInstance questChain, ResourceLocation npcDefinitionName,
                                        UUID npcId, DialogueTree tree,
                                        Map<ResourceLocation, List<MKStructureEntry>> questStructures,
                                        QuestDefinition definition){
@@ -74,10 +74,11 @@ public class Quest {
                 TalkToNpcObjective talkObj = (TalkToNpcObjective) obj;
                 UUIDInstanceData instanceData = talkObj.getInstanceData(questData);
                 if (instanceData.getUuid().equals(npcId)){
-                    talkObj.generateDialogueForNpc(this, questChain, npcDefinitionName, npcId, tree, questStructures, definition);
+                    tree = talkObj.generateDialogueForNpc(this, questChain, npcDefinitionName, npcId, tree, questStructures, definition);
                 }
             }
         }
+        return tree;
     }
 
     public void addObjective(QuestObjective<?> objective){
