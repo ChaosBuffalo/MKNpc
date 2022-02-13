@@ -10,10 +10,12 @@ import com.chaosbuffalo.mknpc.quest.QuestChainInstance;
 import com.google.common.collect.ImmutableMap;
 import com.mojang.serialization.Dynamic;
 import com.mojang.serialization.DynamicOps;
+import com.mojang.serialization.JsonOps;
 import net.minecraft.entity.LivingEntity;
 import net.minecraft.entity.player.ServerPlayerEntity;
 import net.minecraft.server.MinecraftServer;
 import net.minecraft.util.ResourceLocation;
+import net.minecraft.util.Util;
 import net.minecraft.world.World;
 
 import java.util.List;
@@ -33,12 +35,12 @@ public class ObjectiveCompleteEffect extends DialogueEffect implements IReceives
     }
 
     public ObjectiveCompleteEffect(String objectiveName, String questName){
-        this(UUID.randomUUID(), objectiveName, questName);
+        this(Util.DUMMY_UUID, objectiveName, questName);
     }
 
     public ObjectiveCompleteEffect() {
         super(effectTypeName);
-        chainId = UUID.randomUUID();
+        chainId = Util.DUMMY_UUID;
         objectiveName = "invalid";
         questName = "default";
     }
@@ -80,7 +82,9 @@ public class ObjectiveCompleteEffect extends DialogueEffect implements IReceives
     @Override
     public <D> void writeAdditionalData(DynamicOps<D> ops, ImmutableMap.Builder<D, D> builder) {
         super.writeAdditionalData(ops, builder);
-        builder.put(ops.createString("chainId"), ops.createString(chainId.toString()));
+        if (!chainId.equals(Util.DUMMY_UUID)){
+            builder.put(ops.createString("chainId"), ops.createString(chainId.toString()));
+        }
         builder.put(ops.createString("objectiveName"), ops.createString(objectiveName));
         builder.put(ops.createString("questName"), ops.createString(questName));
     }
@@ -88,7 +92,7 @@ public class ObjectiveCompleteEffect extends DialogueEffect implements IReceives
     @Override
     public <D> void readAdditionalData(Dynamic<D> dynamic) {
         super.readAdditionalData(dynamic);
-        chainId = dynamic.get("chainId").asString().result().map(UUID::fromString).orElse(UUID.randomUUID());
+        chainId = dynamic.get("chainId").asString().result().map(UUID::fromString).orElse(Util.DUMMY_UUID);
         objectiveName = dynamic.get("objectiveName").asString("invalid");
         questName = dynamic.get("questName").asString("defualt");
     }

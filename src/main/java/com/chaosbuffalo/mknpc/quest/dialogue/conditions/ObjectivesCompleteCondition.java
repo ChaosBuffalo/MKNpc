@@ -9,9 +9,11 @@ import com.chaosbuffalo.mknpc.quest.dialogue.effects.IReceivesChainId;
 import com.google.common.collect.ImmutableMap;
 import com.mojang.serialization.Dynamic;
 import com.mojang.serialization.DynamicOps;
+import com.mojang.serialization.JsonOps;
 import net.minecraft.entity.LivingEntity;
 import net.minecraft.entity.player.ServerPlayerEntity;
 import net.minecraft.util.ResourceLocation;
+import net.minecraft.util.Util;
 
 import java.util.*;
 import java.util.stream.Collectors;
@@ -26,7 +28,7 @@ public class ObjectivesCompleteCondition extends DialogueCondition implements IR
     public ObjectivesCompleteCondition(String questName, String... objectiveNames){
         super(conditionTypeName);
         this.objectiveNames.addAll(Arrays.asList(objectiveNames));
-        this.chainId = UUID.randomUUID();
+        this.chainId = Util.DUMMY_UUID;
         this.questName = questName;
     }
 
@@ -62,7 +64,9 @@ public class ObjectivesCompleteCondition extends DialogueCondition implements IR
     public <D> void writeAdditionalData(DynamicOps<D> ops, ImmutableMap.Builder<D, D> builder) {
         super.writeAdditionalData(ops, builder);
         builder.put(ops.createString("objectiveNames"), ops.createList(objectiveNames.stream().map(ops::createString)));
-        builder.put(ops.createString("chainId"), ops.createString(chainId.toString()));
+        if (!chainId.equals(Util.DUMMY_UUID)){
+            builder.put(ops.createString("chainId"), ops.createString(chainId.toString()));
+        }
         builder.put(ops.createString("questName"), ops.createString(questName));
     }
 
@@ -72,7 +76,7 @@ public class ObjectivesCompleteCondition extends DialogueCondition implements IR
         this.objectiveNames.addAll(dynamic.get("objectiveNames").asList(x -> x.asString().result()).stream()
                 .filter(Optional::isPresent).map(Optional::get).collect(Collectors.toList()));
         questName = dynamic.get("questName").asString("default");
-        chainId = dynamic.get("chainId").asString().result().map(UUID::fromString).orElse(UUID.randomUUID());
+        chainId = dynamic.get("chainId").asString().result().map(UUID::fromString).orElse(Util.DUMMY_UUID);
     }
 
     @Override
