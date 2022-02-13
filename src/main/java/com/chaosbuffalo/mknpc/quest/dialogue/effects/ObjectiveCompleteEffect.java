@@ -35,7 +35,7 @@ public class ObjectiveCompleteEffect extends DialogueEffect implements IReceives
     }
 
     public ObjectiveCompleteEffect(String objectiveName, String questName){
-        this(UUID.randomUUID(), objectiveName, questName);
+        this(Util.DUMMY_UUID, objectiveName, questName);
     }
 
     public ObjectiveCompleteEffect() {
