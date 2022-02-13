@@ -62,11 +62,15 @@ public class EquipmentOption extends WorldPermanentOption {
     @Override
     public <D> void writeAdditionalData(DynamicOps<D> ops, ImmutableMap.Builder<D, D> builder) {
         super.writeAdditionalData(ops, builder);
-        builder.put(ops.createString("slotOptions"),
-                ops.createMap(itemChoices.entrySet().stream().map(entry -> Pair.of(
-                                ops.createString(entry.getKey().getName()),
-                                ops.createList(entry.getValue().stream()
-                                        .map(itemChoice -> itemChoice.serialize(ops)))))
-                        .collect(Collectors.toMap(Pair::getFirst, Pair::getSecond))));
+
+        ImmutableMap.Builder<D, D> mapBuilder = ImmutableMap.builder();
+        itemChoices.entrySet().stream()
+                .sorted(Comparator.comparing(e -> e.getKey().getName()))
+                .forEach(e -> mapBuilder.put(
+                        ops.createString(e.getKey().getName()),
+                        ops.createList(e.getValue().stream().map(itemChoice -> itemChoice.serialize(ops)))
+                ));
+
+        builder.put(ops.createString("slotOptions"), ops.createMap(mapBuilder.build()));
     }
 }
