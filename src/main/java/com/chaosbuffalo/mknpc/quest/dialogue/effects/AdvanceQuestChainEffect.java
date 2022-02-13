@@ -15,6 +15,7 @@ import net.minecraft.entity.LivingEntity;
 import net.minecraft.entity.player.ServerPlayerEntity;
 import net.minecraft.server.MinecraftServer;
 import net.minecraft.util.ResourceLocation;
+import net.minecraft.util.Util;
 import net.minecraft.world.World;
 
 import java.util.UUID;
@@ -30,7 +31,7 @@ public class AdvanceQuestChainEffect extends DialogueEffect implements IReceives
 
     public AdvanceQuestChainEffect() {
         super(effectTypeName);
-        chainId = UUID.randomUUID();
+        chainId = Util.DUMMY_UUID;
     }
 
     @Override
@@ -73,13 +74,13 @@ public class AdvanceQuestChainEffect extends DialogueEffect implements IReceives
     @Override
     public <D> void readAdditionalData(Dynamic<D> dynamic) {
         super.readAdditionalData(dynamic);
-        chainId = dynamic.get("chainId").asString().result().map(UUID::fromString).orElse(UUID.randomUUID());
+        chainId = dynamic.get("chainId").asString().result().map(UUID::fromString).orElse(Util.DUMMY_UUID);
     }
 
     @Override
     public <D> void writeAdditionalData(DynamicOps<D> ops, ImmutableMap.Builder<D, D> builder) {
         super.writeAdditionalData(ops, builder);
-        if (!(ops instanceof JsonOps)){
+        if (!chainId.equals(Util.DUMMY_UUID)){
             builder.put(ops.createString("chainId"), ops.createString(chainId.toString()));
         }
     }
