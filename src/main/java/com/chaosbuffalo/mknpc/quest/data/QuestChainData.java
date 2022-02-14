@@ -42,8 +42,9 @@ public class QuestChainData implements IQuestInstanceData{
         for (Map.Entry<ResourceLocation, UUID> entry : speakingRoles.entrySet()){
             DialogueTree tree = new DialogueTree(dialogueName);
             DialoguePrompt hailPrompt = new DialoguePrompt("hail");
-            tree.setHailPrompt(hailPrompt);
             tree.addPrompt(hailPrompt);
+            tree.setHailPrompt(hailPrompt);
+
             for (Quest quest : definition.getQuestChain()){
                 tree = quest.generateDialogueForNpc(questChain, entry.getKey(), entry.getValue(), tree, questStructures, definition);
             }
