@@ -2,6 +2,7 @@ package com.chaosbuffalo.mknpc.quest;
 
 import com.chaosbuffalo.mkchat.dialogue.DialogueNode;
 import com.chaosbuffalo.mkchat.dialogue.DialoguePrompt;
+import com.chaosbuffalo.mkchat.dialogue.DialogueUtils;
 import com.chaosbuffalo.mknpc.MKNpc;
 import com.chaosbuffalo.mknpc.npc.MKStructureEntry;
 import com.chaosbuffalo.mknpc.quest.requirements.QuestRequirement;
@@ -31,6 +32,8 @@ public class QuestDefinition {
     private boolean repeatable;
     private DialogueNode startQuestResponse;
     private DialogueNode startQuestHail;
+    private List<DialogueNode> additionalNodes = new ArrayList<>();
+    private List<DialoguePrompt> additionalPrompts = new ArrayList<>();
     private DialoguePrompt hailPrompt;
     private ITextComponent questName;
     private static final ITextComponent defaultQuestName = new StringTextComponent("Default");
@@ -69,6 +72,22 @@ public class QuestDefinition {
 
     public ITextComponent getQuestName() {
         return questName;
+    }
+
+    public List<DialogueNode> getAdditionalNodes() {
+        return additionalNodes;
+    }
+
+    public List<DialoguePrompt> getAdditionalPrompts() {
+        return additionalPrompts;
+    }
+
+    public void addAdditionalNode(DialogueNode node){
+        this.additionalNodes.add(node);
+    }
+
+    public void addAdditionalPrompt(DialoguePrompt prompt){
+        this.additionalPrompts.add(prompt);
     }
 
     public void setStartQuestResponse(DialogueNode startQuestResponse) {
@@ -146,6 +165,8 @@ public class QuestDefinition {
         builder.put(ops.createString("questName"), ops.createString(ITextComponent.Serializer.toJson(questName)));
         builder.put(ops.createString("requirements"), ops.createList(requirements.stream().map(x -> x.serialize(ops))));
         builder.put(ops.createString("questMode"), ops.createInt(getMode().ordinal()));
+        builder.put(ops.createString("additionalNodes"), ops.createList(additionalNodes.stream().map(x -> x.serialize(ops))));
+        builder.put(ops.createString("additionalPrompts"), ops.createList(additionalPrompts.stream().map(x -> x.serialize(ops))));
         return ops.createMap(builder.build());
     }
 
@@ -179,6 +200,14 @@ public class QuestDefinition {
             }
         });
         reqs.forEach(x -> x.ifPresent(this::addRequirement));
+        List<DialogueNode> nodes = dynamic.get("additionalNodes").asList(x -> DialogueNode.fromDynamic(x)
+                .resultOrPartial(DialogueUtils::throwParseException).orElseThrow(IllegalStateException::new));
+        additionalNodes.clear();
+        additionalNodes.addAll(nodes);
+        List<DialoguePrompt> prompts = dynamic.get("additionalPrompts").asList(x -> DialoguePrompt.fromDynamic(x)
+                .resultOrPartial(DialogueUtils::throwParseException).orElseThrow(IllegalStateException::new));
+        additionalPrompts.clear();
+        additionalPrompts.addAll(prompts);
     }
 
     public Map<ResourceLocation, Integer> getStructuresNeeded(){

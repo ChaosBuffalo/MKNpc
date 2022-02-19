@@ -24,6 +24,18 @@ import java.util.stream.Collectors;
 
 public class QuestChainInstance implements INBTSerializable<CompoundNBT> {
 
+    public static class QuestChainBuildResult {
+        public QuestChainInstance instance;
+        public Map<ResourceLocation, List<MKStructureEntry>> questStructures;
+
+        public QuestChainBuildResult(QuestChainInstance instance,
+                                     Map<ResourceLocation, List<MKStructureEntry>> structuresIn){
+            this.instance = instance;
+            questStructures = structuresIn;
+        }
+
+    }
+
     private UUID questId;
     private QuestDefinition definition;
     private QuestChainData questChainData;
@@ -44,6 +56,7 @@ public class QuestChainInstance implements INBTSerializable<CompoundNBT> {
     public void setQuestSourceNpc(UUID questSourceNpc) {
         this.questSourceNpc = questSourceNpc;
     }
+
 
     public Map<ResourceLocation, UUID> getSpeakingRoles(){
         Map<ResourceLocation, UUID> speakingRoles = new HashMap<>();

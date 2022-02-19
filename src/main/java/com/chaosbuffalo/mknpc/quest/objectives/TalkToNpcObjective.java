@@ -96,7 +96,7 @@ public class TalkToNpcObjective extends StructureInstanceObjective<UUIDInstanceD
 
     }
 
-    private void handleQuestRawMessageManipulation(DialogueObject dialogueObj,
+    public static void handleQuestRawMessageManipulation(DialogueObject dialogueObj,
                                                    Map<ResourceLocation, List<MKStructureEntry>> questStructures,
                                                    QuestChainInstance questChain){
         String rawMsg = dialogueObj.getRawMessage();

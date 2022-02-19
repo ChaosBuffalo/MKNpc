@@ -113,7 +113,7 @@ public class WorldNpcDataHandler implements IWorldNpcData{
     }
 
     @Override
-    public Optional<QuestChainInstance> buildQuest(QuestDefinition definition, BlockPos pos){
+    public Optional<QuestChainInstance.QuestChainBuildResult> buildQuest(QuestDefinition definition, BlockPos pos){
         Map<ResourceLocation, Integer> structuresNeeded = definition.getStructuresNeeded();
         if (hasStructureInstances(structuresNeeded.keySet())){
             Map<ResourceLocation, List<MKStructureEntry>> possibilities = structuresNeeded.keySet().stream()
@@ -139,7 +139,7 @@ public class WorldNpcDataHandler implements IWorldNpcData{
                 instance.generateDialogue(questStructures);
                 MKNpc.LOGGER.debug("Built quest {} for {}", instance.getQuestId(), definition.getName());
                 quests.put(instance.getQuestId(), instance);
-                return Optional.of(instance);
+                return Optional.of(new QuestChainInstance.QuestChainBuildResult(instance, questStructures));
             } else {
                 return Optional.empty();
             }

@@ -88,10 +88,10 @@ public class MKQuestCommand {
             if (server != null){
                 World world = server.getWorld(World.OVERWORLD);
                 if (world != null){
-                    Optional<QuestChainInstance> quest = world.getCapability(NpcCapabilities.WORLD_NPC_DATA_CAPABILITY)
+                    Optional<QuestChainInstance.QuestChainBuildResult> quest = world.getCapability(NpcCapabilities.WORLD_NPC_DATA_CAPABILITY)
                             .map(x -> x.buildQuest(definition, pos)).orElse(Optional.empty());
                     if (quest.isPresent()){
-                        QuestChainInstance newQuest = quest.get();
+                        QuestChainInstance newQuest = quest.get().instance;
                         player.sendMessage(new StringTextComponent(String.format("Generated quest: %s", newQuest.getQuestId().toString())), Util.DUMMY_UUID);
                         return Command.SINGLE_SUCCESS;
                     }
