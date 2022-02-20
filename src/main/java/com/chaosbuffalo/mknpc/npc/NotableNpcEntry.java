@@ -18,6 +18,7 @@ public class NotableNpcEntry implements INBTSerializable<CompoundNBT> {
     private ResourceLocation definition;
     private UUID structureId;
     private UUID spawnerId;
+    private UUID notableId;
 
     public NotableNpcEntry(NpcDefinition definition, MKSpawnerTileEntity spawner){
         this.location = spawner.getPos();
@@ -25,6 +26,7 @@ public class NotableNpcEntry implements INBTSerializable<CompoundNBT> {
         this.definition = definition.getDefinitionName();
         this.structureId = spawner.getStructureId();
         this.spawnerId = spawner.getSpawnUUID();
+        this.notableId = UUID.randomUUID();
     }
 
     public NotableNpcEntry(){
@@ -43,6 +45,10 @@ public class NotableNpcEntry implements INBTSerializable<CompoundNBT> {
         return structureId;
     }
 
+    public UUID getNotableId() {
+        return notableId;
+    }
+
     public StringTextComponent getName() {
         return name;
     }
@@ -58,6 +64,7 @@ public class NotableNpcEntry implements INBTSerializable<CompoundNBT> {
         tag.put("location", NBTUtil.writeBlockPos(location));
         tag.putUniqueId("spawnerId", spawnerId);
         tag.putUniqueId("structureId", structureId);
+        tag.putUniqueId("notableId", notableId);
         tag.putString("definition", definition.toString());
         tag.putString("name", name.getUnformattedComponentText());
         return tag;
@@ -70,5 +77,6 @@ public class NotableNpcEntry implements INBTSerializable<CompoundNBT> {
         structureId = nbt.getUniqueId("structureId");
         definition = new ResourceLocation(nbt.getString("definition"));
         name = new StringTextComponent(nbt.getString("name"));
+        notableId = nbt.getUniqueId("notableId");
     }
 }

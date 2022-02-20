@@ -38,7 +38,7 @@ public class NpcDialogueUtils {
         ResourceLocation defName = new ResourceLocation(splitArgs[2]);
         Optional<NotableNpcEntry> npc = parseData.questStructures.get(structureName).get(index)
                 .getFirstNotableOfType(defName);
-        return npc.map(x -> String.format("{notable:%s}", x.getSpawnerId())).orElse("#notable.not_found#");
+        return npc.map(x -> String.format("{notable:%s}", x.getNotableId())).orElse("#notable.not_found#");
     };
 
     public static void setupMKNpcHandlers(){

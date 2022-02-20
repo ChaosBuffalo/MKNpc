@@ -1,6 +1,7 @@
 package com.chaosbuffalo.mknpc.quest.data.objective;
 
 import net.minecraft.nbt.CompoundNBT;
+import net.minecraft.util.Util;
 
 import java.util.UUID;
 
@@ -10,7 +11,7 @@ public class UUIDInstanceData extends ObjectiveInstanceData{
     private boolean isValid;
 
     public UUIDInstanceData(){
-        uuid = UUID.randomUUID();
+        uuid = Util.DUMMY_UUID;
         isValid = false;
     }
 

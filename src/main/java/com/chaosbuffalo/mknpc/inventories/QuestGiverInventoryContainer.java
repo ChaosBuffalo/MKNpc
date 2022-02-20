@@ -7,7 +7,10 @@ import com.chaosbuffalo.mknpc.capabilities.NpcCapabilities;
 import com.chaosbuffalo.mknpc.entity.MKEntity;
 import com.chaosbuffalo.mknpc.quest.Quest;
 import com.chaosbuffalo.mknpc.quest.QuestChainInstance;
+import com.chaosbuffalo.mknpc.quest.data.QuestData;
 import com.chaosbuffalo.mknpc.quest.data.player.PlayerQuestChainInstance;
+import com.chaosbuffalo.mknpc.quest.data.player.PlayerQuestData;
+import com.chaosbuffalo.mknpc.quest.data.player.PlayerQuestObjectiveData;
 import com.chaosbuffalo.mknpc.quest.objectives.ITradeObjectiveHandler;
 import com.chaosbuffalo.mknpc.quest.objectives.QuestObjective;
 import net.minecraft.entity.player.PlayerEntity;
@@ -76,19 +79,22 @@ public class QuestGiverInventoryContainer extends ChestContainer {
                                 Quest currentQuest = questChain.getDefinition().getQuest(questName);
                                 if (currentQuest != null) {
                                     for (QuestObjective<?> obj : currentQuest.getObjectives()){
+                                        PlayerQuestData playerData = chain.getQuestData(currentQuest.getQuestName());
+                                        PlayerQuestObjectiveData playerObj = playerData.getObjective(obj.getObjectiveName());
+                                        QuestData questData = questChain.getQuestChainData().getQuestData(questName);
                                         if (obj instanceof ITradeObjectiveHandler){
-                                            int[] matches = ((ITradeObjectiveHandler) obj).findMatches(nonEmpty);
-                                            if (matches == null){
-                                                continue;
-                                            } else {
-                                                ((ITradeObjectiveHandler) obj).onPlayerTradeSuccess(playerIn,
-                                                        chain.getQuestData(currentQuest.getQuestName())
-                                                                .getObjective(obj.getObjectiveName()),
-                                                        questChain.getQuestChainData().getQuestData(questName), chain, entity);
-                                                questChain.signalQuestProgress(worldData, playerQuest, currentQuest, chain, false);
-                                                return;
+                                            if (((ITradeObjectiveHandler) obj).canTradeWith(entity, playerIn, playerObj,
+                                                    questData, chain)){
+                                                int[] matches = ((ITradeObjectiveHandler) obj).findMatches(nonEmpty);
+                                                if (matches == null){
+                                                    continue;
+                                                } else {
+                                                    ((ITradeObjectiveHandler) obj).onPlayerTradeSuccess(playerIn,
+                                                            playerObj, questData, chain, entity);
+                                                    questChain.signalQuestProgress(worldData, playerQuest, currentQuest, chain, false);
+                                                    return;
+                                                }
                                             }
-
                                         }
                                     }
                                 }

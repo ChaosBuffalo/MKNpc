@@ -93,6 +93,7 @@ public class MKStructureEntry implements INBTSerializable<CompoundNBT> {
                 NotableNpcEntry entry = new NotableNpcEntry(def, spawner);
                 worldData.putNotableNpc(entry);
                 notables.add(entry);
+                spawner.putNotableId(def.getDefinitionName(), entry.getNotableId());
             } else {
                 mobs.add(def.getDefinitionName());
             }

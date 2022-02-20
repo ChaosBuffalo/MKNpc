@@ -91,7 +91,7 @@ public class QuestChainInstance implements INBTSerializable<CompoundNBT> {
 
     public Optional<DialogueTree> getTreeForEntity(Entity entity){
         return MKNpc.getNpcData(entity).map(x -> {
-            UUID entityId = x.getSpawnID();
+            UUID entityId = x.getNotableUUID();
             return Optional.ofNullable(dialogueTrees.get(entityId));
         }).orElse(Optional.empty());
     }

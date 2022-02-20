@@ -13,7 +13,10 @@ import java.util.List;
 public interface ITradeObjectiveHandler {
 
     void onPlayerTradeSuccess(PlayerEntity player, PlayerQuestObjectiveData objectiveData,
-                                     QuestData questData, PlayerQuestChainInstance playerChain, LivingEntity trader);
+                              QuestData questData, PlayerQuestChainInstance playerChain, LivingEntity trader);
+
+    boolean canTradeWith(LivingEntity trader, PlayerEntity player, PlayerQuestObjectiveData objectiveData,
+                         QuestData questData, PlayerQuestChainInstance chainInstance);
 
     @Nullable
     int[] findMatches(List<ItemStack> nonEmptyInventoryContents);

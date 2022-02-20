@@ -4,6 +4,7 @@ import com.chaosbuffalo.mkcore.serialization.attributes.ResourceLocationAttribut
 import com.chaosbuffalo.mkcore.utils.SerializationUtils;
 import com.chaosbuffalo.mknpc.MKNpc;
 import com.chaosbuffalo.mknpc.capabilities.IWorldNpcData;
+import com.chaosbuffalo.mknpc.capabilities.NpcCapabilities;
 import com.chaosbuffalo.mknpc.npc.MKStructureEntry;
 import com.chaosbuffalo.mknpc.npc.NotableNpcEntry;
 import com.chaosbuffalo.mknpc.npc.NpcDefinitionManager;
@@ -57,8 +58,8 @@ public class TradeItemsObjective extends StructureInstanceObjective<UUIDInstance
     @Override
     public UUIDInstanceData generateInstanceData(Map<ResourceLocation, List<MKStructureEntry>> questStructures) {
         MKStructureEntry entry = questStructures.get(getStructureName()).get(structureIndex.value());
-        Optional<NotableNpcEntry> chest = entry.getFirstNotableOfType(npcDefinition.getValue());
-        return chest.map(x -> new UUIDInstanceData(x.getSpawnerId())).orElse(new UUIDInstanceData());
+        Optional<NotableNpcEntry> npcOpt = entry.getFirstNotableOfType(npcDefinition.getValue());
+        return npcOpt.map(x -> new UUIDInstanceData(x.getNotableId())).orElse(new UUIDInstanceData());
     }
 
     @Override
@@ -96,6 +97,14 @@ public class TradeItemsObjective extends StructureInstanceObjective<UUIDInstance
         player.sendMessage(new TranslationTextComponent("mknpc.quest.trade.accepted",
                 trader.getDisplayName()).mergeStyle(TextFormatting.GOLD), Util.DUMMY_UUID);
         signalCompleted(objectiveData);
+    }
+
+    @Override
+    public boolean canTradeWith(LivingEntity trader, PlayerEntity player, PlayerQuestObjectiveData objectiveData,
+                                QuestData questData, PlayerQuestChainInstance chainInstance) {
+        UUIDInstanceData objData = getInstanceData(questData);
+        return trader.getCapability(NpcCapabilities.ENTITY_NPC_DATA_CAPABILITY)
+                .map(x -> x.getNotableUUID().equals(objData.getUuid())).orElse(false);
     }
 
     @Nullable
