@@ -3,16 +3,18 @@ package com.chaosbuffalo.mknpc.quest.dialogue.conditions;
 import com.chaosbuffalo.mkchat.dialogue.conditions.DialogueCondition;
 import com.chaosbuffalo.mknpc.MKNpc;
 import com.chaosbuffalo.mknpc.capabilities.PlayerQuestingDataHandler;
+import com.chaosbuffalo.mknpc.quest.dialogue.effects.IReceivesChainId;
 import com.google.common.collect.ImmutableMap;
 import com.mojang.serialization.Dynamic;
 import com.mojang.serialization.DynamicOps;
 import net.minecraft.entity.LivingEntity;
 import net.minecraft.entity.player.ServerPlayerEntity;
 import net.minecraft.util.ResourceLocation;
+import net.minecraft.util.Util;
 
 import java.util.UUID;
 
-public class CanStartQuestCondition extends DialogueCondition {
+public class CanStartQuestCondition extends DialogueCondition implements IReceivesChainId {
 
     public static final ResourceLocation conditionTypeName = new ResourceLocation(MKNpc.MODID, "can_start_chain_condition");
     private UUID questId;
@@ -25,7 +27,7 @@ public class CanStartQuestCondition extends DialogueCondition {
     }
 
     public CanStartQuestCondition(){
-        this(UUID.randomUUID(), false);
+        this(Util.DUMMY_UUID, false);
     }
 
     @Override
@@ -48,14 +50,21 @@ public class CanStartQuestCondition extends DialogueCondition {
     @Override
     public <D> void readAdditionalData(Dynamic<D> dynamic) {
         super.readAdditionalData(dynamic);
-        this.questId = UUID.fromString(dynamic.get("questId").asString(questId.toString()));
+        questId = dynamic.get("questId").asString().result().map(UUID::fromString).orElse(Util.DUMMY_UUID);
         allowRepeat = dynamic.get("allowRepeat").asBoolean(false);
     }
 
     @Override
     public <D> void writeAdditionalData(DynamicOps<D> ops, ImmutableMap.Builder<D, D> builder) {
         super.writeAdditionalData(ops, builder);
-        builder.put(ops.createString("questId"), ops.createString(questId.toString()));
+        if (!questId.equals(Util.DUMMY_UUID)){
+            builder.put(ops.createString("questId"), ops.createString(questId.toString()));
+        }
         builder.put(ops.createString("allowRepeat"), ops.createBoolean(allowRepeat));
+    }
+
+    @Override
+    public void setChainId(UUID chainId) {
+        this.questId = chainId;
     }
 }
