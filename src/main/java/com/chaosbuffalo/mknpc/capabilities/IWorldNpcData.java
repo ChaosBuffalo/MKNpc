@@ -40,7 +40,7 @@ public interface IWorldNpcData extends INBTSerializable<CompoundNBT> {
     @Nullable
     QuestChainInstance getQuest(UUID questId);
 
-    Optional<QuestChainInstance> buildQuest(QuestDefinition definition, BlockPos pos);
+    Optional<QuestChainInstance.QuestChainBuildResult> buildQuest(QuestDefinition definition, BlockPos pos);
 
     NotableChestEntry getNotableChest(UUID id);
 

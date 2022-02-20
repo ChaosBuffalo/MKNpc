@@ -146,12 +146,14 @@ public class EntityNpcDataHandler implements IEntityNpcData {
         if (server != null && entry.getQuestId() == null){
             World overworld = server.getWorld(World.OVERWORLD);
             if (overworld != null){
-                Optional<QuestChainInstance> quest = overworld.getCapability(NpcCapabilities.WORLD_NPC_DATA_CAPABILITY)
+                Optional<QuestChainInstance.QuestChainBuildResult> quest = overworld.getCapability(NpcCapabilities.WORLD_NPC_DATA_CAPABILITY)
                         .map(x -> x.buildQuest(npcDef, getSpawnPos())).orElse(Optional.empty());
                 if (quest.isPresent()) {
-                    QuestChainInstance newQuest = quest.get();
+                    QuestChainInstance.QuestChainBuildResult result = quest.get();
+                    QuestChainInstance newQuest = result.instance;
                     MKNpc.getNpcData(entity).ifPresent(x -> newQuest.setQuestSourceNpc(x.getSpawnID()));
                     MKNpc.LOGGER.debug("Assigning quest {}({}) to {}", newQuest.getDefinition().getName(), newQuest.getQuestId(), entity);
+                    entry.setupDialogue(result);
                     entry.setQuestId(newQuest.getQuestId());
                 }
             }
@@ -160,8 +162,8 @@ public class EntityNpcDataHandler implements IEntityNpcData {
             MKNpc.LOGGER.debug("Adding offering for start quest {} to {}", entry.getQuestDef(), entity);
             addQuestOffering(entry.getQuestDef(), entry.getQuestId());
             if (entry.getTree() == null){
-                MKNpc.LOGGER.debug("{} has quest offering for {} but no dialogue tree, attempting regen", entity, entry.getQuestDef());
-                entry.setQuestId(entry.getQuestId());
+                MKNpc.LOGGER.error("{} has quest offering for {} but no dialogue tree, dialogue won't be assigned. " +
+                        "There is probably a bug in this quest.", entity, entry.getQuestDef());
             }
             if (entry.getTree() != null){
                 MKNpc.LOGGER.debug("Adding dialogue offering for start quest {} to {}", entry.getQuestDef(), entity);

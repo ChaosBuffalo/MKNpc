@@ -209,6 +209,19 @@ public abstract class MKEntity extends CreatureEntity implements IModelLookProvi
         return isGhost() ? getGhostTranslucency() : 0.15f;
     }
 
+    public void postDefinitionApply(NpcDefinition definition){
+        float maxHealth = getMaxHealth();
+        if (maxHealth > 100.0f){
+            float ratio = maxHealth / 100.0f;
+            float adjustForBase = ratio - 1.0f;
+            ModifiableAttributeInstance inst = getAttribute(MKAttributes.HEAL_EFFICIENCY);
+            if (inst != null){
+                inst.applyNonPersistentModifier(new AttributeModifier("heal_scaling",
+                        adjustForBase, AttributeModifier.Operation.ADDITION));
+            }
+        }
+    }
+
 
 
     public ParticleEffectInstanceTracker getParticleEffectTracker() {

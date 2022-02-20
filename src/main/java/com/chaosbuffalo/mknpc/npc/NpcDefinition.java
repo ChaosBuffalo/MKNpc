@@ -2,6 +2,7 @@ package com.chaosbuffalo.mknpc.npc;
 
 import com.chaosbuffalo.mkfaction.faction.MKFaction;
 import com.chaosbuffalo.mknpc.MKNpc;
+import com.chaosbuffalo.mknpc.entity.MKEntity;
 import com.chaosbuffalo.mknpc.npc.options.*;
 import com.google.common.collect.ImmutableMap;
 import com.google.gson.Gson;
@@ -259,6 +260,9 @@ public class NpcDefinition {
                 cap.setSpawnID(uuid);
             });
             applyDefinition(entity);
+            if (entity instanceof MKEntity){
+                ((MKEntity) entity).postDefinitionApply(this);
+            }
             return entity;
         }
         return null;
