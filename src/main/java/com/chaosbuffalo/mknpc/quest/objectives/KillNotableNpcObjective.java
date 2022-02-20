@@ -47,7 +47,7 @@ public class KillNotableNpcObjective extends StructureInstanceObjective<UUIDInst
         if (!isComplete(objectiveData)){
             UUIDInstanceData objData = getInstanceData(quest);
             boolean applies = event.getEntityLiving().getCapability(NpcCapabilities.ENTITY_NPC_DATA_CAPABILITY).map(
-                    x -> x.getSpawnID().equals(objData.getUuid())).orElse(false);
+                    x -> x.getNotableUUID().equals(objData.getUuid())).orElse(false);
             if (applies){
                 objectiveData.putBool("hasKilled", true);
                 objectiveData.removeBlockPos("npcPos");
@@ -63,7 +63,7 @@ public class KillNotableNpcObjective extends StructureInstanceObjective<UUIDInst
     public UUIDInstanceData generateInstanceData(Map<ResourceLocation, List<MKStructureEntry>> questStructures) {
         MKStructureEntry entry = questStructures.get(getStructureName()).get(structureIndex.value());
         Optional<NotableNpcEntry> npcOpt = entry.getFirstNotableOfType(npcDefinition.getValue());
-        return npcOpt.map(x -> new UUIDInstanceData(x.getSpawnerId())).orElse(new UUIDInstanceData());
+        return npcOpt.map(x -> new UUIDInstanceData(x.getNotableId())).orElse(new UUIDInstanceData());
     }
 
     @Override

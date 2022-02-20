@@ -2,7 +2,6 @@ package com.chaosbuffalo.mknpc.world.gen.feature.structure;
 
 import com.mojang.serialization.Codec;
 import net.minecraft.nbt.CompoundNBT;
-import net.minecraft.util.Rotation;
 import net.minecraft.util.math.BlockPos;
 import net.minecraft.util.math.MutableBoundingBox;
 import net.minecraft.util.registry.DynamicRegistries;

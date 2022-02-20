@@ -53,8 +53,8 @@ public class TalkToNpcObjective extends StructureInstanceObjective<UUIDInstanceD
     @Override
     public UUIDInstanceData generateInstanceData(Map<ResourceLocation, List<MKStructureEntry>> questStructures) {
         MKStructureEntry entry = questStructures.get(getStructureName()).get(structureIndex.value());
-        Optional<NotableNpcEntry> chest = entry.getFirstNotableOfType(npcDefinition.getValue());
-        return chest.map(x -> new UUIDInstanceData(x.getSpawnerId())).orElse(new UUIDInstanceData());
+        Optional<NotableNpcEntry> npcOpt = entry.getFirstNotableOfType(npcDefinition.getValue());
+        return npcOpt.map(x -> new UUIDInstanceData(x.getNotableId())).orElse(new UUIDInstanceData());
     }
 
     public TalkToNpcObjective withHailResponse(DialogueNode hailNode, DialogueResponse hailResponse){

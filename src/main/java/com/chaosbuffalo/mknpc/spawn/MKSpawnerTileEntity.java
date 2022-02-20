@@ -33,6 +33,8 @@ import net.minecraftforge.common.util.LazyOptional;
 
 import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
+import java.util.HashMap;
+import java.util.Map;
 import java.util.UUID;
 
 public class MKSpawnerTileEntity extends TileEntity implements ITickableTileEntity, IStructurePlaced {
@@ -52,6 +54,7 @@ public class MKSpawnerTileEntity extends TileEntity implements ITickableTileEnti
     private UUID structureId;
     private boolean needsUploadToWorld;
     private boolean placedByStructure;
+    private final Map<ResourceLocation, UUID> notableIds = new HashMap<>();
 
     public MKSpawnerTileEntity(){
         this(MKNpcTileEntityTypes.MK_SPAWNER_TILE_ENTITY_TYPE.get());
@@ -94,6 +97,10 @@ public class MKSpawnerTileEntity extends TileEntity implements ITickableTileEnti
     @Nullable
     public UUID getStructureId() {
         return structureId;
+    }
+
+    public void putNotableId(ResourceLocation loc, UUID notableId){
+        this.notableIds.put(loc, notableId);
     }
 
     @Nonnull
@@ -162,6 +169,11 @@ public class MKSpawnerTileEntity extends TileEntity implements ITickableTileEnti
             compound.putString("structureName", structureName.toString());
             compound.putUniqueId("structureId", structureId);
         }
+        CompoundNBT notableTag = new CompoundNBT();
+        for (Map.Entry<ResourceLocation, UUID> entry : notableIds.entrySet()){
+            notableTag.putUniqueId(entry.getKey().toString(), entry.getValue());
+        }
+        compound.put("notableIds", notableTag);
         return super.write(compound);
     }
 
@@ -232,6 +244,13 @@ public class MKSpawnerTileEntity extends TileEntity implements ITickableTileEnti
         if (compound.contains("respawnTime")){
             setRespawnTime(compound.getInt("respawnTime"));
         }
+        if (compound.contains("notableIds")){
+            CompoundNBT notableTag = compound.getCompound("notableIds");
+            for (String key : notableTag.keySet()){
+                UUID notId = notableTag.getUniqueId(key);
+                notableIds.put(new ResourceLocation(key), notId);
+            }
+        }
 
     }
 
@@ -255,6 +274,10 @@ public class MKSpawnerTileEntity extends TileEntity implements ITickableTileEnti
                 MKNpc.getNpcData(entity).ifPresent((cap) -> {
                     cap.setMKSpawned(true);
                     cap.setSpawnPos(new BlockPos(spawnPos).up());
+                    if (notableIds.containsKey(definition.getDefinitionName())){
+                        cap.setNotableUUID(notableIds.get(definition.getDefinitionName()));
+                    }
+                    cap.setStructureId(getStructureId());
                 });
                 if (entity instanceof MKEntity){
                     ((MKEntity) entity).setNonCombatMoveType(getMoveType());

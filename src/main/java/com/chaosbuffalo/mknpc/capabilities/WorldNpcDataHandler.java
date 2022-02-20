@@ -78,7 +78,7 @@ public class WorldNpcDataHandler implements IWorldNpcData{
     }
 
     public void putNotableNpc(NotableNpcEntry notableNpcEntry){
-        notableNpcs.put(notableNpcEntry.getSpawnerId(), notableNpcEntry);
+        notableNpcs.put(notableNpcEntry.getNotableId(), notableNpcEntry);
     }
 
     @Override

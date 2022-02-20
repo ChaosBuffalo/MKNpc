@@ -23,10 +23,12 @@ import net.minecraft.nbt.CompoundNBT;
 import net.minecraft.server.MinecraftServer;
 import net.minecraft.util.DamageSource;
 import net.minecraft.util.ResourceLocation;
+import net.minecraft.util.Util;
 import net.minecraft.util.math.BlockPos;
 import net.minecraft.world.World;
 
 import javax.annotation.Nonnull;
+import javax.annotation.Nullable;
 import java.util.*;
 
 public class EntityNpcDataHandler implements IEntityNpcData {
@@ -46,13 +48,18 @@ public class EntityNpcDataHandler implements IEntityNpcData {
     private final Map<ResourceLocation, UUID> questOfferings = new HashMap<>();
     private final Queue<QuestOfferingEntry> questRequests = new ArrayDeque<>();
     private int questGenCd;
+    private UUID notableId;
+    @Nullable
+    private UUID structureId;
 
     public EntityNpcDataHandler(LivingEntity entity) {
         this.entity = entity;
         mkSpawned = false;
         bonusXp = 0;
         notable = false;
-        spawnID = UUID.randomUUID();
+        spawnID = Util.DUMMY_UUID;
+        notableId = Util.DUMMY_UUID;
+        structureId = null;
         needsDefinitionApplied = false;
         noLootChance = 0;
         dropChances = 0;
@@ -151,7 +158,7 @@ public class EntityNpcDataHandler implements IEntityNpcData {
                 if (quest.isPresent()) {
                     QuestChainInstance.QuestChainBuildResult result = quest.get();
                     QuestChainInstance newQuest = result.instance;
-                    MKNpc.getNpcData(entity).ifPresent(x -> newQuest.setQuestSourceNpc(x.getSpawnID()));
+                    MKNpc.getNpcData(entity).ifPresent(x -> newQuest.setQuestSourceNpc(x.getNotableUUID()));
                     MKNpc.LOGGER.debug("Assigning quest {}({}) to {}", newQuest.getDefinition().getName(), newQuest.getQuestId(), entity);
                     entry.setupDialogue(result);
                     entry.setQuestId(newQuest.getQuestId());
@@ -271,6 +278,16 @@ public class EntityNpcDataHandler implements IEntityNpcData {
     }
 
     @Override
+    public void setStructureId(UUID structureId) {
+        this.structureId = structureId;
+    }
+
+    @Override
+    public Optional<UUID> getStructureId() {
+        return Optional.ofNullable(structureId);
+    }
+
+    @Override
     public void setMKSpawned(boolean value) {
         this.mkSpawned = value;
     }
@@ -283,6 +300,16 @@ public class EntityNpcDataHandler implements IEntityNpcData {
     @Override
     public void setNotable(boolean value) {
         notable = value;
+    }
+
+    @Override
+    public UUID getNotableUUID() {
+        return notableId;
+    }
+
+    @Override
+    public void setNotableUUID(UUID notableUUID) {
+        this.notableId = notableUUID;
     }
 
     @Override

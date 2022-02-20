@@ -15,6 +15,7 @@ import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
 import java.util.Collection;
 import java.util.Map;
+import java.util.Optional;
 import java.util.UUID;
 
 public interface IEntityNpcData extends INBTSerializable<CompoundNBT> {
@@ -51,6 +52,10 @@ public interface IEntityNpcData extends INBTSerializable<CompoundNBT> {
     @Nonnull
     UUID getSpawnID();
 
+    void setStructureId(UUID structureId);
+
+    Optional<UUID> getStructureId();
+
     void tick();
 
     void setMKSpawned(boolean value);
@@ -58,6 +63,10 @@ public interface IEntityNpcData extends INBTSerializable<CompoundNBT> {
     boolean isNotable();
 
     void setNotable(boolean value);
+
+    UUID getNotableUUID();
+
+    void setNotableUUID(UUID notableUUID);
 
     boolean needsDefinitionApplied();
 
