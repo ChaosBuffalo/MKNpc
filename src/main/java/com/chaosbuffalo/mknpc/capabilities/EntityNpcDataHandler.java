@@ -57,7 +57,7 @@ public class EntityNpcDataHandler implements IEntityNpcData {
         mkSpawned = false;
         bonusXp = 0;
         notable = false;
-        spawnID = Util.DUMMY_UUID;
+        spawnID = UUID.randomUUID();
         notableId = Util.DUMMY_UUID;
         structureId = null;
         needsDefinitionApplied = false;
