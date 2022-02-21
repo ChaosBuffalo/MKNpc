@@ -79,7 +79,7 @@ public class QuestLootNotableObjective extends StructureInstanceObjective<UUIDIn
     }
 
     @Override
-    public void onPlayerKillNpcDefEntity(PlayerEntity player, PlayerQuestObjectiveData objectiveData, NpcDefinition def,
+    public boolean onPlayerKillNpcDefEntity(PlayerEntity player, PlayerQuestObjectiveData objectiveData, NpcDefinition def,
                                          LivingDeathEvent event, QuestData quest, PlayerQuestChainInstance playerChain) {
         if (!isComplete(objectiveData)) {
             UUIDInstanceData objData = getInstanceData(quest);
@@ -97,8 +97,10 @@ public class QuestLootNotableObjective extends StructureInstanceObjective<UUIDIn
                     objectiveData.removeBlockPos("npcPos");
                 }
                 playerChain.notifyDirty();
+                return true;
             }
         }
+        return false;
     }
 
     @Override
