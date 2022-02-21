@@ -42,7 +42,7 @@ public class KillNotableNpcObjective extends StructureInstanceObjective<UUIDInst
     }
 
     @Override
-    public void onPlayerKillNpcDefEntity(PlayerEntity player, PlayerQuestObjectiveData objectiveData, NpcDefinition def,
+    public boolean onPlayerKillNpcDefEntity(PlayerEntity player, PlayerQuestObjectiveData objectiveData, NpcDefinition def,
                                          LivingDeathEvent event, QuestData quest, PlayerQuestChainInstance playerChain) {
         if (!isComplete(objectiveData)){
             UUIDInstanceData objData = getInstanceData(quest);
@@ -55,8 +55,10 @@ public class KillNotableNpcObjective extends StructureInstanceObjective<UUIDInst
                         event.getEntityLiving().getDisplayName()).mergeStyle(TextFormatting.GOLD), Util.DUMMY_UUID);
                 signalCompleted(objectiveData);
                 playerChain.notifyDirty();
+                return true;
             }
         }
+        return false;
     }
 
     @Override

@@ -72,7 +72,7 @@ public class KillNpcDefObjective extends QuestObjective<EmptyInstanceData> imple
     }
 
     @Override
-    public void onPlayerKillNpcDefEntity(PlayerEntity player, PlayerQuestObjectiveData objectiveData, NpcDefinition def,
+    public boolean onPlayerKillNpcDefEntity(PlayerEntity player, PlayerQuestObjectiveData objectiveData, NpcDefinition def,
                                          LivingDeathEvent event, QuestData questData, PlayerQuestChainInstance playerChain) {
         if (def.getDefinitionName().equals(npcDefinition.getValue()) && !isComplete(objectiveData)){
             int currentCount = objectiveData.getInt("killCount");
@@ -84,7 +84,9 @@ public class KillNpcDefObjective extends QuestObjective<EmptyInstanceData> imple
                 signalCompleted(objectiveData);
             }
             playerChain.notifyDirty();
+            return true;
 
         }
+        return false;
     }
 }

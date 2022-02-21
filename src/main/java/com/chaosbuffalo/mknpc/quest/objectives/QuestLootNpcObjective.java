@@ -78,7 +78,7 @@ public class QuestLootNpcObjective extends StructureInstanceObjective<UUIDInstan
     }
 
     @Override
-    public void onPlayerKillNpcDefEntity(PlayerEntity player, PlayerQuestObjectiveData objectiveData, NpcDefinition def,
+    public boolean onPlayerKillNpcDefEntity(PlayerEntity player, PlayerQuestObjectiveData objectiveData, NpcDefinition def,
                                          LivingDeathEvent event, QuestData quest, PlayerQuestChainInstance playerChain) {
         if (!isComplete(objectiveData)){
             UUIDInstanceData objData = getInstanceData(quest);
@@ -96,8 +96,10 @@ public class QuestLootNpcObjective extends StructureInstanceObjective<UUIDInstan
                     signalCompleted(objectiveData);
                 }
                 playerChain.notifyDirty();
+                return true;
             }
         }
+        return false;
     }
 
     @Override

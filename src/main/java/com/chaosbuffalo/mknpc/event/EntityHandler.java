@@ -189,7 +189,9 @@ public class EntityHandler {
                                             PlayerQuestData pQuest = pQuestChain.getQuestData(currentQuest.getQuestName());
                                             PlayerQuestObjectiveData pObj = pQuest.getObjective(obj.getObjectiveName());
                                             QuestData qData = questChain.getQuestChainData().getQuestData(currentQuest.getQuestName());
-                                            ((IKillObjectiveHandler) obj).onPlayerKillNpcDefEntity(player, pObj, def, event, qData, pQuestChain);
+                                            if (((IKillObjectiveHandler) obj).onPlayerKillNpcDefEntity(player, pObj, def, event, qData, pQuestChain)){
+                                                questChain.signalQuestProgress(worldData, pData, currentQuest, pQuestChain, false);
+                                            }
                                         }
                                     }
                                 }

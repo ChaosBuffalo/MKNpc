@@ -1,16 +1,18 @@
 package com.chaosbuffalo.mknpc.quest;
 
-import com.chaosbuffalo.mkchat.dialogue.DialogueNode;
-import com.chaosbuffalo.mkchat.dialogue.DialoguePrompt;
-import com.chaosbuffalo.mkchat.dialogue.DialogueUtils;
+import com.chaosbuffalo.mkchat.dialogue.*;
+import com.chaosbuffalo.mkchat.dialogue.conditions.DialogueCondition;
 import com.chaosbuffalo.mknpc.MKNpc;
 import com.chaosbuffalo.mknpc.npc.MKStructureEntry;
+import com.chaosbuffalo.mknpc.quest.dialogue.conditions.CanStartQuestCondition;
+import com.chaosbuffalo.mknpc.quest.dialogue.effects.StartQuestChainEffect;
 import com.chaosbuffalo.mknpc.quest.requirements.QuestRequirement;
 import com.google.common.collect.ImmutableMap;
 import com.mojang.datafixers.util.Pair;
 import com.mojang.serialization.Dynamic;
 import com.mojang.serialization.DynamicOps;
 import net.minecraft.util.ResourceLocation;
+import net.minecraft.util.Util;
 import net.minecraft.util.text.ITextComponent;
 import net.minecraft.util.text.StringTextComponent;
 
@@ -30,15 +32,11 @@ public class QuestDefinition {
     private final List<Quest> questChain;
     private final Map<String, Quest> questIndex;
     private boolean repeatable;
-    private DialogueNode startQuestResponse;
-    private DialogueNode startQuestHail;
-    private List<DialogueNode> additionalNodes = new ArrayList<>();
-    private List<DialoguePrompt> additionalPrompts = new ArrayList<>();
-    private DialoguePrompt hailPrompt;
     private ITextComponent questName;
     private static final ITextComponent defaultQuestName = new StringTextComponent("Default");
     private final List<QuestRequirement> requirements;
     private QuestMode mode;
+    private DialogueTree startQuestTree;
 
     public QuestDefinition(ResourceLocation name){
         this.name = name;
@@ -48,6 +46,10 @@ public class QuestDefinition {
         this.repeatable = false;
         this.mode = QuestMode.LINEAR;
         this.questName = defaultQuestName;
+        startQuestTree = new DialogueTree(makeTreeId(name));
+        DialoguePrompt hailPrompt = new DialoguePrompt("hail");
+        startQuestTree.addPrompt(hailPrompt);
+        startQuestTree.setHailPrompt(hailPrompt);
     }
 
     public QuestMode getMode() {
@@ -74,44 +76,51 @@ public class QuestDefinition {
         return questName;
     }
 
-    public List<DialogueNode> getAdditionalNodes() {
-        return additionalNodes;
+    public void addStartNode(DialogueNode node){
+        startQuestTree.addNode(node);
     }
 
-    public List<DialoguePrompt> getAdditionalPrompts() {
-        return additionalPrompts;
+    public void addStartPrompt(DialoguePrompt prompt){
+        if (prompt.getId().equals("hail")){
+            if (startQuestTree.getHailPrompt() != null){
+                startQuestTree.getHailPrompt().merge(prompt);
+            } else {
+                startQuestTree.addPrompt(prompt);
+                startQuestTree.setHailPrompt(prompt);
+            }
+        } else {
+            startQuestTree.addPrompt(prompt);
+        }
     }
 
-    public void addAdditionalNode(DialogueNode node){
-        this.additionalNodes.add(node);
+    public void addHailResponse(DialogueNode node){
+        startQuestTree.addNode(node);
+        DialoguePrompt hail = startQuestTree.getHailPrompt();
+        if (hail != null){
+            DialogueResponse startResponse = new DialogueResponse(node)
+                    .addCondition(new CanStartQuestCondition(Util.DUMMY_UUID, isRepeatable()));
+            hail.addResponse(startResponse);
+        }
     }
 
-    public void addAdditionalPrompt(DialoguePrompt prompt){
-        this.additionalPrompts.add(prompt);
+    private static ResourceLocation makeTreeId(ResourceLocation questName) {
+        return new ResourceLocation(MKNpc.MODID, String.format("give_quest.%s.%s", questName.getNamespace(), questName.getPath()));
     }
 
-    public void setStartQuestResponse(DialogueNode startQuestResponse) {
-        this.startQuestResponse = startQuestResponse;
+    public DialogueTree getStartQuestTree() {
+        return startQuestTree;
     }
 
-    public DialogueNode getStartQuestResponse() {
-        return startQuestResponse;
-    }
-
-    public DialoguePrompt getHailPrompt(){
-        return hailPrompt;
-    }
-
-    public void setHailPrompt(DialoguePrompt hailPrompt) {
-        this.hailPrompt = hailPrompt;
-    }
-
-    public DialogueNode getStartQuestHail() {
-        return startQuestHail;
-    }
-
-    public void setStartQuestHail(DialogueNode startQuestHail) {
-        this.startQuestHail = startQuestHail;
+    public void setupStartQuestResponse(DialogueNode startQuestResponse, DialoguePrompt prompt, DialogueCondition... extraConditions) {
+        startQuestResponse.addEffect(new StartQuestChainEffect());
+        addStartNode(startQuestResponse);
+        DialogueResponse startResponse = new DialogueResponse(startQuestResponse)
+                .addCondition(new CanStartQuestCondition(Util.DUMMY_UUID, isRepeatable()));
+        for (DialogueCondition cond : extraConditions){
+            startResponse.addCondition(cond);
+        }
+        prompt.addResponse(startResponse);
+        addStartPrompt(prompt);
     }
 
     public void setRepeatable(boolean repeatable) {
@@ -159,14 +168,10 @@ public class QuestDefinition {
         ImmutableMap.Builder<D, D> builder = ImmutableMap.builder();
         builder.put(ops.createString("quests"), ops.createList(questChain.stream().map(x -> x.serialize(ops))));
         builder.put(ops.createString("repeatable"), ops.createBoolean(isRepeatable()));
-        builder.put(ops.createString("startQuestResponse"), startQuestResponse.serialize(ops));
-        builder.put(ops.createString("hailQuestResponse"), startQuestHail.serialize(ops));
-        builder.put(ops.createString("hailPrompt"), hailPrompt.serialize(ops));
         builder.put(ops.createString("questName"), ops.createString(ITextComponent.Serializer.toJson(questName)));
         builder.put(ops.createString("requirements"), ops.createList(requirements.stream().map(x -> x.serialize(ops))));
         builder.put(ops.createString("questMode"), ops.createInt(getMode().ordinal()));
-        builder.put(ops.createString("additionalNodes"), ops.createList(additionalNodes.stream().map(x -> x.serialize(ops))));
-        builder.put(ops.createString("additionalPrompts"), ops.createList(additionalPrompts.stream().map(x -> x.serialize(ops))));
+        builder.put(ops.createString("dialogue"), startQuestTree.serialize(ops));
         return ops.createMap(builder.build());
     }
 
@@ -179,9 +184,6 @@ public class QuestDefinition {
         questIndex.clear();
         questChain.clear();
         repeatable = dynamic.get("repeatable").asBoolean(false);
-        startQuestResponse = DialogueNode.fromDynamicField(dynamic.get("startQuestResponse"));
-        startQuestHail = DialogueNode.fromDynamicField(dynamic.get("hailQuestResponse"));
-        hailPrompt = DialoguePrompt.fromDynamicField(dynamic.get("hailPrompt"));
         for (Quest quest : dQuests) {
             addQuest(quest);
         }
@@ -200,14 +202,9 @@ public class QuestDefinition {
             }
         });
         reqs.forEach(x -> x.ifPresent(this::addRequirement));
-        List<DialogueNode> nodes = dynamic.get("additionalNodes").asList(x -> DialogueNode.fromDynamic(x)
-                .resultOrPartial(DialogueUtils::throwParseException).orElseThrow(IllegalStateException::new));
-        additionalNodes.clear();
-        additionalNodes.addAll(nodes);
-        List<DialoguePrompt> prompts = dynamic.get("additionalPrompts").asList(x -> DialoguePrompt.fromDynamic(x)
-                .resultOrPartial(DialogueUtils::throwParseException).orElseThrow(IllegalStateException::new));
-        additionalPrompts.clear();
-        additionalPrompts.addAll(prompts);
+        startQuestTree = DialogueTree.deserializeTreeFromDynamic(makeTreeId(getName()),
+                dynamic.get("dialogue").result().orElseThrow(() -> new IllegalStateException(String.format(
+                        "QuestDefinition: %s missing start quest dialogue", getName().toString()))));
     }
 
     public Map<ResourceLocation, Integer> getStructuresNeeded(){

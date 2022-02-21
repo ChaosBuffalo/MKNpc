@@ -9,7 +9,7 @@ import net.minecraftforge.event.entity.living.LivingDeathEvent;
 
 public interface IKillObjectiveHandler {
 
-    void onPlayerKillNpcDefEntity(PlayerEntity player, PlayerQuestObjectiveData objectiveData,
+    boolean onPlayerKillNpcDefEntity(PlayerEntity player, PlayerQuestObjectiveData objectiveData,
                                   NpcDefinition def, LivingDeathEvent event, QuestData quest,
                                   PlayerQuestChainInstance playerChain);
 }
