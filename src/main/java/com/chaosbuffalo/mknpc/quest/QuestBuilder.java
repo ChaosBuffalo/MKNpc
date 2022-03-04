@@ -3,6 +3,7 @@ package com.chaosbuffalo.mknpc.quest;
 import com.chaosbuffalo.mkchat.dialogue.DialogueNode;
 import com.chaosbuffalo.mkchat.dialogue.DialogueResponse;
 import com.chaosbuffalo.mkchat.dialogue.conditions.DialogueCondition;
+import com.chaosbuffalo.mkcore.abilities.MKAbility;
 import com.chaosbuffalo.mknpc.quest.dialogue.NpcDialogueUtils;
 import com.chaosbuffalo.mknpc.quest.dialogue.conditions.ObjectivesCompleteCondition;
 import com.chaosbuffalo.mknpc.quest.dialogue.effects.ObjectiveCompleteEffect;
@@ -47,6 +48,12 @@ public class QuestBuilder {
 
     public QuestBuilder killNpc(String objectiveName, ResourceLocation npcDef, int count){
         KillNpcDefObjective kill = new KillNpcDefObjective(objectiveName, npcDef, count);
+        objective(kill);
+        return this;
+    }
+
+    public QuestBuilder killWithAbility(String objectiveName, MKAbility ability, int count){
+        KillWithAbilityObjective kill = new KillWithAbilityObjective(objectiveName, ability, count);
         objective(kill);
         return this;
     }
