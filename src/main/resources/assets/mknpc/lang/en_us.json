@@ -18,5 +18,6 @@
   "mknpc.objective.kill_notable.complete": "You Killed %s",
   "mknpc.quest_reward.entitlement.message": "Grants Entitlement: %s",
   "mknpc.objective.quest_loot_npc.desc": "Loot %s from %s (%s / %s)",
-  "mknpc.objective.quest_loot_npc.progress": "You found %s on the corpse of %s (%s / %s)."
+  "mknpc.objective.quest_loot_npc.progress": "You found %s on the corpse of %s (%s / %s).",
+  "mknpc.objective.kill_w_ability.desc": "Land Killing Blows with %s (%s / %s)"
 }
