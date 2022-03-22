@@ -26,6 +26,10 @@ public class QuestData {
         return objectives.get(objectiveName);
     }
 
+    public <T extends ObjectiveInstanceData> T getObjective(QuestObjective<T> objective) {
+        return (T) getObjective(objective.getObjectiveName());
+    }
+
     public String getQuestName() {
         return quest.getQuestName();
     }

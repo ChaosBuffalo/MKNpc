@@ -47,7 +47,7 @@ public class KillNotableNpcObjective extends StructureInstanceObjective<UUIDInst
     public boolean onPlayerKillNpcDefEntity(PlayerEntity player, PlayerQuestObjectiveData objectiveData, NpcDefinition def,
                                             LivingDeathEvent event, QuestData quest, PlayerQuestChainInstance playerChain) {
         if (!isComplete(objectiveData)) {
-            UUIDInstanceData objData = getInstanceData(quest);
+            UUIDInstanceData objData = quest.getObjective(this);
             boolean applies = event.getEntityLiving().getCapability(NpcCapabilities.ENTITY_NPC_DATA_CAPABILITY).map(
                     x -> x.getNotableUUID().equals(objData.getUUID())).orElse(false);
             if (applies) {
@@ -88,7 +88,7 @@ public class KillNotableNpcObjective extends StructureInstanceObjective<UUIDInst
 
     @Override
     public PlayerQuestObjectiveData generatePlayerData(IWorldNpcData worldData, QuestData questData) {
-        UUIDInstanceData objData = getInstanceData(questData);
+        UUIDInstanceData objData = questData.getObjective(this);
         PlayerQuestObjectiveData newObj = playerDataFactory();
         NotableNpcEntry notable = worldData.getNotableNpc(objData.getUUID());
         newObj.setDescription((new TranslationTextComponent("mknpc.objective.kill_notable.desc", notable.getName())));

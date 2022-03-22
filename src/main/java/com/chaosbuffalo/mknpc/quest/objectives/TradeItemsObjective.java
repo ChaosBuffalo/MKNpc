@@ -70,7 +70,7 @@ public class TradeItemsObjective extends StructureInstanceObjective<UUIDInstance
 
     @Override
     public PlayerQuestObjectiveData generatePlayerData(IWorldNpcData worldData, QuestData questData) {
-        UUIDInstanceData objData = getInstanceData(questData);
+        UUIDInstanceData objData = questData.getObjective(this);
         PlayerQuestObjectiveData newObj = playerDataFactory();
         newObj.putBlockPos("npcPos", worldData.getNotableNpc(objData.getUUID()).getLocation());
         return newObj;
@@ -103,7 +103,7 @@ public class TradeItemsObjective extends StructureInstanceObjective<UUIDInstance
     @Override
     public boolean canTradeWith(LivingEntity trader, PlayerEntity player, PlayerQuestObjectiveData objectiveData,
                                 QuestData questData, PlayerQuestChainInstance chainInstance) {
-        UUIDInstanceData objData = getInstanceData(questData);
+        UUIDInstanceData objData = questData.getObjective(this);
         return trader.getCapability(NpcCapabilities.ENTITY_NPC_DATA_CAPABILITY)
                 .map(x -> x.getNotableUUID().equals(objData.getUUID())).orElse(false);
     }

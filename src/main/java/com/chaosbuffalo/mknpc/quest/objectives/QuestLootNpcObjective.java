@@ -82,7 +82,7 @@ public class QuestLootNpcObjective extends StructureInstanceObjective<UUIDInstan
     public boolean onPlayerKillNpcDefEntity(PlayerEntity player, PlayerQuestObjectiveData objectiveData, NpcDefinition def,
                                             LivingDeathEvent event, QuestData quest, PlayerQuestChainInstance playerChain) {
         if (!isComplete(objectiveData)) {
-            UUIDInstanceData objData = getInstanceData(quest);
+            UUIDInstanceData objData = quest.getObjective(this);
             boolean applies = event.getEntityLiving().getCapability(NpcCapabilities.ENTITY_NPC_DATA_CAPABILITY).map(
                     x -> x.getStructureId().map(structId -> structId.equals(objData.getUUID())).orElse(false)).orElse(false)
                     && def.getDefinitionName().equals(npcDefinition.getValue());

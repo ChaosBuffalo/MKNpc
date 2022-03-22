@@ -97,7 +97,7 @@ public class Quest {
         for (QuestObjective<?> obj : getObjectives()) {
             if (obj instanceof TalkToNpcObjective) {
                 TalkToNpcObjective talkObj = (TalkToNpcObjective) obj;
-                UUIDInstanceData instanceData = talkObj.getInstanceData(questData);
+                UUIDInstanceData instanceData = questData.getObjective(talkObj);
                 if (instanceData.getUUID().equals(npcId)) {
                     tree = talkObj.generateDialogueForNpc(this, questChain, npcDefinitionName, npcId, tree, questStructures, definition);
                 }

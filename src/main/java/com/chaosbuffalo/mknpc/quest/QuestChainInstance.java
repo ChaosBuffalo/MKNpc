@@ -53,7 +53,7 @@ public class QuestChainInstance implements INBTSerializable<CompoundNBT> {
             for (QuestObjective<?> obj : quest.getObjectives()) {
                 if (obj instanceof TalkToNpcObjective) {
                     TalkToNpcObjective talkObj = (TalkToNpcObjective) obj;
-                    UUIDInstanceData instanceData = talkObj.getInstanceData(questData);
+                    UUIDInstanceData instanceData = questData.getObjective(talkObj);
                     if (speakingRoles.containsKey(talkObj.getNpcDefinition()) && !speakingRoles.get(talkObj.getNpcDefinition()).equals(instanceData.getUUID())) {
                         MKNpc.LOGGER.warn("Error: quest chain has 2 different npc definition with speaking roles {}", talkObj.getNpcDefinition());
                     }

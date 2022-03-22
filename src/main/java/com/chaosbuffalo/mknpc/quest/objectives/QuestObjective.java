@@ -98,10 +98,6 @@ public abstract class QuestObjective<T extends ObjectiveInstanceData>
 
     public abstract PlayerQuestObjectiveData playerDataFactory();
 
-    public T getInstanceData(QuestData data) {
-        return (T) data.getObjective(getObjectiveName());
-    }
-
     public void signalCompleted(PlayerQuestObjectiveData objectiveData) {
         objectiveData.putBool("isComplete", true);
     }
