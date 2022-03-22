@@ -25,7 +25,6 @@ import net.minecraft.util.text.ITextComponent;
 import net.minecraft.util.text.StringTextComponent;
 
 import java.util.*;
-import java.util.function.Supplier;
 import java.util.stream.Collectors;
 
 public class Quest {
@@ -40,12 +39,46 @@ public class Quest {
     public static final IFormattableTextComponent defaultDescription = new StringTextComponent("Placeholder Quest Description");
 
     public Quest(String questName, IFormattableTextComponent description) {
+        this();
         this.questName = questName;
+        this.description = description;
+    }
+
+    public Quest(Dynamic<?> dynamic) {
+        this();
+        deserialize(dynamic);
+    }
+
+    private Quest() {
         this.objectives = new ArrayList<>();
         this.objectiveIndex = new HashMap<>();
         this.rewards = new ArrayList<>();
         this.requirements = new ArrayList<>();
-        this.description = description;
+    }
+
+    public String getQuestName() {
+        return questName;
+    }
+
+    public IFormattableTextComponent getDescription() {
+        return description;
+    }
+
+    public void addObjective(QuestObjective<?> objective) {
+        if (objectiveIndex.containsKey(objective.getObjectiveName())) {
+            MKNpc.LOGGER.error("Failed to add objective {} to quest {}", objective.getObjectiveName(), getQuestName());
+        } else {
+            objectives.add(objective);
+            objectiveIndex.put(objective.getObjectiveName(), objective);
+        }
+    }
+
+    public QuestObjective<?> getObjective(String name) {
+        return objectiveIndex.get(name);
+    }
+
+    public void addReward(QuestReward reward) {
+        rewards.add(reward);
     }
 
     public void setAutoComplete(boolean autoComplete) {
@@ -54,14 +87,6 @@ public class Quest {
 
     public boolean shouldAutoComplete() {
         return autoComplete;
-    }
-
-    public Quest() {
-        this("default", defaultDescription);
-    }
-
-    public String getQuestName() {
-        return questName;
     }
 
     public DialogueTree generateDialogueForNpc(QuestChainInstance questChain, ResourceLocation npcDefinitionName,
@@ -79,27 +104,6 @@ public class Quest {
             }
         }
         return tree;
-    }
-
-    public void addObjective(QuestObjective<?> objective) {
-        if (objectiveIndex.containsKey(objective.getObjectiveName())) {
-            MKNpc.LOGGER.error("Failed to add objective {} to quest {}", objective.getObjectiveName(), getQuestName());
-        } else {
-            objectives.add(objective);
-            objectiveIndex.put(objective.getObjectiveName(), objective);
-        }
-    }
-
-    public void addReward(QuestReward reward) {
-        rewards.add(reward);
-    }
-
-    public QuestObjective<?> getObjective(String name) {
-        return objectiveIndex.get(name);
-    }
-
-    public IFormattableTextComponent getDescription() {
-        return description;
     }
 
     public <D> D serialize(DynamicOps<D> ops) {

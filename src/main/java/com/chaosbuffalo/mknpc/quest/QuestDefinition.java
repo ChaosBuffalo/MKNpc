@@ -168,31 +168,27 @@ public class QuestDefinition {
 
     public <D> D serialize(DynamicOps<D> ops) {
         ImmutableMap.Builder<D, D> builder = ImmutableMap.builder();
-        builder.put(ops.createString("quests"), ops.createList(questChain.stream().map(x -> x.serialize(ops))));
-        builder.put(ops.createString("repeatable"), ops.createBoolean(isRepeatable()));
         builder.put(ops.createString("questName"), ops.createString(ITextComponent.Serializer.toJson(questName)));
-        builder.put(ops.createString("requirements"), ops.createList(requirements.stream().map(x -> x.serialize(ops))));
+        builder.put(ops.createString("repeatable"), ops.createBoolean(isRepeatable()));
         builder.put(ops.createString("questMode"), ops.createInt(getMode().ordinal()));
+        builder.put(ops.createString("quests"), ops.createList(questChain.stream().map(x -> x.serialize(ops))));
+        builder.put(ops.createString("requirements"), ops.createList(requirements.stream().map(x -> x.serialize(ops))));
         builder.put(ops.createString("dialogue"), startQuestTree.serialize(ops));
         return ops.createMap(builder.build());
     }
 
     public <D> void deserialize(Dynamic<D> dynamic) {
-        List<Quest> dQuests = dynamic.get("quests").asList(d -> {
-            Quest q = new Quest();
-            q.deserialize(d);
-            return q;
-        });
         questIndex.clear();
         questChain.clear();
-        repeatable = dynamic.get("repeatable").asBoolean(false);
-        for (Quest quest : dQuests) {
-            addQuest(quest);
-        }
+
         questName = dynamic.get("questName").asString().result()
                 .map(ITextComponent.Serializer::getComponentFromJson).orElse(defaultQuestName);
-
+        repeatable = dynamic.get("repeatable").asBoolean(false);
         mode = QuestMode.values()[dynamic.get("questMode").asInt(0)];
+
+        dynamic.get("quests").asStream()
+                .map(Quest::new)
+                .forEach(this::addQuest);
 
         dynamic.get("requirements").asStream().forEach(entry -> {
             QuestRequirement requirement = QuestRequirement.getType(entry)
