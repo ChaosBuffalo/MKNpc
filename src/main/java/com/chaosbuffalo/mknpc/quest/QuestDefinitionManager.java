@@ -21,12 +21,11 @@ import net.minecraftforge.common.MinecraftForge;
 import net.minecraftforge.event.AddReloadListenerEvent;
 import net.minecraftforge.event.OnDatapackSyncEvent;
 import net.minecraftforge.eventbus.api.SubscribeEvent;
-import net.minecraftforge.fml.event.server.FMLServerAboutToStartEvent;
-import net.minecraftforge.fml.event.server.FMLServerStoppingEvent;
 
 import javax.annotation.Nullable;
 import java.util.HashMap;
 import java.util.Map;
+import java.util.Optional;
 import java.util.function.Supplier;
 
 public class QuestDefinitionManager extends JsonReloadListener {
@@ -37,7 +36,7 @@ public class QuestDefinitionManager extends JsonReloadListener {
 
     public static final Map<ResourceLocation, QuestDefinition> DEFINITIONS = new HashMap<>();
 
-    public static final Map<ResourceLocation, Supplier<QuestObjective<?>>> OBJECTIVE_DESERIALIZERS = new HashMap<>();
+    public static final Map<ResourceLocation, QuestObjective.Deserializer> OBJECTIVE_DESERIALIZERS = new HashMap<>();
     public static final Map<ResourceLocation, Supplier<QuestReward>> REWARD_DESERIALIZERS = new HashMap<>();
     public static final Map<ResourceLocation, Supplier<QuestRequirement>> REQUIREMENT_DESERIALIZERS = new HashMap<>();
 
@@ -46,22 +45,16 @@ public class QuestDefinitionManager extends JsonReloadListener {
         MinecraftForge.EVENT_BUS.register(this);
     }
 
-
-    public static void putObjectiveDeserializer(ResourceLocation name, Supplier<QuestObjective<?>> deserializer) {
+    public static void setObjectiveDeserializer(ResourceLocation name, QuestObjective.Deserializer deserializer) {
         OBJECTIVE_DESERIALIZERS.put(name, deserializer);
+    }
+
+    public static Optional<QuestObjective.Deserializer> getObjectiveDeserializer(ResourceLocation name) {
+        return Optional.ofNullable(OBJECTIVE_DESERIALIZERS.get(name));
     }
 
     public static void putRequirementDeserializer(ResourceLocation name, Supplier<QuestRequirement> deserializer) {
         REQUIREMENT_DESERIALIZERS.put(name, deserializer);
-    }
-
-    public static void putRewardDeserializer(ResourceLocation name, Supplier<QuestReward> deserializer) {
-        REWARD_DESERIALIZERS.put(name, deserializer);
-    }
-
-    @SubscribeEvent
-    public void subscribeEvent(AddReloadListenerEvent event) {
-        event.addListener(this);
     }
 
     @Nullable
@@ -69,9 +62,8 @@ public class QuestDefinitionManager extends JsonReloadListener {
         return REQUIREMENT_DESERIALIZERS.get(name);
     }
 
-    @Nullable
-    public static Supplier<QuestObjective<?>> getObjectiveDeserializer(ResourceLocation name) {
-        return OBJECTIVE_DESERIALIZERS.get(name);
+    public static void putRewardDeserializer(ResourceLocation name, Supplier<QuestReward> deserializer) {
+        REWARD_DESERIALIZERS.put(name, deserializer);
     }
 
     @Nullable
@@ -80,18 +72,20 @@ public class QuestDefinitionManager extends JsonReloadListener {
     }
 
     public static void setupDeserializers() {
-        putObjectiveDeserializer(LootChestObjective.NAME, LootChestObjective::new);
-        putObjectiveDeserializer(TalkToNpcObjective.NAME, TalkToNpcObjective::new);
-        putObjectiveDeserializer(KillNpcDefObjective.NAME, KillNpcDefObjective::new);
-        putObjectiveDeserializer(TradeItemsObjective.NAME, TradeItemsObjective::new);
+        setObjectiveDeserializer(LootChestObjective.NAME, LootChestObjective::new);
+        setObjectiveDeserializer(TalkToNpcObjective.NAME, TalkToNpcObjective::new);
+        setObjectiveDeserializer(KillNpcDefObjective.NAME, KillNpcDefObjective::new);
+        setObjectiveDeserializer(TradeItemsObjective.NAME, TradeItemsObjective::new);
+        setObjectiveDeserializer(KillNotableNpcObjective.NAME, KillNotableNpcObjective::new);
+        setObjectiveDeserializer(QuestLootNpcObjective.NAME, QuestLootNpcObjective::new);
+        setObjectiveDeserializer(QuestLootNotableObjective.NAME, QuestLootNotableObjective::new);
+        setObjectiveDeserializer(KillWithAbilityObjective.NAME, KillWithAbilityObjective::new);
+
         putRewardDeserializer(XpReward.TYPE_NAME, XpReward::new);
         putRewardDeserializer(MKLootReward.TYPE_NAME, MKLootReward::new);
-        putRequirementDeserializer(HasEntitlementRequirement.TYPE_NAME, HasEntitlementRequirement::new);
-        putObjectiveDeserializer(KillNotableNpcObjective.NAME, KillNotableNpcObjective::new);
         putRewardDeserializer(GrantEntitlementReward.TYPE_NAME, GrantEntitlementReward::new);
-        putObjectiveDeserializer(QuestLootNpcObjective.NAME, QuestLootNpcObjective::new);
-        putObjectiveDeserializer(QuestLootNotableObjective.NAME, QuestLootNotableObjective::new);
-        putObjectiveDeserializer(KillWithAbilityObjective.NAME, KillWithAbilityObjective::new);
+
+        putRequirementDeserializer(HasEntitlementRequirement.TYPE_NAME, HasEntitlementRequirement::new);
     }
 
     @Override
@@ -113,11 +107,8 @@ public class QuestDefinitionManager extends JsonReloadListener {
     }
 
     @SubscribeEvent
-    public void serverStop(FMLServerStoppingEvent event) {
-    }
-
-    @SubscribeEvent
-    public void serverStart(FMLServerAboutToStartEvent event) {
+    public void addReloadListener(AddReloadListenerEvent event) {
+        event.addListener(this);
     }
 
     @SubscribeEvent

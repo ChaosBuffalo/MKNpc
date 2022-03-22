@@ -115,21 +115,19 @@ public class Quest {
     public <D> void deserialize(Dynamic<D> dynamic) {
         questName = dynamic.get("questName").asString("default");
         autoComplete = dynamic.get("autoComplete").asBoolean(false);
-        description = ITextComponent.Serializer.getComponentFromJson(
-                dynamic.get("description").asString(ITextComponent.Serializer.toJson(defaultDescription)));
-        List<Optional<QuestObjective<?>>> objectives = dynamic.get("objectives").asList(x -> {
-            ResourceLocation type = QuestObjective.getType(x);
-            Supplier<QuestObjective<?>> sup = QuestDefinitionManager.getObjectiveDeserializer(type);
-            if (sup != null) {
-                QuestObjective<?> obj = sup.get();
-                obj.deserialize(x);
-                return Optional.of(obj);
-            }
-            return Optional.empty();
+        description = dynamic.get("description").asString().result()
+                .map(ITextComponent.Serializer::getComponentFromJson)
+                .orElse(defaultDescription);
+
+        dynamic.get("objectives").asStream().forEach(entry -> {
+            QuestObjective<?> objective = QuestObjective.getType(entry)
+                    .flatMap(QuestDefinitionManager::getObjectiveDeserializer)
+                    .map(f -> f.apply(entry))
+                    .orElseThrow(() -> new IllegalStateException(String.format(Locale.ENGLISH, "Failed to parse quest " +
+                            "objective type from: %s", entry)));
+
+            addObjective(objective);
         });
-        for (Optional<QuestObjective<?>> objOpt : objectives) {
-            objOpt.ifPresent(this::addObjective);
-        }
 
         List<Optional<QuestReward>> rewards = dynamic.get("rewards").asList(x -> {
             ResourceLocation type = QuestReward.getType(x);

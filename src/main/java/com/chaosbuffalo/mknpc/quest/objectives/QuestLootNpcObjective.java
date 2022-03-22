@@ -47,10 +47,11 @@ public class QuestLootNpcObjective extends StructureInstanceObjective<UUIDInstan
         addAttributes(this.npcDefinition, this.chanceToFind, this.count);
     }
 
-    public QuestLootNpcObjective() {
+    public QuestLootNpcObjective(Dynamic<?> dynamic) {
         super(NAME, "invalid", defaultDescription);
         itemDescription = defaultItemDescription;
         addAttributes(npcDefinition, chanceToFind, count);
+        deserialize(dynamic);
     }
 
     @Override

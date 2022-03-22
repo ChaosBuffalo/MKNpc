@@ -39,9 +39,10 @@ public class LootChestObjective extends StructureInstanceObjective<UUIDInstanceD
         this.chestTag.setValue(chestTag);
     }
 
-    public LootChestObjective() {
+    public LootChestObjective(Dynamic<?> dynamic) {
         super(NAME, "invalid", defaultDescription);
         addAttribute(this.chestTag);
+        deserialize(dynamic);
     }
 
     public void addItemStack(ItemStack stack) {

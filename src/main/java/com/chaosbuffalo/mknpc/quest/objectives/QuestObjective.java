@@ -19,17 +19,18 @@ import net.minecraft.util.text.IFormattableTextComponent;
 import net.minecraft.util.text.ITextComponent;
 import net.minecraft.util.text.StringTextComponent;
 
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
+import java.util.function.Function;
 import java.util.stream.Collectors;
 
 public abstract class QuestObjective<T extends ObjectiveInstanceData>
         implements ISerializableAttributeContainer, IDynamicMapTypedSerializer {
 
+    public interface Deserializer extends Function<Dynamic<?>, QuestObjective<?>> {
+
+    }
+
     private static final String TYPE_NAME_FIELD = "objectiveType";
-    public final static ResourceLocation INVALID_OPTION = new ResourceLocation(MKNpc.MODID, "quest_objective.invalid");
     protected static final IFormattableTextComponent defaultDescription = new StringTextComponent("Placeholder");
 
     private final List<ISerializableAttribute<?>> attributes;
@@ -45,6 +46,10 @@ public abstract class QuestObjective<T extends ObjectiveInstanceData>
         this.description.addAll(Arrays.asList(description));
     }
 
+    public List<IFormattableTextComponent> getDescription() {
+        return description;
+    }
+
     public void setDescription(IFormattableTextComponent... description) {
         this.setDescription(Arrays.asList(description));
     }
@@ -52,6 +57,10 @@ public abstract class QuestObjective<T extends ObjectiveInstanceData>
     public void setDescription(List<IFormattableTextComponent> description) {
         this.description.clear();
         this.description.addAll(description);
+    }
+
+    public String getObjectiveName() {
+        return objectiveName.getValue();
     }
 
     @Override
@@ -69,12 +78,8 @@ public abstract class QuestObjective<T extends ObjectiveInstanceData>
         attributes.addAll(Arrays.asList(iSerializableAttributes));
     }
 
-    public String getObjectiveName() {
-        return objectiveName.getValue();
-    }
-
-    // return true if it works or you dont care
-    // return false only if this structure is needed but doesnt meet requirements
+    // return true if it works, or you don't care
+    // return false only if this structure is needed but doesn't meet requirements
     public boolean isStructureRelevant(MKStructureEntry entry) {
         return true;
     }
@@ -110,10 +115,6 @@ public abstract class QuestObjective<T extends ObjectiveInstanceData>
         data.putObjective(getObjectiveName(), generateInstanceData(questStructures));
     }
 
-    public List<IFormattableTextComponent> getDescription() {
-        return description;
-    }
-
     @Override
     public <D> void writeAdditionalData(DynamicOps<D> ops, ImmutableMap.Builder<D, D> builder) {
         builder.put(ops.createString("description"),
@@ -124,9 +125,8 @@ public abstract class QuestObjective<T extends ObjectiveInstanceData>
 
     @Override
     public <D> void readAdditionalData(Dynamic<D> dynamic) {
-        description = dynamic.get("description")
-                .asList(x -> x.asString().resultOrPartial(MKNpc.LOGGER::error).orElseThrow(IllegalArgumentException::new))
-                .stream()
+        description = dynamic.get("description").asStream()
+                .map(x -> x.asString().resultOrPartial(MKNpc.LOGGER::error).orElseThrow(IllegalArgumentException::new))
                 .map(ITextComponent.Serializer::getComponentFromJson)
                 .collect(Collectors.toList());
 
@@ -143,7 +143,7 @@ public abstract class QuestObjective<T extends ObjectiveInstanceData>
         return TYPE_NAME_FIELD;
     }
 
-    public static <D> ResourceLocation getType(Dynamic<D> dynamic) {
-        return IDynamicMapTypedSerializer.getType(dynamic, TYPE_NAME_FIELD).orElse(INVALID_OPTION);
+    public static <D> Optional<ResourceLocation> getType(Dynamic<D> dynamic) {
+        return IDynamicMapTypedSerializer.getType(dynamic, TYPE_NAME_FIELD);
     }
 }

@@ -12,6 +12,7 @@ import com.chaosbuffalo.mknpc.quest.data.QuestData;
 import com.chaosbuffalo.mknpc.quest.data.objective.UUIDInstanceData;
 import com.chaosbuffalo.mknpc.quest.data.player.PlayerQuestChainInstance;
 import com.chaosbuffalo.mknpc.quest.data.player.PlayerQuestObjectiveData;
+import com.mojang.serialization.Dynamic;
 import net.minecraft.entity.player.PlayerEntity;
 import net.minecraft.util.ResourceLocation;
 import net.minecraft.util.Util;
@@ -36,9 +37,10 @@ public class KillNotableNpcObjective extends StructureInstanceObjective<UUIDInst
         addAttributes(this.npcDefinition);
     }
 
-    public KillNotableNpcObjective() {
+    public KillNotableNpcObjective(Dynamic<?> dynamic) {
         super(NAME, "invalid", defaultDescription);
         addAttributes(npcDefinition);
+        deserialize(dynamic);
     }
 
     @Override

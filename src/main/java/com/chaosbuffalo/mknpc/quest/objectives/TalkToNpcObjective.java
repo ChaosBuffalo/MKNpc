@@ -44,9 +44,10 @@ public class TalkToNpcObjective extends StructureInstanceObjective<UUIDInstanceD
         tree.setHailPrompt(hailPrompt);
     }
 
-    public TalkToNpcObjective() {
+    public TalkToNpcObjective(Dynamic<?> dynamic) {
         super(NAME, "invalid", defaultDescription);
         addAttribute(this.npcDefinition);
+        deserialize(dynamic);
     }
 
     public ResourceLocation getNpcDefinition() {

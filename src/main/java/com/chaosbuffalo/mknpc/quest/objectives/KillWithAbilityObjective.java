@@ -13,6 +13,7 @@ import com.chaosbuffalo.mknpc.quest.data.QuestData;
 import com.chaosbuffalo.mknpc.quest.data.objective.EmptyInstanceData;
 import com.chaosbuffalo.mknpc.quest.data.player.PlayerQuestChainInstance;
 import com.chaosbuffalo.mknpc.quest.data.player.PlayerQuestObjectiveData;
+import com.mojang.serialization.Dynamic;
 import net.minecraft.entity.player.PlayerEntity;
 import net.minecraft.util.ResourceLocation;
 import net.minecraft.util.Util;
@@ -38,9 +39,10 @@ public class KillWithAbilityObjective extends QuestObjective<EmptyInstanceData> 
         addAttributes(this.ability, this.count);
     }
 
-    public KillWithAbilityObjective() {
+    public KillWithAbilityObjective(Dynamic<?> dynamic) {
         super(NAME, "invalid", defaultDescription);
         addAttributes(this.ability, this.count);
+        deserialize(dynamic);
     }
 
     @Override

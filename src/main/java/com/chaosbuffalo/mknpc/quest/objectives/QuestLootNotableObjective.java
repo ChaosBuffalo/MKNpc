@@ -49,10 +49,11 @@ public class QuestLootNotableObjective extends StructureInstanceObjective<UUIDIn
         addAttributes(this.npcDefinition, this.chanceToFind, this.count);
     }
 
-    public QuestLootNotableObjective() {
+    public QuestLootNotableObjective(Dynamic<?> dynamic) {
         super(NAME, "invalid", defaultDescription);
         itemDescription = defaultItemDescription;
         addAttributes(npcDefinition, chanceToFind, count);
+        deserialize(dynamic);
     }
 
     @Override

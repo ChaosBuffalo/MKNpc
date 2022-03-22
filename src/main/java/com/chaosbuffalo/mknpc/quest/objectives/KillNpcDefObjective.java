@@ -11,6 +11,7 @@ import com.chaosbuffalo.mknpc.quest.data.QuestData;
 import com.chaosbuffalo.mknpc.quest.data.objective.EmptyInstanceData;
 import com.chaosbuffalo.mknpc.quest.data.player.PlayerQuestChainInstance;
 import com.chaosbuffalo.mknpc.quest.data.player.PlayerQuestObjectiveData;
+import com.mojang.serialization.Dynamic;
 import net.minecraft.entity.player.PlayerEntity;
 import net.minecraft.util.ResourceLocation;
 import net.minecraft.util.Util;
@@ -35,9 +36,10 @@ public class KillNpcDefObjective extends QuestObjective<EmptyInstanceData> imple
         addAttributes(npcDefinition, this.count);
     }
 
-    public KillNpcDefObjective() {
+    public KillNpcDefObjective(Dynamic<?> dynamic) {
         super(NAME, "invalid", defaultDescription);
         addAttributes(npcDefinition, this.count);
+        deserialize(dynamic);
     }
 
     @Override

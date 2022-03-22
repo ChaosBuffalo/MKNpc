@@ -44,9 +44,10 @@ public class TradeItemsObjective extends StructureInstanceObjective<UUIDInstance
         this.npcDefinition.setValue(npcDefinition);
     }
 
-    public TradeItemsObjective() {
+    public TradeItemsObjective(Dynamic<?> dynamic) {
         super(NAME, "invalid", defaultDescription);
         addAttribute(this.npcDefinition);
+        deserialize(dynamic);
     }
 
     public void addItemStack(ItemStack stack) {
