@@ -81,7 +81,7 @@ public class QuestGiverInventoryContainer extends ChestContainer {
                                 Quest currentQuest = questChain.getDefinition().getQuest(questName);
                                 if (currentQuest != null) {
                                     for (QuestObjective<?> obj : currentQuest.getObjectives()) {
-                                        PlayerQuestData playerData = chain.getQuestData(currentQuest.getQuestName());
+                                        PlayerQuestData playerData = chain.getQuestData(currentQuest);
                                         PlayerQuestObjectiveData playerObj = playerData.getObjective(obj.getObjectiveName());
                                         QuestData questData = questChain.getQuestChainData().getQuestData(questName);
                                         if (obj instanceof ITradeObjectiveHandler) {

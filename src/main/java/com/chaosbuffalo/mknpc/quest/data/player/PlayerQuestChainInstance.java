@@ -1,6 +1,7 @@
 package com.chaosbuffalo.mknpc.quest.data.player;
 
 import com.chaosbuffalo.mkcore.sync.IMKSerializable;
+import com.chaosbuffalo.mknpc.quest.Quest;
 import com.chaosbuffalo.mknpc.quest.QuestChainInstance;
 import net.minecraft.nbt.CompoundNBT;
 import net.minecraft.nbt.INBT;
@@ -29,12 +30,12 @@ public class PlayerQuestChainInstance implements IMKSerializable<CompoundNBT> {
         questComplete = false;
     }
 
-    public LinkedHashMap<String, PlayerQuestData> getQuestData() {
-        return questData;
-    }
-
     public PlayerQuestChainInstance(CompoundNBT nbt) {
         deserialize(nbt);
+    }
+
+    public LinkedHashMap<String, PlayerQuestData> getQuestData() {
+        return questData;
     }
 
     public boolean isQuestComplete() {
@@ -84,10 +85,13 @@ public class PlayerQuestChainInstance implements IMKSerializable<CompoundNBT> {
         return questData.get(questName);
     }
 
+    public PlayerQuestData getQuestData(Quest quest) {
+        return getQuestData(quest.getQuestName());
+    }
+
     public List<String> getCurrentQuests() {
         return currentQuests;
     }
-
 
     public void addCurrentQuest(String questName) {
         this.currentQuests.add(questName);

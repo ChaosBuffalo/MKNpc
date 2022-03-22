@@ -132,7 +132,7 @@ public class EntityHandler {
                             for (QuestObjective<?> obj : currentQuest.getObjectives()) {
                                 if (obj instanceof IContainerObjectiveHandler) {
                                     IContainerObjectiveHandler iObj = (IContainerObjectiveHandler) obj;
-                                    PlayerQuestData pQuest = pQuestChain.getQuestData(currentQuest.getQuestName());
+                                    PlayerQuestData pQuest = pQuestChain.getQuestData(currentQuest);
                                     PlayerQuestObjectiveData pObj = pQuest.getObjective(obj.getObjectiveName());
                                     QuestData qData = questChain.getQuestChainData().getQuestData(currentQuest);
                                     if (iObj.onLootChest(player, pObj, qData, chestCap)) {
@@ -186,7 +186,7 @@ public class EntityHandler {
                                 if (currentQuest != null) {
                                     for (QuestObjective<?> obj : currentQuest.getObjectives()) {
                                         if (obj instanceof IKillObjectiveHandler) {
-                                            PlayerQuestData pQuest = pQuestChain.getQuestData(currentQuest.getQuestName());
+                                            PlayerQuestData pQuest = pQuestChain.getQuestData(currentQuest);
                                             PlayerQuestObjectiveData pObj = pQuest.getObjective(obj.getObjectiveName());
                                             QuestData qData = questChain.getQuestChainData().getQuestData(currentQuest);
                                             if (((IKillObjectiveHandler) obj).onPlayerKillNpcDefEntity(player, pObj, def, event, qData, pQuestChain)){

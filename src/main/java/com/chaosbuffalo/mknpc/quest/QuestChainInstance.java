@@ -36,15 +36,55 @@ public class QuestChainInstance implements INBTSerializable<CompoundNBT> {
         questChainData = new QuestChainData(definition, questStructures);
     }
 
-    public void generateDialogue(Map<ResourceLocation, List<MKStructureEntry>> questStructures) {
-        questChainData.generateDialogue(this, getDialogueTreeName(), definition, questStructures,
-                getSpeakingRoles(), dialogueTrees);
+    public QuestChainInstance(CompoundNBT nbt) {
+        deserializeNBT(nbt);
+    }
+
+    public UUID getQuestId() {
+        return questId;
+    }
+
+    public QuestChainData getQuestChainData() {
+        return questChainData;
+    }
+
+    public QuestDefinition getDefinition() {
+        return definition;
     }
 
     public void setQuestSourceNpc(UUID questSourceNpc) {
         this.questSourceNpc = questSourceNpc;
     }
 
+    public List<String> getStartingQuestNames() {
+        return definition.getFirstQuests().stream().map(Quest::getQuestName).collect(Collectors.toList());
+    }
+
+    public Optional<DialogueTree> getTreeForEntity(Entity entity) {
+        return MKNpc.getNpcData(entity).map(x -> {
+            UUID entityId = x.getNotableUUID();
+            return Optional.ofNullable(dialogueTrees.get(entityId));
+        }).orElse(Optional.empty());
+    }
+
+    public Optional<Quest> getNextQuest(String currentQuest) {
+        Quest current = definition.getQuest(currentQuest);
+        int currentIndex = definition.getQuestChain().indexOf(current);
+        if (definition.getQuestChain().size() > currentIndex + 1) {
+            return Optional.of(definition.getQuestChain().get(currentIndex + 1));
+        } else {
+            return Optional.empty();
+        }
+    }
+
+    protected ResourceLocation getDialogueTreeName() {
+        return new ResourceLocation(MKNpc.MODID, String.format("quest_dialogue.%s", questId.toString()));
+    }
+
+    public void generateDialogue(Map<ResourceLocation, List<MKStructureEntry>> questStructures) {
+        questChainData.generateDialogue(this, getDialogueTreeName(), definition, questStructures,
+                getSpeakingRoles(), dialogueTrees);
+    }
 
     public Map<ResourceLocation, UUID> getSpeakingRoles() {
         Map<ResourceLocation, UUID> speakingRoles = new HashMap<>();
@@ -64,44 +104,6 @@ public class QuestChainInstance implements INBTSerializable<CompoundNBT> {
         return speakingRoles;
     }
 
-    public QuestChainInstance(CompoundNBT nbt) {
-        deserializeNBT(nbt);
-    }
-
-    public UUID getQuestId() {
-        return questId;
-    }
-
-    public List<String> getStartingQuestNames() {
-        return definition.getFirstQuests().stream().map(Quest::getQuestName).collect(Collectors.toList());
-    }
-
-
-    public Optional<DialogueTree> getTreeForEntity(Entity entity) {
-        return MKNpc.getNpcData(entity).map(x -> {
-            UUID entityId = x.getNotableUUID();
-            return Optional.ofNullable(dialogueTrees.get(entityId));
-        }).orElse(Optional.empty());
-    }
-
-    public Optional<Quest> getNextQuest(String currentQuest) {
-        Quest current = definition.getQuest(currentQuest);
-        int currentIndex = definition.getQuestChain().indexOf(current);
-        if (definition.getQuestChain().size() > currentIndex + 1) {
-            return Optional.of(definition.getQuestChain().get(currentIndex + 1));
-        } else {
-            return Optional.empty();
-        }
-    }
-
-    public QuestChainData getQuestChainData() {
-        return questChainData;
-    }
-
-    public QuestDefinition getDefinition() {
-        return definition;
-    }
-
     @Override
     public CompoundNBT serializeNBT() {
         CompoundNBT nbt = new CompoundNBT();
@@ -118,10 +120,6 @@ public class QuestChainInstance implements INBTSerializable<CompoundNBT> {
 //        nbt.put("dialogueTree", dialogueTree.serialize(NBTDynamicOps.INSTANCE));
         nbt.put("dialogueTrees", dialogueNbt);
         return nbt;
-    }
-
-    protected ResourceLocation getDialogueTreeName() {
-        return new ResourceLocation(MKNpc.MODID, String.format("quest_dialogue.%s", questId.toString()));
     }
 
     @Override
@@ -145,7 +143,7 @@ public class QuestChainInstance implements INBTSerializable<CompoundNBT> {
     }
 
     public void signalQuestProgress(IWorldNpcData worldData, IPlayerQuestingData questingData, Quest currentQuest, PlayerQuestChainInstance playerInstance, boolean manualAdvance) {
-        PlayerQuestData playerData = playerInstance.getQuestData(currentQuest.getQuestName());
+        PlayerQuestData playerData = playerInstance.getQuestData(currentQuest);
         questingData.questProgression(worldData, worldData.getQuest(playerInstance.getQuestId()));
         if (currentQuest.isComplete(playerData) || manualAdvance) {
             if (currentQuest.shouldAutoComplete() || manualAdvance) {
@@ -158,7 +156,7 @@ public class QuestChainInstance implements INBTSerializable<CompoundNBT> {
                                         Quest currentQuest, PlayerQuestChainInstance playerInstance) {
         for (QuestObjective<?> obj : currentQuest.getObjectives()) {
             if (obj.getObjectiveName().equals(objectiveName)) {
-                obj.signalCompleted(playerInstance.getQuestData(currentQuest.getQuestName()).getObjective(objectiveName));
+                obj.signalCompleted(playerInstance.getQuestData(currentQuest).getObjective(objectiveName));
             }
         }
         signalQuestProgress(worldData, questingData, currentQuest, playerInstance, false);
