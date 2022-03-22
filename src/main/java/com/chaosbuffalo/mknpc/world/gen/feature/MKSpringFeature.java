@@ -11,7 +11,6 @@ import net.minecraft.world.gen.feature.SpringFeature;
 import net.minecraft.world.gen.feature.structure.Structure;
 import net.minecraft.world.gen.feature.structure.StructureStart;
 
-import java.util.ArrayList;
 import java.util.Random;
 import java.util.stream.Stream;
 
@@ -24,10 +23,12 @@ public class MKSpringFeature extends SpringFeature {
     @Override
     public boolean generate(ISeedReader reader, ChunkGenerator generator, Random rand, BlockPos pos, LiquidsConfig config) {
         Stream<? extends StructureStart<?>> ours = Stream.of();
-        for (Structure<?> struct : MKNpcWorldGen.NO_WATER_STRUCTURES){
-            ours = Stream.concat(ours, reader.func_241827_a(SectionPos.from(pos), struct));
+        for (Structure<?> struct : MKNpcWorldGen.getNoWaterStructures()) {
+            if (struct != null) {
+                ours = Stream.concat(ours, reader.func_241827_a(SectionPos.from(pos), struct));
+            }
         }
-        if (ours.findAny().isPresent()){
+        if (ours.findAny().isPresent()) {
             return false;
         }
         return super.generate(reader, generator, rand, pos, config);

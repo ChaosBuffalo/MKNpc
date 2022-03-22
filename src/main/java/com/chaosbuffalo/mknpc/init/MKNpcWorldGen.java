@@ -35,7 +35,7 @@ public class MKNpcWorldGen {
     public static MKJigsawStructure TEST_JIGSAW;
     public static ResourceLocation TEST_JIG_SAW_NAME = new ResourceLocation(MKNpc.MODID, "test_jigsaw");
     private static StructureFeature<?, ?> TEST_JIGSAW_FEATURE;
-    public static List<Structure<?>> NO_WATER_STRUCTURES = new ArrayList<>();
+    private static List<Structure<?>> NO_WATER_STRUCTURES = new ArrayList<>();
     public static IStructurePieceType MK_JIGSAW_PIECE_TYPE;
 
     public static void registerStructurePieces(){
@@ -69,6 +69,16 @@ public class MKNpcWorldGen {
         SPRING_REPLACEMENT = new MKSpringFeature(LiquidsConfig.CODEC);
         SPRING_REPLACEMENT.setRegistryName(MKNpc.MODID, "spring_feature");
         evt.getRegistry().register(SPRING_REPLACEMENT);
+    }
+
+    public static void addNoWaterStructure(Structure<?> structure) {
+        if (structure != null) {
+            NO_WATER_STRUCTURES.add(structure);
+        }
+    }
+
+    public static List<Structure<?>> getNoWaterStructures() {
+        return NO_WATER_STRUCTURES;
     }
 
     public static void worldSetup(FMLServerAboutToStartEvent event){

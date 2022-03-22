@@ -4,7 +4,6 @@ import com.chaosbuffalo.mknpc.world.gen.StructureUtils;
 import com.mojang.datafixers.util.Either;
 import com.mojang.serialization.Codec;
 import com.mojang.serialization.codecs.RecordCodecBuilder;
-import jdk.nashorn.internal.ir.Block;
 import net.minecraft.util.ResourceLocation;
 import net.minecraft.util.Rotation;
 import net.minecraft.util.math.BlockPos;
