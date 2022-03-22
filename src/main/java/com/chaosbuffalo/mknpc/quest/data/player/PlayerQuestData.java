@@ -17,16 +17,16 @@ public class PlayerQuestData implements INBTSerializable<CompoundNBT> {
     private IFormattableTextComponent description;
     private final List<PlayerQuestReward> playerQuestRewards = new ArrayList<>();
 
-    public PlayerQuestData(String questName, IFormattableTextComponent description){
+    public PlayerQuestData(String questName, IFormattableTextComponent description) {
         this.questName = questName;
         this.description = description;
     }
 
-    public PlayerQuestData(CompoundNBT nbt){
+    public PlayerQuestData(CompoundNBT nbt) {
         deserializeNBT(nbt);
     }
 
-    public void putObjective(String objectiveName, PlayerQuestObjectiveData data){
+    public void putObjective(String objectiveName, PlayerQuestObjectiveData data) {
         objectives.put(objectiveName, data);
     }
 
@@ -34,11 +34,11 @@ public class PlayerQuestData implements INBTSerializable<CompoundNBT> {
         return playerQuestRewards;
     }
 
-    public void addReward(PlayerQuestReward questReward){
+    public void addReward(PlayerQuestReward questReward) {
         playerQuestRewards.add(questReward);
     }
 
-    public boolean isComplete(){
+    public boolean isComplete() {
         return objectives.values().stream().allMatch(PlayerQuestObjectiveData::isComplete);
     }
 
@@ -46,11 +46,11 @@ public class PlayerQuestData implements INBTSerializable<CompoundNBT> {
         return description;
     }
 
-    public Collection<PlayerQuestObjectiveData> getObjectives(){
+    public Collection<PlayerQuestObjectiveData> getObjectives() {
         return objectives.values();
     }
 
-    public PlayerQuestObjectiveData getObjective(String objectiveName){
+    public PlayerQuestObjectiveData getObjective(String objectiveName) {
         return objectives.get(objectiveName);
     }
 
@@ -64,14 +64,14 @@ public class PlayerQuestData implements INBTSerializable<CompoundNBT> {
     public CompoundNBT serializeNBT() {
         CompoundNBT nbt = new CompoundNBT();
         ListNBT objectiveNbt = new ListNBT();
-        for (Map.Entry<String, PlayerQuestObjectiveData> entry : objectives.entrySet()){
+        for (Map.Entry<String, PlayerQuestObjectiveData> entry : objectives.entrySet()) {
             objectiveNbt.add(entry.getValue().serializeNBT());
         }
         nbt.put("objectives", objectiveNbt);
         nbt.putString("questName", questName);
         nbt.putString("description", ITextComponent.Serializer.toJson(description));
         ListNBT rewardNbt = new ListNBT();
-        for (PlayerQuestReward reward : playerQuestRewards){
+        for (PlayerQuestReward reward : playerQuestRewards) {
             rewardNbt.add(reward.serializeNBT());
         }
         nbt.put("rewards", rewardNbt);
@@ -81,14 +81,14 @@ public class PlayerQuestData implements INBTSerializable<CompoundNBT> {
     @Override
     public void deserializeNBT(CompoundNBT nbt) {
         ListNBT objectiveNbt = nbt.getList("objectives", Constants.NBT.TAG_COMPOUND);
-        for (INBT objNbt : objectiveNbt){
+        for (INBT objNbt : objectiveNbt) {
             PlayerQuestObjectiveData objective = new PlayerQuestObjectiveData((CompoundNBT) objNbt);
             objectives.put(objective.getObjectiveName(), objective);
         }
         questName = nbt.getString("questName");
         description = ITextComponent.Serializer.getComponentFromJson(nbt.getString("description"));
         ListNBT rewardNbts = nbt.getList("rewards", Constants.NBT.TAG_COMPOUND);
-        for (INBT rewardNbt : rewardNbts){
+        for (INBT rewardNbt : rewardNbts) {
             addReward(new PlayerQuestReward((CompoundNBT) rewardNbt));
         }
     }

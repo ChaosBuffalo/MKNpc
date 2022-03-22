@@ -22,7 +22,7 @@ public class StructureData implements INBTSerializable<CompoundNBT> {
     private final List<StructureComponentData> components;
     private RegistryKey<World> worldKey;
 
-    public StructureData(RegistryKey<World> worldKey, int chunkX, int chunkZ, MutableBoundingBox bounds, List<StructureComponentData> data){
+    public StructureData(RegistryKey<World> worldKey, int chunkX, int chunkZ, MutableBoundingBox bounds, List<StructureComponentData> data) {
         this.chunkX = chunkX;
         this.chunkZ = chunkZ;
         this.boundingBox = bounds;
@@ -31,7 +31,7 @@ public class StructureData implements INBTSerializable<CompoundNBT> {
         components.addAll(data);
     }
 
-    public StructureData(){
+    public StructureData() {
         this.components = new ArrayList<>();
     }
 
@@ -55,7 +55,7 @@ public class StructureData implements INBTSerializable<CompoundNBT> {
         int[] boundsArr = {boundingBox.minX, boundingBox.minY, boundingBox.minZ, boundingBox.maxX, boundingBox.maxY, boundingBox.maxZ};
         tag.putIntArray("bounds", boundsArr);
         ListNBT comps = new ListNBT();
-        for (StructureComponentData dat : components){
+        for (StructureComponentData dat : components) {
             comps.add(dat.serializeNBT());
         }
         tag.put("components", comps);
@@ -72,7 +72,7 @@ public class StructureData implements INBTSerializable<CompoundNBT> {
         boundingBox = new MutableBoundingBox(boundsArr);
         ListNBT comps = nbt.getList("components", Constants.NBT.TAG_COMPOUND);
         List<StructureComponentData> newComps = new ArrayList<>();
-        for (INBT comp : comps){
+        for (INBT comp : comps) {
             StructureComponentData data = new StructureComponentData();
             data.deserializeNBT((CompoundNBT) comp);
             newComps.add(data);

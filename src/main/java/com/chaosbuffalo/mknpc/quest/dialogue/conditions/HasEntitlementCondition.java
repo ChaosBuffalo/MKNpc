@@ -16,18 +16,18 @@ public class HasEntitlementCondition extends DialogueCondition {
     public final static ResourceLocation conditionTypeName = new ResourceLocation(MKNpc.MODID, "has_entitlement");
     private MKEntitlement entitlement;
 
-    public HasEntitlementCondition(MKEntitlement entitlement){
+    public HasEntitlementCondition(MKEntitlement entitlement) {
         super(conditionTypeName);
         this.entitlement = entitlement;
     }
 
-    public HasEntitlementCondition(){
+    public HasEntitlementCondition() {
         super(conditionTypeName);
     }
 
     @Override
     public boolean meetsCondition(ServerPlayerEntity serverPlayerEntity, LivingEntity livingEntity) {
-        if (entitlement == null){
+        if (entitlement == null) {
             return false;
         }
         return MKCore.getPlayer(serverPlayerEntity).map(x -> x.getEntitlements().hasEntitlement(entitlement)).orElse(false);

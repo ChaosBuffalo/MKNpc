@@ -6,11 +6,8 @@ import com.chaosbuffalo.mknpc.MKNpc;
 import com.chaosbuffalo.mknpc.quest.data.objective.ObjectiveInstanceData;
 import net.minecraft.util.ResourceLocation;
 import net.minecraft.util.text.IFormattableTextComponent;
-import net.minecraft.util.text.ITextComponent;
 
-import java.util.List;
-
-public abstract class StructureInstanceObjective<T extends ObjectiveInstanceData> extends QuestObjective<T>{
+public abstract class StructureInstanceObjective<T extends ObjectiveInstanceData> extends QuestObjective<T> {
     public final static ResourceLocation INVALID_OPTION = new ResourceLocation(MKNpc.MODID, "structure.invalid");
 
     protected final ResourceLocationAttribute structureName = new ResourceLocationAttribute("structure", INVALID_OPTION);
@@ -30,17 +27,17 @@ public abstract class StructureInstanceObjective<T extends ObjectiveInstanceData
     }
 
 
-    public int getStructureIndex(){
-        return structureIndex.getValue();
+    public int getStructureIndex() {
+        return structureIndex.value();
     }
 
-    public StructureInstanceObjective(ResourceLocation typeName, String name, IFormattableTextComponent... description){
+    public StructureInstanceObjective(ResourceLocation typeName, String name, IFormattableTextComponent... description) {
         super(typeName, name, description);
         addAttributes(structureName, structureIndex);
 
     }
 
-    public ResourceLocation getStructureName(){
+    public ResourceLocation getStructureName() {
         return structureName.getValue();
     }
 }

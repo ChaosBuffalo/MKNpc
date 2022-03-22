@@ -9,20 +9,19 @@ import com.chaosbuffalo.mknpc.quest.dialogue.conditions.HasEntitlementCondition;
 import com.google.common.collect.ImmutableMap;
 import com.mojang.serialization.Dynamic;
 import com.mojang.serialization.DynamicOps;
-import net.minecraft.entity.LivingEntity;
 import net.minecraft.entity.player.PlayerEntity;
 import net.minecraft.util.ResourceLocation;
 
-public class HasEntitlementRequirement extends QuestRequirement{
+public class HasEntitlementRequirement extends QuestRequirement {
     public final static ResourceLocation TYPE_NAME = new ResourceLocation(MKNpc.MODID, "quest_requirement.has_entitlement");
     private MKEntitlement entitlement;
 
-    public HasEntitlementRequirement(MKEntitlement entitlement){
+    public HasEntitlementRequirement(MKEntitlement entitlement) {
         super(TYPE_NAME);
         this.entitlement = entitlement;
     }
 
-    public HasEntitlementRequirement(){
+    public HasEntitlementRequirement() {
         super(TYPE_NAME);
     }
 
@@ -41,7 +40,7 @@ public class HasEntitlementRequirement extends QuestRequirement{
 
     @Override
     public boolean meetsRequirements(PlayerEntity player) {
-        if (entitlement == null){
+        if (entitlement == null) {
             return false;
         }
         return MKCore.getPlayer(player).map(x -> x.getEntitlements().hasEntitlement(entitlement)).orElse(false);

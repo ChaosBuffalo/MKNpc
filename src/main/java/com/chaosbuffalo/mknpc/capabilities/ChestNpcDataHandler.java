@@ -20,7 +20,7 @@ import java.util.HashMap;
 import java.util.Map;
 import java.util.UUID;
 
-public class ChestNpcDataHandler implements IChestNpcData{
+public class ChestNpcDataHandler implements IChestNpcData {
     @Nullable
     private UUID structureId;
     @Nullable
@@ -45,18 +45,18 @@ public class ChestNpcDataHandler implements IChestNpcData{
         structureName = null;
     }
 
-    public QuestChestInventory createQuestInventoryForPlayer(UUID playerId){
+    public QuestChestInventory createQuestInventoryForPlayer(UUID playerId) {
         QuestChestInventory inventory = new QuestChestInventory(getTileEntity());
         return inventory;
     }
 
     @Override
-    public QuestChestInventory getQuestInventoryForPlayer(PlayerEntity player){
+    public QuestChestInventory getQuestInventoryForPlayer(PlayerEntity player) {
         return questInventories.computeIfAbsent(player.getUniqueID(), this::createQuestInventoryForPlayer);
     }
 
     @Override
-    public boolean hasQuestInventoryForPlayer(PlayerEntity player){
+    public boolean hasQuestInventoryForPlayer(PlayerEntity player) {
         return questInventories.containsKey(player.getUniqueID());
     }
 
@@ -126,13 +126,13 @@ public class ChestNpcDataHandler implements IChestNpcData{
 
     @Override
     public void tick() {
-        if (needsUploadToWorld){
+        if (needsUploadToWorld) {
             World world = getTileEntity().getWorld();
             if (world != null && !world.isRemote()) {
                 MinecraftServer server = world.getServer();
-                if (server != null){
+                if (server != null) {
                     World overworld = server.getWorld(World.OVERWORLD);
-                    if (overworld != null){
+                    if (overworld != null) {
                         overworld.getCapability(NpcCapabilities.WORLD_NPC_DATA_CAPABILITY)
                                 .ifPresent(cap -> cap.addChest(this));
                     }
@@ -147,20 +147,20 @@ public class ChestNpcDataHandler implements IChestNpcData{
         CompoundNBT tag = new CompoundNBT();
         tag.putBoolean("placedByStructure", placedByStructure);
         tag.putBoolean("needsUploadToWorld", needsUploadToWorld);
-        if (chestId != null){
+        if (chestId != null) {
             tag.putUniqueId("chestId", chestId);
         }
-        if (structureId != null){
+        if (structureId != null) {
             tag.putUniqueId("structureId", structureId);
         }
-        if (chestLabel != null){
+        if (chestLabel != null) {
             tag.putString("chestLabel", chestLabel);
         }
-        if (structureName != null){
+        if (structureName != null) {
             tag.putString("structureName", structureName.toString());
         }
         CompoundNBT questInvNbt = new CompoundNBT();
-        for (Map.Entry<UUID, QuestChestInventory> entry : questInventories.entrySet()){
+        for (Map.Entry<UUID, QuestChestInventory> entry : questInventories.entrySet()) {
             questInvNbt.put(entry.getKey().toString(), entry.getValue().write());
         }
         tag.put("questInventories", questInvNbt);
@@ -171,22 +171,22 @@ public class ChestNpcDataHandler implements IChestNpcData{
     public void deserializeNBT(CompoundNBT nbt) {
         placedByStructure = nbt.getBoolean("placedByStructure");
         needsUploadToWorld = nbt.getBoolean("needsUploadToWorld");
-        if (nbt.contains("chestId")){
+        if (nbt.contains("chestId")) {
             chestId = nbt.getUniqueId("chestId");
         }
-        if (nbt.contains("structureId")){
+        if (nbt.contains("structureId")) {
             structureId = nbt.getUniqueId("structureId");
         }
-        if (nbt.contains("chestLabel")){
+        if (nbt.contains("chestLabel")) {
             chestLabel = nbt.getString("chestLabel");
         }
-        if (nbt.contains("structureName")){
+        if (nbt.contains("structureName")) {
             structureName = new ResourceLocation(nbt.getString("structureName"));
         }
-        if (nbt.contains("questInventories")){
+        if (nbt.contains("questInventories")) {
             questInventories.clear();
             CompoundNBT questInvNbt = nbt.getCompound("questInventories");
-            for (String key : questInvNbt.keySet()){
+            for (String key : questInvNbt.keySet()) {
                 QuestChestInventory newInventory = new QuestChestInventory(entity);
                 newInventory.read(questInvNbt.getList(key, Constants.NBT.TAG_COMPOUND));
                 questInventories.put(UUID.fromString(key), newInventory);

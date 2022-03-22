@@ -39,7 +39,7 @@ public class QuestLootNpcObjective extends StructureInstanceObjective<UUIDInstan
     public QuestLootNpcObjective(String name, ResourceLocation structure, int index, ResourceLocation npcDefinition,
                                  double chance, int count, IFormattableTextComponent itemDescription,
                                  IFormattableTextComponent... description) {
-        super(NAME, name,  structure, index, description);
+        super(NAME, name, structure, index, description);
         this.npcDefinition.setValue(npcDefinition);
         this.chanceToFind.setValue(chance);
         this.count.setValue(count);
@@ -56,7 +56,7 @@ public class QuestLootNpcObjective extends StructureInstanceObjective<UUIDInstan
     @Override
     public <D> void writeAdditionalData(DynamicOps<D> ops, ImmutableMap.Builder<D, D> builder) {
         super.writeAdditionalData(ops, builder);
-        builder.put(ops.createString("itemDescription"),  ops.createString(ITextComponent.Serializer.toJson(itemDescription)));
+        builder.put(ops.createString("itemDescription"), ops.createString(ITextComponent.Serializer.toJson(itemDescription)));
     }
 
     @Override
@@ -66,33 +66,33 @@ public class QuestLootNpcObjective extends StructureInstanceObjective<UUIDInstan
                 .resultOrPartial(MKNpc.LOGGER::error).orElseThrow(IllegalArgumentException::new));
     }
 
-    private IFormattableTextComponent getDescriptionWithCount(int count){
+    private IFormattableTextComponent getDescriptionWithCount(int count) {
         NpcDefinition def = NpcDefinitionManager.getDefinition(npcDefinition.getValue());
         return new TranslationTextComponent("mknpc.objective.quest_loot_npc.desc", itemDescription, def.getDisplayName(),
                 MKAbility.INTEGER_FORMATTER.format(count), MKAbility.INTEGER_FORMATTER.format(this.count.value()));
     }
 
-    private IFormattableTextComponent getProgressMessage(LivingEntity entity, int count){
+    private IFormattableTextComponent getProgressMessage(LivingEntity entity, int count) {
         return new TranslationTextComponent("mknpc.objective.quest_loot_npc.progress", itemDescription, entity.getName(),
                 MKAbility.INTEGER_FORMATTER.format(count), MKAbility.INTEGER_FORMATTER.format(this.count.value()));
     }
 
     @Override
     public boolean onPlayerKillNpcDefEntity(PlayerEntity player, PlayerQuestObjectiveData objectiveData, NpcDefinition def,
-                                         LivingDeathEvent event, QuestData quest, PlayerQuestChainInstance playerChain) {
-        if (!isComplete(objectiveData)){
+                                            LivingDeathEvent event, QuestData quest, PlayerQuestChainInstance playerChain) {
+        if (!isComplete(objectiveData)) {
             UUIDInstanceData objData = getInstanceData(quest);
             boolean applies = event.getEntityLiving().getCapability(NpcCapabilities.ENTITY_NPC_DATA_CAPABILITY).map(
                     x -> x.getStructureId().map(structId -> structId.equals(objData.getUuid())).orElse(false)).orElse(false)
                     && def.getDefinitionName().equals(npcDefinition.getValue());
-            if (applies && player.getRNG().nextDouble() <= chanceToFind.value()){
+            if (applies && player.getRNG().nextDouble() <= chanceToFind.value()) {
                 int currentCount = objectiveData.getInt("lootCount");
                 currentCount++;
                 objectiveData.putInt("lootCount", currentCount);
                 objectiveData.setDescription(getDescriptionWithCount(currentCount));
                 player.sendMessage(getProgressMessage(event.getEntityLiving(), currentCount)
                         .mergeStyle(TextFormatting.GOLD), Util.DUMMY_UUID);
-                if (currentCount == count.value()){
+                if (currentCount == count.value()) {
                     signalCompleted(objectiveData);
                 }
                 playerChain.notifyDirty();

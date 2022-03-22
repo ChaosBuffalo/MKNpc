@@ -9,7 +9,6 @@ import com.chaosbuffalo.mknpc.quest.dialogue.effects.IReceivesChainId;
 import com.google.common.collect.ImmutableMap;
 import com.mojang.serialization.Dynamic;
 import com.mojang.serialization.DynamicOps;
-import com.mojang.serialization.JsonOps;
 import net.minecraft.entity.LivingEntity;
 import net.minecraft.entity.player.ServerPlayerEntity;
 import net.minecraft.util.ResourceLocation;
@@ -25,14 +24,14 @@ public class ObjectivesCompleteCondition extends DialogueCondition implements IR
     private UUID chainId;
 
 
-    public ObjectivesCompleteCondition(String questName, String... objectiveNames){
+    public ObjectivesCompleteCondition(String questName, String... objectiveNames) {
         super(conditionTypeName);
         this.objectiveNames.addAll(Arrays.asList(objectiveNames));
         this.chainId = Util.DUMMY_UUID;
         this.questName = questName;
     }
 
-    public ObjectivesCompleteCondition(){
+    public ObjectivesCompleteCondition() {
         this("default");
     }
 
@@ -40,11 +39,11 @@ public class ObjectivesCompleteCondition extends DialogueCondition implements IR
     public boolean meetsCondition(ServerPlayerEntity serverPlayerEntity, LivingEntity livingEntity) {
         return MKNpc.getPlayerQuestData(serverPlayerEntity).map(x -> {
             Optional<PlayerQuestChainInstance> chainInstance = x.getQuestChain(chainId);
-            if (chainInstance.isPresent()){
+            if (chainInstance.isPresent()) {
                 PlayerQuestChainInstance chain = chainInstance.get();
                 return objectiveNames.stream().allMatch(name -> {
                     PlayerQuestData questData = chain.getQuestData(questName);
-                    if (questData == null){
+                    if (questData == null) {
                         return false;
                     }
                     PlayerQuestObjectiveData pObj = questData.getObjective(name);
@@ -64,7 +63,7 @@ public class ObjectivesCompleteCondition extends DialogueCondition implements IR
     public <D> void writeAdditionalData(DynamicOps<D> ops, ImmutableMap.Builder<D, D> builder) {
         super.writeAdditionalData(ops, builder);
         builder.put(ops.createString("objectiveNames"), ops.createList(objectiveNames.stream().map(ops::createString)));
-        if (!chainId.equals(Util.DUMMY_UUID)){
+        if (!chainId.equals(Util.DUMMY_UUID)) {
             builder.put(ops.createString("chainId"), ops.createString(chainId.toString()));
         }
         builder.put(ops.createString("questName"), ops.createString(questName));

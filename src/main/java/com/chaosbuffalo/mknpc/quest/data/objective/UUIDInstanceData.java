@@ -5,17 +5,17 @@ import net.minecraft.util.Util;
 
 import java.util.UUID;
 
-public class UUIDInstanceData extends ObjectiveInstanceData{
+public class UUIDInstanceData extends ObjectiveInstanceData {
 
     private UUID uuid;
     private boolean isValid;
 
-    public UUIDInstanceData(){
+    public UUIDInstanceData() {
         uuid = Util.DUMMY_UUID;
         isValid = false;
     }
 
-    public UUIDInstanceData(UUID uuid){
+    public UUIDInstanceData(UUID uuid) {
         this.uuid = uuid;
         isValid = true;
     }

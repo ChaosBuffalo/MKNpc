@@ -31,7 +31,7 @@ public class KillNotableNpcObjective extends StructureInstanceObjective<UUIDInst
 
     public KillNotableNpcObjective(String name, ResourceLocation structure, int index, ResourceLocation npcDefinition,
                                    IFormattableTextComponent... description) {
-        super(NAME, name,  structure, index, description);
+        super(NAME, name, structure, index, description);
         this.npcDefinition.setValue(npcDefinition);
         addAttributes(this.npcDefinition);
     }
@@ -43,12 +43,12 @@ public class KillNotableNpcObjective extends StructureInstanceObjective<UUIDInst
 
     @Override
     public boolean onPlayerKillNpcDefEntity(PlayerEntity player, PlayerQuestObjectiveData objectiveData, NpcDefinition def,
-                                         LivingDeathEvent event, QuestData quest, PlayerQuestChainInstance playerChain) {
-        if (!isComplete(objectiveData)){
+                                            LivingDeathEvent event, QuestData quest, PlayerQuestChainInstance playerChain) {
+        if (!isComplete(objectiveData)) {
             UUIDInstanceData objData = getInstanceData(quest);
             boolean applies = event.getEntityLiving().getCapability(NpcCapabilities.ENTITY_NPC_DATA_CAPABILITY).map(
                     x -> x.getNotableUUID().equals(objData.getUuid())).orElse(false);
-            if (applies){
+            if (applies) {
                 objectiveData.putBool("hasKilled", true);
                 objectiveData.removeBlockPos("npcPos");
                 player.sendMessage(new TranslationTextComponent("mknpc.objective.kill_notable.complete",

@@ -16,12 +16,12 @@ public class HasSpentTalentPointsCondition extends DialogueCondition {
     public static final ResourceLocation conditionTypeName = new ResourceLocation(MKNpc.MODID, "has_spent_talents");
     private int talentCount;
 
-    public HasSpentTalentPointsCondition(int talentCount){
+    public HasSpentTalentPointsCondition(int talentCount) {
         super(conditionTypeName);
         this.talentCount = talentCount;
     }
 
-    public HasSpentTalentPointsCondition(){
+    public HasSpentTalentPointsCondition() {
         this(0);
     }
 

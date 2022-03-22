@@ -12,7 +12,7 @@ public class HasGeneratedQuestsCondition extends DialogueCondition {
 
     public static final ResourceLocation conditionTypeName = new ResourceLocation(MKNpc.MODID, "has_generated_quests");
 
-    public HasGeneratedQuestsCondition(){
+    public HasGeneratedQuestsCondition() {
         super(conditionTypeName);
     }
 

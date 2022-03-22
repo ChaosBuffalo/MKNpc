@@ -19,9 +19,11 @@ import net.minecraft.util.text.TextFormatting;
 import net.minecraft.util.text.TranslationTextComponent;
 import net.minecraftforge.event.entity.living.LivingDeathEvent;
 
-import java.util.*;
+import java.util.Collections;
+import java.util.List;
+import java.util.Map;
 
-public class KillNpcDefObjective extends QuestObjective<EmptyInstanceData> implements IKillObjectiveHandler{
+public class KillNpcDefObjective extends QuestObjective<EmptyInstanceData> implements IKillObjectiveHandler {
     public static final ResourceLocation NAME = new ResourceLocation(MKNpc.MODID, "objective.kill_npc_def");
     protected ResourceLocationAttribute npcDefinition = new ResourceLocationAttribute("npcDefinition", NpcDefinitionManager.INVALID_NPC_DEF);
     protected IntAttribute count = new IntAttribute("count", 1);
@@ -58,7 +60,7 @@ public class KillNpcDefObjective extends QuestObjective<EmptyInstanceData> imple
         return Collections.singletonList(getDescriptionWithKillCount(0));
     }
 
-    private IFormattableTextComponent getDescriptionWithKillCount(int count){
+    private IFormattableTextComponent getDescriptionWithKillCount(int count) {
         NpcDefinition def = NpcDefinitionManager.getDefinition(npcDefinition.getValue());
         return new TranslationTextComponent("mknpc.objective.kill_npc_def.desc", def.getDisplayName(),
                 count, this.count.value());
@@ -73,14 +75,14 @@ public class KillNpcDefObjective extends QuestObjective<EmptyInstanceData> imple
 
     @Override
     public boolean onPlayerKillNpcDefEntity(PlayerEntity player, PlayerQuestObjectiveData objectiveData, NpcDefinition def,
-                                         LivingDeathEvent event, QuestData questData, PlayerQuestChainInstance playerChain) {
-        if (def.getDefinitionName().equals(npcDefinition.getValue()) && !isComplete(objectiveData)){
+                                            LivingDeathEvent event, QuestData questData, PlayerQuestChainInstance playerChain) {
+        if (def.getDefinitionName().equals(npcDefinition.getValue()) && !isComplete(objectiveData)) {
             int currentCount = objectiveData.getInt("killCount");
             currentCount++;
             objectiveData.putInt("killCount", currentCount);
             objectiveData.setDescription(getDescriptionWithKillCount(currentCount));
             player.sendMessage(getDescriptionWithKillCount(currentCount).mergeStyle(TextFormatting.GOLD), Util.DUMMY_UUID);
-            if (currentCount == count.value()){
+            if (currentCount == count.value()) {
                 signalCompleted(objectiveData);
             }
             playerChain.notifyDirty();

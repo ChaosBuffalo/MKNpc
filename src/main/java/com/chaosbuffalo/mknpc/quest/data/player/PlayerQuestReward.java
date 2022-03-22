@@ -10,11 +10,11 @@ public class PlayerQuestReward implements INBTSerializable<CompoundNBT> {
     IFormattableTextComponent description;
 
 
-    public PlayerQuestReward(QuestReward questReward){
+    public PlayerQuestReward(QuestReward questReward) {
         this.description = questReward.getDescription();
     }
 
-    public PlayerQuestReward(CompoundNBT nbt){
+    public PlayerQuestReward(CompoundNBT nbt) {
         deserializeNBT(nbt);
     }
 

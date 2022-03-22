@@ -19,21 +19,21 @@ public class OnQuestCondition extends DialogueCondition {
     private UUID questId;
     private String questStep;
 
-    public OnQuestCondition(UUID questId, String questStep){
+    public OnQuestCondition(UUID questId, String questStep) {
         super(conditionTypeName);
         this.questId = questId;
         this.questStep = questStep;
     }
 
-    public OnQuestCondition(){
+    public OnQuestCondition() {
         this(UUID.randomUUID(), "invalid");
     }
 
     @Override
     public boolean meetsCondition(ServerPlayerEntity player, LivingEntity source) {
         return MKNpc.getPlayerQuestData(player).map(
-                x -> x.getQuestStatus(questId) == PlayerQuestingDataHandler.QuestStatus.IN_PROGRESS
-                        && x.getCurrentQuestSteps(questId).orElse(new ArrayList<>()).contains(questStep))
+                        x -> x.getQuestStatus(questId) == PlayerQuestingDataHandler.QuestStatus.IN_PROGRESS
+                                && x.getCurrentQuestSteps(questId).orElse(new ArrayList<>()).contains(questStep))
                 .orElse(false);
     }
 

@@ -17,12 +17,12 @@ public class OnQuestChainCondition extends DialogueCondition {
     public static final ResourceLocation conditionTypeName = new ResourceLocation(MKNpc.MODID, "on_quest_chain_condition");
     private UUID questId;
 
-    public OnQuestChainCondition(UUID questId){
+    public OnQuestChainCondition(UUID questId) {
         super(conditionTypeName);
         this.questId = questId;
     }
 
-    public OnQuestChainCondition(){
+    public OnQuestChainCondition() {
         this(UUID.randomUUID());
     }
 

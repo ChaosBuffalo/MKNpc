@@ -11,7 +11,7 @@ public class PendingGenerationCondition extends DialogueCondition {
 
     public static final ResourceLocation conditionTypeName = new ResourceLocation(MKNpc.MODID, "pendering_generation");
 
-    public PendingGenerationCondition(){
+    public PendingGenerationCondition() {
         super(conditionTypeName);
     }
 

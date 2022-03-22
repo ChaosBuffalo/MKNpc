@@ -39,8 +39,8 @@ public class QuestLootNotableObjective extends StructureInstanceObjective<UUIDIn
 
 
     public QuestLootNotableObjective(String name, ResourceLocation structure, int index, ResourceLocation npcDefinition,
-                                 double chance, int count, IFormattableTextComponent itemDescription,
-                                 IFormattableTextComponent... description) {
+                                     double chance, int count, IFormattableTextComponent itemDescription,
+                                     IFormattableTextComponent... description) {
         super(NAME, name, structure, index, description);
         this.npcDefinition.setValue(npcDefinition);
         this.chanceToFind.setValue(chance);
@@ -80,7 +80,7 @@ public class QuestLootNotableObjective extends StructureInstanceObjective<UUIDIn
 
     @Override
     public boolean onPlayerKillNpcDefEntity(PlayerEntity player, PlayerQuestObjectiveData objectiveData, NpcDefinition def,
-                                         LivingDeathEvent event, QuestData quest, PlayerQuestChainInstance playerChain) {
+                                            LivingDeathEvent event, QuestData quest, PlayerQuestChainInstance playerChain) {
         if (!isComplete(objectiveData)) {
             UUIDInstanceData objData = getInstanceData(quest);
             boolean applies = event.getEntityLiving().getCapability(NpcCapabilities.ENTITY_NPC_DATA_CAPABILITY).map(

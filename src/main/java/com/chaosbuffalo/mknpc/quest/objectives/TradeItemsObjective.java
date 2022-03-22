@@ -33,23 +33,23 @@ import java.util.Optional;
 import java.util.function.Predicate;
 import java.util.stream.Collectors;
 
-public class TradeItemsObjective extends StructureInstanceObjective<UUIDInstanceData> implements ITradeObjectiveHandler{
+public class TradeItemsObjective extends StructureInstanceObjective<UUIDInstanceData> implements ITradeObjectiveHandler {
     public static final ResourceLocation NAME = new ResourceLocation(MKNpc.MODID, "objective.trade_with_npc");
     protected ResourceLocationAttribute npcDefinition = new ResourceLocationAttribute("npcDefinition", NpcDefinitionManager.INVALID_NPC_DEF);
     private final List<ItemStack> neededItems = new ArrayList<>();
 
-    public TradeItemsObjective(String name, ResourceLocation structure, int index, ResourceLocation npcDefinition, IFormattableTextComponent... description){
+    public TradeItemsObjective(String name, ResourceLocation structure, int index, ResourceLocation npcDefinition, IFormattableTextComponent... description) {
         super(NAME, name, structure, index, description);
         addAttribute(this.npcDefinition);
         this.npcDefinition.setValue(npcDefinition);
     }
 
-    public TradeItemsObjective(){
+    public TradeItemsObjective() {
         super(NAME, "invalid", defaultDescription);
         addAttribute(this.npcDefinition);
     }
 
-    public void addItemStack(ItemStack stack){
+    public void addItemStack(ItemStack stack) {
         neededItems.add(stack);
         setDescription(neededItems.stream().map(x -> new TranslationTextComponent("mknpc.trade.item_needed",
                 x.getCount(), x.getDisplayName())).collect(Collectors.toList()));
@@ -108,7 +108,7 @@ public class TradeItemsObjective extends StructureInstanceObjective<UUIDInstance
     }
 
     @Nullable
-    public int[] findMatches(List<ItemStack> nonEmptyInventoryContents){
+    public int[] findMatches(List<ItemStack> nonEmptyInventoryContents) {
         return RecipeMatcher.findMatches(nonEmptyInventoryContents, neededItems.stream().map(
                 TradeItemsObjective::getItemsEqualTester).collect(Collectors.toList()));
     }
@@ -118,7 +118,7 @@ public class TradeItemsObjective extends StructureInstanceObjective<UUIDInstance
         return new PlayerQuestObjectiveData(getObjectiveName(), getDescription());
     }
 
-    public static Predicate<ItemStack> getItemsEqualTester(ItemStack other){
+    public static Predicate<ItemStack> getItemsEqualTester(ItemStack other) {
         return itemStack -> ItemStack.areItemStacksEqual(itemStack, other);
     }
 }

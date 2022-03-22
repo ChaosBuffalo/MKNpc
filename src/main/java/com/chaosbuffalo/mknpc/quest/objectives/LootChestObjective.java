@@ -19,9 +19,12 @@ import net.minecraft.item.ItemStack;
 import net.minecraft.util.ResourceLocation;
 import net.minecraft.util.text.IFormattableTextComponent;
 
-import java.util.*;
+import java.util.ArrayList;
+import java.util.List;
+import java.util.Map;
+import java.util.Optional;
 
-public class LootChestObjective extends StructureInstanceObjective<UUIDInstanceData> implements IContainerObjectiveHandler{
+public class LootChestObjective extends StructureInstanceObjective<UUIDInstanceData> implements IContainerObjectiveHandler {
     protected final StringAttribute chestTag = new StringAttribute("chestTag", "invalid");
     public static final ResourceLocation NAME = new ResourceLocation(MKNpc.MODID, "objective.loot_chest");
     private final List<ItemStack> itemsToAdd = new ArrayList<>();
@@ -30,18 +33,18 @@ public class LootChestObjective extends StructureInstanceObjective<UUIDInstanceD
         this(name, structure, 0, chestTag, description);
     }
 
-    public LootChestObjective(String name, ResourceLocation structure, int index, String chestTag, IFormattableTextComponent... description){
+    public LootChestObjective(String name, ResourceLocation structure, int index, String chestTag, IFormattableTextComponent... description) {
         super(NAME, name, structure, index, description);
         addAttribute(this.chestTag);
         this.chestTag.setValue(chestTag);
     }
 
-    public LootChestObjective(){
+    public LootChestObjective() {
         super(NAME, "invalid", defaultDescription);
         addAttribute(this.chestTag);
     }
 
-    public void addItemStack(ItemStack stack){
+    public void addItemStack(ItemStack stack) {
         itemsToAdd.add(stack);
     }
 
@@ -68,7 +71,7 @@ public class LootChestObjective extends StructureInstanceObjective<UUIDInstanceD
 
     @Override
     public UUIDInstanceData generateInstanceData(Map<ResourceLocation, List<MKStructureEntry>> questStructures) {
-        MKStructureEntry entry = questStructures.get(getStructureName()).get(structureIndex.getValue());
+        MKStructureEntry entry = questStructures.get(getStructureName()).get(structureIndex.value());
         Optional<NotableChestEntry> chest = entry.getFirstChestWithTag(chestTag.getValue());
         return chest.map(x -> new UUIDInstanceData(x.getChestId())).orElse(new UUIDInstanceData());
     }
@@ -96,10 +99,10 @@ public class LootChestObjective extends StructureInstanceObjective<UUIDInstanceD
     @Override
     public boolean onLootChest(PlayerEntity player, PlayerQuestObjectiveData objectiveData, QuestData questData, IChestNpcData chestData) {
         UUIDInstanceData objData = getInstanceData(questData);
-        if (objectiveData.getBool("hasLooted")){
+        if (objectiveData.getBool("hasLooted")) {
             return false;
         }
-        if (chestData.getChestId() != null && chestData.getChestId().equals(objData.getUuid())){
+        if (chestData.getChestId() != null && chestData.getChestId().equals(objData.getUuid())) {
             objectiveData.putBool("hasLooted", true);
             objectiveData.removeBlockPos("chestPos");
             signalCompleted(objectiveData);
@@ -112,7 +115,7 @@ public class LootChestObjective extends StructureInstanceObjective<UUIDInstanceD
     protected void populateChest(PlayerEntity player, IChestNpcData chestData) {
         int index = 0;
         Inventory inventory = chestData.getQuestInventoryForPlayer(player);
-        for (ItemStack item : itemsToAdd){
+        for (ItemStack item : itemsToAdd) {
             inventory.setInventorySlotContents(index, item.copy());
             index++;
         }

@@ -57,7 +57,7 @@ public class PlayerQuestingDataHandler implements IPlayerQuestingData {
     }
 
     @Override
-    public void advanceQuestChain(IWorldNpcData worldHandler, QuestChainInstance questChainInstance, Quest currentQuest){
+    public void advanceQuestChain(IWorldNpcData worldHandler, QuestChainInstance questChainInstance, Quest currentQuest) {
         getPersonaData().advanceQuestChain(worldHandler, questChainInstance, currentQuest, this);
     }
 
@@ -67,7 +67,7 @@ public class PlayerQuestingDataHandler implements IPlayerQuestingData {
     }
 
 
-    public Collection<PlayerQuestChainInstance> getQuestChains(){
+    public Collection<PlayerQuestChainInstance> getQuestChains() {
         return getPersonaData().questChains.values();
     }
 
@@ -79,7 +79,7 @@ public class PlayerQuestingDataHandler implements IPlayerQuestingData {
     @Override
     public void startQuest(IWorldNpcData worldHandler, UUID questId) {
         QuestChainInstance chain = worldHandler.getQuest(questId);
-        if (chain != null){
+        if (chain != null) {
             MKNpc.LOGGER.info("Player {} started quest {}", getPlayer(), chain);
             getPersonaData().startQuest(playerData.getEntity(), worldHandler, chain);
         } else {
@@ -98,7 +98,7 @@ public class PlayerQuestingDataHandler implements IPlayerQuestingData {
         return getPersonaData().getCurrentQuestSteps(questId);
     }
 
-    private PersonaQuestData getPersonaData(){
+    private PersonaQuestData getPersonaData() {
         return getPlayerData().getPersonaExtension(PersonaQuestData.class);
     }
 
@@ -134,25 +134,25 @@ public class PlayerQuestingDataHandler implements IPlayerQuestingData {
             persona.getKnowledge().addSyncPrivate(questChainUpdater);
         }
 
-        public Optional<PlayerQuestChainInstance> getChain(UUID questId){
+        public Optional<PlayerQuestChainInstance> getChain(UUID questId) {
             PlayerQuestChainInstance questChain = questChains.get(questId);
-            if (questChain == null){
+            if (questChain == null) {
                 return Optional.empty();
             }
             return Optional.of(questChain);
         }
 
-        public Optional<List<String>> getCurrentQuestSteps(UUID questId){
+        public Optional<List<String>> getCurrentQuestSteps(UUID questId) {
             PlayerQuestChainInstance questChain = questChains.get(questId);
-            if (questChain == null){
+            if (questChain == null) {
                 return Optional.empty();
             }
             return Optional.of(questChain.getCurrentQuests());
         }
 
-        public QuestStatus getQuestStatus(UUID questId){
+        public QuestStatus getQuestStatus(UUID questId) {
             PlayerQuestChainInstance questChain = questChains.get(questId);
-            if (questChain == null){
+            if (questChain == null) {
                 return QuestStatus.NOT_ON;
             }
             if (questChain.isQuestComplete()) {
@@ -161,22 +161,22 @@ public class PlayerQuestingDataHandler implements IPlayerQuestingData {
             return QuestStatus.IN_PROGRESS;
         }
 
-        public void startQuest(PlayerEntity player, IWorldNpcData worldHandler, QuestChainInstance questChain){
-            if (!questChain.getDefinition().isRepeatable() && completedQuests.contains(questChain.getQuestId())){
+        public void startQuest(PlayerEntity player, IWorldNpcData worldHandler, QuestChainInstance questChain) {
+            if (!questChain.getDefinition().isRepeatable() && completedQuests.contains(questChain.getQuestId())) {
                 MKNpc.LOGGER.info("Can't start quest with definition {} for {} already completed {}",
                         questChain.getDefinition().getName(), persona.getPlayerData().getEntity(), questChain.getQuestId());
                 player.sendMessage(new TranslationTextComponent("mknpc.quest.cant_start_quest", questChain.getDefinition().getQuestName()).mergeStyle(TextFormatting.DARK_RED), Util.DUMMY_UUID);
                 return;
             }
             if (!questChain.getDefinition().getRequirements().stream().allMatch(requirement ->
-                    requirement.meetsRequirements(player))){
+                    requirement.meetsRequirements(player))) {
                 player.sendMessage(new TranslationTextComponent("mknpc.quest.cant_start_quest", questChain.getDefinition().getQuestName()).mergeStyle(TextFormatting.DARK_RED), Util.DUMMY_UUID);
                 return;
             }
             PlayerQuestChainInstance quest = createNewEntry(questChain.getQuestId());
             quest.setupQuestChain(questChain);
             quest.setCurrentQuests(questChain.getStartingQuestNames());
-            for (Quest q : questChain.getDefinition().getFirstQuests()){
+            for (Quest q : questChain.getDefinition().getFirstQuests()) {
                 PlayerQuestData questData = q.generatePlayerQuestData(
                         worldHandler, questChain.getQuestChainData().getQuestData(q.getQuestName()));
                 quest.addQuestData(questData);
@@ -187,17 +187,17 @@ public class PlayerQuestingDataHandler implements IPlayerQuestingData {
             player.sendMessage(new TranslationTextComponent("mknpc.quest.start_quest", questChain.getDefinition().getQuestName()).mergeStyle(TextFormatting.GOLD), Util.DUMMY_UUID);
         }
 
-        public void questProgression(IWorldNpcData worldHandler, QuestChainInstance questChainInstance){
+        public void questProgression(IWorldNpcData worldHandler, QuestChainInstance questChainInstance) {
             questChainUpdater.markDirty(questChainInstance.getQuestId());
         }
 
-        private void completeChain(PlayerQuestChainInstance chain, PlayerEntity player){
+        private void completeChain(PlayerQuestChainInstance chain, PlayerEntity player) {
             chain.setQuestComplete(true);
             completedQuests.add(chain.getQuestId());
             player.sendMessage(new TranslationTextComponent("mknpc.quest.complete_chain", chain.getQuestName()).mergeStyle(TextFormatting.GOLD), Util.DUMMY_UUID);
         }
 
-        public void advanceQuestChain(IWorldNpcData worldHandler, QuestChainInstance questChainInstance, Quest currentQuest, IPlayerQuestingData questingData){
+        public void advanceQuestChain(IWorldNpcData worldHandler, QuestChainInstance questChainInstance, Quest currentQuest, IPlayerQuestingData questingData) {
             PlayerQuestChainInstance chain = questChains.get(questChainInstance.getQuestId());
             if (chain != null && currentQuest != null) {
                 currentQuest.grantRewards(questingData);
@@ -218,9 +218,9 @@ public class PlayerQuestingDataHandler implements IPlayerQuestingData {
                     case UNSORTED:
                         boolean allComplete = chain.getCurrentQuests().stream().allMatch(questName -> {
                             Quest quest = questChainInstance.getDefinition().getQuest(questName);
-                            if (quest != null){
+                            if (quest != null) {
                                 PlayerQuestData questData = chain.getQuestData(questName);
-                                if (questData == null){
+                                if (questData == null) {
                                     return false;
                                 }
                                 return quest.isComplete(questData);
@@ -228,7 +228,7 @@ public class PlayerQuestingDataHandler implements IPlayerQuestingData {
                                 return false;
                             }
                         });
-                        if (allComplete){
+                        if (allComplete) {
                             completeChain(chain, questingData.getPlayer());
                         }
                         break;
@@ -266,7 +266,7 @@ public class PlayerQuestingDataHandler implements IPlayerQuestingData {
         public CompoundNBT serialize() {
             CompoundNBT tag = new CompoundNBT();
             ListNBT chainsNbt = new ListNBT();
-            for (PlayerQuestChainInstance chain : questChains.values()){
+            for (PlayerQuestChainInstance chain : questChains.values()) {
                 chainsNbt.add(chain.serialize());
             }
             tag.put("chains", chainsNbt);
@@ -276,18 +276,18 @@ public class PlayerQuestingDataHandler implements IPlayerQuestingData {
         @Override
         public void deserialize(CompoundNBT nbt) {
             ListNBT chainsNbt = nbt.getList("chains", Constants.NBT.TAG_COMPOUND);
-            for (INBT chainNbt : chainsNbt){
+            for (INBT chainNbt : chainsNbt) {
                 PlayerQuestChainInstance newChain = new PlayerQuestChainInstance((CompoundNBT) chainNbt);
                 newChain.setDirtyNotifier(this::onDirtyEntry);
                 questChains.put(newChain.getQuestId(), newChain);
-                if (newChain.isQuestComplete()){
+                if (newChain.isQuestComplete()) {
                     completedQuests.add(newChain.getQuestId());
                 }
             }
         }
     }
 
-    private static PersonaQuestData createNewPersonaData(Persona persona){
+    private static PersonaQuestData createNewPersonaData(Persona persona) {
         return new PersonaQuestData(persona);
     }
 

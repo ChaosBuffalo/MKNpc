@@ -11,7 +11,7 @@ public class HasWeaponInHandCondition extends DialogueCondition {
 
     public static final ResourceLocation conditionTypeName = new ResourceLocation(MKNpc.MODID, "has_weapon_in_hand");
 
-    public HasWeaponInHandCondition(){
+    public HasWeaponInHandCondition() {
         super(conditionTypeName);
     }
 

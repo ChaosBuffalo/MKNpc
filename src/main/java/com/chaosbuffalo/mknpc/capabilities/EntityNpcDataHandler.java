@@ -73,8 +73,8 @@ public class EntityNpcDataHandler implements IEntityNpcData {
         return needsDefinitionApplied;
     }
 
-    public void applyDefinition(){
-        if (definition != null){
+    public void applyDefinition() {
+        if (definition != null) {
             definition.applyDefinition(getEntity());
             needsDefinitionApplied = false;
         }
@@ -109,25 +109,25 @@ public class EntityNpcDataHandler implements IEntityNpcData {
     public void handleExtraLoot(int lootingLevel, Collection<ItemEntity> drops, DamageSource source) {
         LivingEntity entity = getEntity();
         double noLoot = getNoLootChance();
-        for (int i = 0; i < dropChances + lootingLevel; i++){
-            if (entity.getRNG().nextDouble() >= noLoot){
+        for (int i = 0; i < dropChances + lootingLevel; i++) {
+            if (entity.getRNG().nextDouble() >= noLoot) {
                 RandomCollection<LootOptionEntry> rolls = new RandomCollection<>();
-                for (LootOptionEntry option : options){
-                    if (option.isValidConfiguration()){
+                for (LootOptionEntry option : options) {
+                    if (option.isValidConfiguration()) {
                         rolls.add(option.weight, option);
                     }
                 }
-                if (rolls.size() > 0){
+                if (rolls.size() > 0) {
                     LootOptionEntry selected = rolls.next();
                     LootSlot lootSlot = LootSlotManager.getSlotFromName(selected.lootSlotName);
                     LootTier lootTier = LootTierManager.getTierFromName(selected.lootTierName);
-                    if (lootSlot != null && lootTier != null){
+                    if (lootSlot != null && lootTier != null) {
                         LootConstructor constructor = selected.hasTemplate() ? lootTier.generateConstructorForSlot(
                                 entity.getRNG(), lootSlot, selected.templateName) : lootTier.generateConstructorForSlot(
-                                        entity.getRNG(), lootSlot);
-                        if (constructor != null){
+                                entity.getRNG(), lootSlot);
+                        if (constructor != null) {
                             ItemStack item = constructor.constructItem();
-                            if (!item.isEmpty()){
+                            if (!item.isEmpty()) {
                                 drops.add(entity.entityDropItem(item));
                             }
                         }
@@ -138,21 +138,21 @@ public class EntityNpcDataHandler implements IEntityNpcData {
         }
     }
 
-    private void handleQuestRequests(){
+    private void handleQuestRequests() {
         QuestOfferingEntry entry = questRequests.poll();
-        if (entry == null){
+        if (entry == null) {
             return;
         }
         MinecraftServer server = getEntity().getServer();
         QuestDefinition npcDef = QuestDefinitionManager.getDefinition(entry.getQuestDef());
-        if (npcDef == null){
+        if (npcDef == null) {
             MKNpc.LOGGER.debug("Can't find definition for quest {}", entry.getQuestDef());
             questRequests.add(entry);
             return;
         }
-        if (server != null && entry.getQuestId() == null){
+        if (server != null && entry.getQuestId() == null) {
             World overworld = server.getWorld(World.OVERWORLD);
-            if (overworld != null){
+            if (overworld != null) {
                 Optional<QuestChainInstance.QuestChainBuildResult> quest = overworld.getCapability(NpcCapabilities.WORLD_NPC_DATA_CAPABILITY)
                         .map(x -> x.buildQuest(npcDef, getSpawnPos())).orElse(Optional.empty());
                 if (quest.isPresent()) {
@@ -165,14 +165,14 @@ public class EntityNpcDataHandler implements IEntityNpcData {
                 }
             }
         }
-        if (entry.getQuestId() != null){
+        if (entry.getQuestId() != null) {
             MKNpc.LOGGER.debug("Adding offering for start quest {} to {}", entry.getQuestDef(), entity);
             addQuestOffering(entry.getQuestDef(), entry.getQuestId());
-            if (entry.getTree() == null){
+            if (entry.getTree() == null) {
                 MKNpc.LOGGER.error("{} has quest offering for {} but no dialogue tree, dialogue won't be assigned. " +
                         "There is probably a bug in this quest.", entity, entry.getQuestDef());
             }
-            if (entry.getTree() != null){
+            if (entry.getTree() != null) {
                 MKNpc.LOGGER.debug("Adding dialogue offering for start quest {} to {}", entry.getQuestDef(), entity);
                 entity.getCapability(ChatCapabilities.NPC_DIALOGUE_CAPABILITY).ifPresent(
                         chat -> chat.addAdditionalDialogueTree(entry.getTree()));
@@ -184,9 +184,9 @@ public class EntityNpcDataHandler implements IEntityNpcData {
     }
 
     @Override
-    public void tick(){
-        if (questGenCd <= 0){
-            if (questRequests.size() > 0){
+    public void tick() {
+        if (questGenCd <= 0) {
+            if (questRequests.size() > 0) {
                 handleQuestRequests();
                 questGenCd = entity.getRNG().nextInt(GameConstants.TICKS_PER_SECOND * 5);
             }
@@ -315,7 +315,7 @@ public class EntityNpcDataHandler implements IEntityNpcData {
     @Override
     public CompoundNBT serializeNBT() {
         CompoundNBT tag = new CompoundNBT();
-        if (definition != null){
+        if (definition != null) {
             tag.putString("npc_definition", definition.getDefinitionName().toString());
         }
         tag.putUniqueId("spawn_id", spawnID);
@@ -325,13 +325,13 @@ public class EntityNpcDataHandler implements IEntityNpcData {
 
     @Override
     public void deserializeNBT(CompoundNBT nbt) {
-        if (nbt.contains("mk_spawned")){
+        if (nbt.contains("mk_spawned")) {
             mkSpawned = nbt.getBoolean("mk_spawned");
         }
-        if (nbt.contains("spawn_id")){
+        if (nbt.contains("spawn_id")) {
             spawnID = nbt.getUniqueId("spawn_id");
         }
-        if (nbt.contains("npc_definition")){
+        if (nbt.contains("npc_definition")) {
             ResourceLocation defName = new ResourceLocation(nbt.getString("npc_definition"));
             NpcDefinition def = NpcDefinitionManager.getDefinition(defName);
             this.definition = def;

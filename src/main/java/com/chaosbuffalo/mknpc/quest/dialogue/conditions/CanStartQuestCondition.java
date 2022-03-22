@@ -20,13 +20,13 @@ public class CanStartQuestCondition extends DialogueCondition implements IReceiv
     private UUID questId;
     private boolean allowRepeat;
 
-    public CanStartQuestCondition(UUID questId, boolean allowRepeat){
+    public CanStartQuestCondition(UUID questId, boolean allowRepeat) {
         super(conditionTypeName);
         this.questId = questId;
         this.allowRepeat = allowRepeat;
     }
 
-    public CanStartQuestCondition(){
+    public CanStartQuestCondition() {
         this(Util.DUMMY_UUID, false);
     }
 
@@ -34,7 +34,7 @@ public class CanStartQuestCondition extends DialogueCondition implements IReceiv
     public boolean meetsCondition(ServerPlayerEntity player, LivingEntity source) {
         return MKNpc.getPlayerQuestData(player).map(x -> {
             PlayerQuestingDataHandler.QuestStatus status = x.getQuestStatus(questId);
-            if (status == PlayerQuestingDataHandler.QuestStatus.NOT_ON){
+            if (status == PlayerQuestingDataHandler.QuestStatus.NOT_ON) {
                 return true;
             } else {
                 return allowRepeat && status != PlayerQuestingDataHandler.QuestStatus.IN_PROGRESS;
@@ -57,7 +57,7 @@ public class CanStartQuestCondition extends DialogueCondition implements IReceiv
     @Override
     public <D> void writeAdditionalData(DynamicOps<D> ops, ImmutableMap.Builder<D, D> builder) {
         super.writeAdditionalData(ops, builder);
-        if (!questId.equals(Util.DUMMY_UUID)){
+        if (!questId.equals(Util.DUMMY_UUID)) {
             builder.put(ops.createString("questId"), ops.createString(questId.toString()));
         }
         builder.put(ops.createString("allowRepeat"), ops.createBoolean(allowRepeat));

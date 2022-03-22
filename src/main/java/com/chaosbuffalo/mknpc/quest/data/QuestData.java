@@ -8,20 +8,20 @@ import net.minecraft.nbt.CompoundNBT;
 import java.util.HashMap;
 import java.util.Map;
 
-public class QuestData{
+public class QuestData {
 
     private final Map<String, ObjectiveInstanceData> objectives = new HashMap<>();
-    private String questName;
+    private final String questName;
 
-    public QuestData(String questName){
+    public QuestData(String questName) {
         this.questName = questName;
     }
 
-    public void putObjective(String objectiveName, ObjectiveInstanceData data){
+    public void putObjective(String objectiveName, ObjectiveInstanceData data) {
         objectives.put(objectiveName, data);
     }
 
-    public ObjectiveInstanceData getObjective(String objectiveName){
+    public ObjectiveInstanceData getObjective(String objectiveName) {
         return objectives.get(objectiveName);
     }
 
@@ -32,7 +32,7 @@ public class QuestData{
     public CompoundNBT serializeNBT() {
         CompoundNBT nbt = new CompoundNBT();
         CompoundNBT objectiveNbt = new CompoundNBT();
-        for (Map.Entry<String, ObjectiveInstanceData> entry : objectives.entrySet()){
+        for (Map.Entry<String, ObjectiveInstanceData> entry : objectives.entrySet()) {
             objectiveNbt.put(entry.getKey(), entry.getValue().serializeNBT());
         }
         nbt.put("objectives", objectiveNbt);
@@ -41,9 +41,9 @@ public class QuestData{
 
     public void deserializeNBT(CompoundNBT nbt, Quest quest) {
         CompoundNBT objectiveNbt = nbt.getCompound("objectives");
-        for (String key : objectiveNbt.keySet()){
+        for (String key : objectiveNbt.keySet()) {
             QuestObjective<?> obj = quest.getObjective(key);
-            if (obj != null){
+            if (obj != null) {
                 putObjective(obj.getObjectiveName(), obj.loadInstanceData(objectiveNbt.getCompound(key)));
             }
 

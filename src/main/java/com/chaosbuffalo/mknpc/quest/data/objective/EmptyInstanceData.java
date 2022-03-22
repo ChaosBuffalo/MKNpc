@@ -2,7 +2,7 @@ package com.chaosbuffalo.mknpc.quest.data.objective;
 
 import net.minecraft.nbt.CompoundNBT;
 
-public class EmptyInstanceData extends ObjectiveInstanceData{
+public class EmptyInstanceData extends ObjectiveInstanceData {
 
     @Override
     public CompoundNBT serializeNBT() {

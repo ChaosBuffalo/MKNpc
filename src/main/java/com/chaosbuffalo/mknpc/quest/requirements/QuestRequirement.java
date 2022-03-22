@@ -21,7 +21,7 @@ public abstract class QuestRequirement implements ISerializableAttributeContaine
     private final List<ISerializableAttribute<?>> attributes = new ArrayList<>();
     private final ResourceLocation requirementType;
 
-    public QuestRequirement(ResourceLocation typeName){
+    public QuestRequirement(ResourceLocation typeName) {
         this.requirementType = typeName;
     }
 
@@ -50,7 +50,7 @@ public abstract class QuestRequirement implements ISerializableAttributeContaine
         deserializeAttributeMap(dynamic, "attributes");
     }
 
-    public static <D> ResourceLocation getType(Dynamic<D> dynamic){
+    public static <D> ResourceLocation getType(Dynamic<D> dynamic) {
         return IDynamicMapTypedSerializer.getType(dynamic, TYPE_ENTRY_NAME).orElse(INVALID_OPTION);
     }
 
