@@ -3,13 +3,11 @@ package com.chaosbuffalo.mknpc.command;
 import com.chaosbuffalo.mknpc.MKNpc;
 import com.chaosbuffalo.mknpc.capabilities.IWorldNpcData;
 import com.chaosbuffalo.mknpc.capabilities.NpcCapabilities;
-import com.chaosbuffalo.mknpc.npc.NpcDefinition;
-import com.chaosbuffalo.mknpc.npc.NpcDefinitionManager;
 import com.chaosbuffalo.mknpc.quest.QuestChainInstance;
 import com.chaosbuffalo.mknpc.quest.QuestDefinition;
 import com.chaosbuffalo.mknpc.quest.QuestDefinitionManager;
+import com.chaosbuffalo.mknpc.quest.generation.QuestChainBuildResult;
 import com.mojang.brigadier.Command;
-import com.mojang.brigadier.arguments.ArgumentType;
 import com.mojang.brigadier.arguments.StringArgumentType;
 import com.mojang.brigadier.builder.LiteralArgumentBuilder;
 import com.mojang.brigadier.context.CommandContext;
@@ -19,9 +17,6 @@ import com.mojang.brigadier.suggestion.SuggestionsBuilder;
 import net.minecraft.command.CommandSource;
 import net.minecraft.command.Commands;
 import net.minecraft.command.ISuggestionProvider;
-import net.minecraft.entity.Entity;
-import net.minecraft.entity.MobEntity;
-import net.minecraft.entity.SpawnReason;
 import net.minecraft.entity.player.ServerPlayerEntity;
 import net.minecraft.server.MinecraftServer;
 import net.minecraft.util.ResourceLocation;
@@ -88,7 +83,7 @@ public class MKQuestCommand {
             if (server != null){
                 World world = server.getWorld(World.OVERWORLD);
                 if (world != null){
-                    Optional<QuestChainInstance.QuestChainBuildResult> quest = world.getCapability(NpcCapabilities.WORLD_NPC_DATA_CAPABILITY)
+                    Optional<QuestChainBuildResult> quest = world.getCapability(NpcCapabilities.WORLD_NPC_DATA_CAPABILITY)
                             .map(x -> x.buildQuest(definition, pos)).orElse(Optional.empty());
                     if (quest.isPresent()){
                         QuestChainInstance newQuest = quest.get().instance;

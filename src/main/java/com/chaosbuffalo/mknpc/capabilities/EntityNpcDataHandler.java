@@ -10,6 +10,7 @@ import com.chaosbuffalo.mknpc.npc.entries.QuestOfferingEntry;
 import com.chaosbuffalo.mknpc.quest.QuestChainInstance;
 import com.chaosbuffalo.mknpc.quest.QuestDefinition;
 import com.chaosbuffalo.mknpc.quest.QuestDefinitionManager;
+import com.chaosbuffalo.mknpc.quest.generation.QuestChainBuildResult;
 import com.chaosbuffalo.mknpc.utils.RandomCollection;
 import com.chaosbuffalo.mkweapons.items.randomization.LootConstructor;
 import com.chaosbuffalo.mkweapons.items.randomization.LootTier;
@@ -153,10 +154,10 @@ public class EntityNpcDataHandler implements IEntityNpcData {
         if (server != null && entry.getQuestId() == null) {
             World overworld = server.getWorld(World.OVERWORLD);
             if (overworld != null) {
-                Optional<QuestChainInstance.QuestChainBuildResult> quest = overworld.getCapability(NpcCapabilities.WORLD_NPC_DATA_CAPABILITY)
+                Optional<QuestChainBuildResult> quest = overworld.getCapability(NpcCapabilities.WORLD_NPC_DATA_CAPABILITY)
                         .map(x -> x.buildQuest(npcDef, getSpawnPos())).orElse(Optional.empty());
                 if (quest.isPresent()) {
-                    QuestChainInstance.QuestChainBuildResult result = quest.get();
+                    QuestChainBuildResult result = quest.get();
                     QuestChainInstance newQuest = result.instance;
                     MKNpc.getNpcData(entity).ifPresent(x -> newQuest.setQuestSourceNpc(x.getNotableUUID()));
                     MKNpc.LOGGER.debug("Assigning quest {}({}) to {}", newQuest.getDefinition().getName(), newQuest.getQuestId(), entity);
