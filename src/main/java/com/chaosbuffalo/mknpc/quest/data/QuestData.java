@@ -8,13 +8,14 @@ import net.minecraft.nbt.CompoundNBT;
 import java.util.HashMap;
 import java.util.Map;
 
+// This is the backing data for a specialized version of a Quest
 public class QuestData {
 
+    private final Quest quest;
     private final Map<String, ObjectiveInstanceData> objectives = new HashMap<>();
-    private final String questName;
 
-    public QuestData(String questName) {
-        this.questName = questName;
+    public QuestData(Quest quest) {
+        this.quest = quest;
     }
 
     public void putObjective(String objectiveName, ObjectiveInstanceData data) {
@@ -26,7 +27,7 @@ public class QuestData {
     }
 
     public String getQuestName() {
-        return questName;
+        return quest.getQuestName();
     }
 
     public CompoundNBT serializeNBT() {
@@ -46,7 +47,6 @@ public class QuestData {
             if (obj != null) {
                 putObjective(obj.getObjectiveName(), obj.loadInstanceData(objectiveNbt.getCompound(key)));
             }
-
         }
     }
 }

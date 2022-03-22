@@ -19,17 +19,20 @@ public class QuestChainData implements IQuestInstanceData {
 
     private final Map<String, QuestData> questData;
 
-
     public QuestChainData(QuestDefinition definition, Map<ResourceLocation, List<MKStructureEntry>> questStructures) {
         questData = new HashMap<>();
         for (Quest quest : definition.getQuestChain()) {
-            QuestData qData = new QuestData(quest.getQuestName());
+            QuestData qData = new QuestData(quest);
             for (QuestObjective<?> objective : quest.getObjectives()) {
                 objective.createDataForQuest(qData, questStructures);
             }
             questData.put(quest.getQuestName(), qData);
         }
+    }
 
+    public QuestChainData(QuestDefinition definition, CompoundNBT tag) {
+        questData = new HashMap<>();
+        deserializeNBT(tag, definition);
     }
 
     public void generateDialogue(QuestChainInstance questChain,
@@ -56,11 +59,9 @@ public class QuestChainData implements IQuestInstanceData {
         return questData.get(questName);
     }
 
-    public QuestChainData(QuestDefinition definition, CompoundNBT nbt) {
-        questData = new HashMap<>();
-        deserializeNBT(nbt, definition);
+    public QuestData getQuestData(Quest quest) {
+        return getQuestData(quest.getQuestName());
     }
-
 
     @Override
     public CompoundNBT serializeNBT() {
@@ -79,7 +80,7 @@ public class QuestChainData implements IQuestInstanceData {
         for (String key : questNbt.keySet()) {
             Quest source = definition.getQuest(key);
             if (source != null) {
-                QuestData data = new QuestData(source.getQuestName());
+                QuestData data = new QuestData(source);
                 data.deserializeNBT(questNbt.getCompound(key), source);
                 questData.put(source.getQuestName(), data);
             }

@@ -49,7 +49,7 @@ public class QuestChainInstance implements INBTSerializable<CompoundNBT> {
     public Map<ResourceLocation, UUID> getSpeakingRoles() {
         Map<ResourceLocation, UUID> speakingRoles = new HashMap<>();
         for (Quest quest : definition.getQuestChain()) {
-            QuestData questData = questChainData.getQuestData(quest.getQuestName());
+            QuestData questData = questChainData.getQuestData(quest);
             for (QuestObjective<?> obj : quest.getObjectives()) {
                 if (obj instanceof TalkToNpcObjective) {
                     TalkToNpcObjective talkObj = (TalkToNpcObjective) obj;

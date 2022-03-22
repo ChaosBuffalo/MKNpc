@@ -178,7 +178,7 @@ public class PlayerQuestingDataHandler implements IPlayerQuestingData {
             quest.setCurrentQuests(questChain.getStartingQuestNames());
             for (Quest q : questChain.getDefinition().getFirstQuests()) {
                 PlayerQuestData questData = q.generatePlayerQuestData(
-                        worldHandler, questChain.getQuestChainData().getQuestData(q.getQuestName()));
+                        worldHandler, questChain.getQuestChainData().getQuestData(q));
                 quest.addQuestData(questData);
                 questChains.put(questChain.getQuestId(), quest);
                 questChainUpdater.markDirty(questChain.getQuestId());
@@ -209,7 +209,7 @@ public class PlayerQuestingDataHandler implements IPlayerQuestingData {
                         if (nextQuest.isPresent()) {
                             Quest quest = nextQuest.get();
                             chain.addQuestData(quest.generatePlayerQuestData(worldHandler,
-                                    questChainInstance.getQuestChainData().getQuestData(quest.getQuestName())));
+                                    questChainInstance.getQuestChainData().getQuestData(quest)));
                             chain.setCurrentQuests(Collections.singletonList(quest.getQuestName()));
                         } else {
                             completeChain(chain, questingData.getPlayer());
