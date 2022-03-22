@@ -20,7 +20,7 @@ public class UUIDInstanceData extends ObjectiveInstanceData {
         isValid = true;
     }
 
-    public UUID getUuid() {
+    public UUID getUUID() {
         return uuid;
     }
 

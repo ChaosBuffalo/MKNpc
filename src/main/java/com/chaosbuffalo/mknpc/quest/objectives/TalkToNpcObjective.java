@@ -153,7 +153,7 @@ public class TalkToNpcObjective extends StructureInstanceObjective<UUIDInstanceD
     public PlayerQuestObjectiveData generatePlayerData(IWorldNpcData worldData, QuestData questData) {
         UUIDInstanceData objData = getInstanceData(questData);
         PlayerQuestObjectiveData newObj = playerDataFactory();
-        newObj.putBlockPos("npcPos", worldData.getNotableNpc(objData.getUuid()).getLocation());
+        newObj.putBlockPos("npcPos", worldData.getNotableNpc(objData.getUUID()).getLocation());
         newObj.putBool("hasSpoken", false);
         return newObj;
     }
