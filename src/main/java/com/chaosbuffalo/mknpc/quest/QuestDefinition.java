@@ -21,7 +21,6 @@ import net.minecraft.util.text.StringTextComponent;
 
 import javax.annotation.Nullable;
 import java.util.*;
-import java.util.function.Supplier;
 import java.util.stream.Collectors;
 
 public class QuestDefinition {
@@ -36,7 +35,7 @@ public class QuestDefinition {
     private final Map<String, Quest> questIndex;
     private boolean repeatable;
     private ITextComponent questName;
-    private static final ITextComponent defaultQuestName = new StringTextComponent("Default");
+    private static final StringTextComponent defaultQuestName = new StringTextComponent("Default");
     private final List<QuestRequirement> requirements;
     private QuestMode mode;
     private DialogueTree startQuestTree;
@@ -190,21 +189,21 @@ public class QuestDefinition {
         for (Quest quest : dQuests) {
             addQuest(quest);
         }
-        questName = ITextComponent.Serializer.getComponentFromJson(
-                dynamic.get("questName").asString(ITextComponent.Serializer.toJson(defaultQuestName)));
+        questName = dynamic.get("questName").asString().result()
+                .map(ITextComponent.Serializer::getComponentFromJson).orElse(defaultQuestName);
+
         mode = QuestMode.values()[dynamic.get("questMode").asInt(0)];
-        List<Optional<QuestRequirement>> reqs = dynamic.get("requirements").asList(x -> {
-            ResourceLocation type = QuestRequirement.getType(x);
-            Supplier<QuestRequirement> deserializer = QuestDefinitionManager.getRequirementDeserializer(type);
-            if (deserializer == null) {
-                return Optional.empty();
-            } else {
-                QuestRequirement req = deserializer.get();
-                req.deserialize(x);
-                return Optional.of(req);
-            }
+
+        dynamic.get("requirements").asStream().forEach(entry -> {
+            QuestRequirement requirement = QuestRequirement.getType(entry)
+                    .flatMap(QuestDefinitionManager::getRequirementDeserializer)
+                    .map(f -> f.apply(entry))
+                    .orElseThrow(() -> new IllegalStateException(String.format(Locale.ENGLISH, "Failed to parse quest " +
+                            "requirement type from: %s", entry)));
+
+            addRequirement(requirement);
         });
-        reqs.forEach(x -> x.ifPresent(this::addRequirement));
+
         startQuestTree = DialogueTree.deserializeTreeFromDynamic(makeTreeId(getName()),
                 dynamic.get("dialogue").result().orElseThrow(() -> new IllegalStateException(String.format(
                         "QuestDefinition: %s missing start quest dialogue", getName().toString()))));

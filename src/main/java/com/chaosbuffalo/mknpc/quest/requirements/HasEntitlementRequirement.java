@@ -17,11 +17,16 @@ public class HasEntitlementRequirement extends QuestRequirement {
     private MKEntitlement entitlement;
 
     public HasEntitlementRequirement(MKEntitlement entitlement) {
-        super(TYPE_NAME);
+        this();
         this.entitlement = entitlement;
     }
 
-    public HasEntitlementRequirement() {
+    public HasEntitlementRequirement(Dynamic<?> dynamic) {
+        this();
+        deserialize(dynamic);
+    }
+
+    private HasEntitlementRequirement() {
         super(TYPE_NAME);
     }
 

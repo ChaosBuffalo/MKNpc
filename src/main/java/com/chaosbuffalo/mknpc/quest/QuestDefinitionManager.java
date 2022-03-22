@@ -22,11 +22,9 @@ import net.minecraftforge.event.AddReloadListenerEvent;
 import net.minecraftforge.event.OnDatapackSyncEvent;
 import net.minecraftforge.eventbus.api.SubscribeEvent;
 
-import javax.annotation.Nullable;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.Optional;
-import java.util.function.Supplier;
 
 public class QuestDefinitionManager extends JsonReloadListener {
     public static final Gson GSON = (new GsonBuilder()).setPrettyPrinting().disableHtmlEscaping().create();
@@ -38,7 +36,7 @@ public class QuestDefinitionManager extends JsonReloadListener {
 
     public static final Map<ResourceLocation, QuestObjective.Deserializer> OBJECTIVE_DESERIALIZERS = new HashMap<>();
     public static final Map<ResourceLocation, QuestReward.Deserializer> REWARD_DESERIALIZERS = new HashMap<>();
-    public static final Map<ResourceLocation, Supplier<QuestRequirement>> REQUIREMENT_DESERIALIZERS = new HashMap<>();
+    public static final Map<ResourceLocation, QuestRequirement.Deserializer> REQUIREMENT_DESERIALIZERS = new HashMap<>();
 
     public QuestDefinitionManager() {
         super(GSON, DEFINITION_FOLDER);
@@ -53,13 +51,12 @@ public class QuestDefinitionManager extends JsonReloadListener {
         return Optional.ofNullable(OBJECTIVE_DESERIALIZERS.get(name));
     }
 
-    public static void putRequirementDeserializer(ResourceLocation name, Supplier<QuestRequirement> deserializer) {
+    public static void setRequirementDeserializer(ResourceLocation name, QuestRequirement.Deserializer deserializer) {
         REQUIREMENT_DESERIALIZERS.put(name, deserializer);
     }
 
-    @Nullable
-    public static Supplier<QuestRequirement> getRequirementDeserializer(ResourceLocation name) {
-        return REQUIREMENT_DESERIALIZERS.get(name);
+    public static Optional<QuestRequirement.Deserializer> getRequirementDeserializer(ResourceLocation name) {
+        return Optional.ofNullable(REQUIREMENT_DESERIALIZERS.get(name));
     }
 
     public static void setRewardDeserializer(ResourceLocation name, QuestReward.Deserializer deserializer) {
@@ -84,7 +81,7 @@ public class QuestDefinitionManager extends JsonReloadListener {
         setRewardDeserializer(MKLootReward.TYPE_NAME, MKLootReward::new);
         setRewardDeserializer(GrantEntitlementReward.TYPE_NAME, GrantEntitlementReward::new);
 
-        putRequirementDeserializer(HasEntitlementRequirement.TYPE_NAME, HasEntitlementRequirement::new);
+        setRequirementDeserializer(HasEntitlementRequirement.TYPE_NAME, HasEntitlementRequirement::new);
     }
 
     @Override

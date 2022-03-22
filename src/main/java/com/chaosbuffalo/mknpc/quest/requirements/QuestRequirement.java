@@ -4,7 +4,6 @@ import com.chaosbuffalo.mkchat.dialogue.conditions.DialogueCondition;
 import com.chaosbuffalo.mkcore.serialization.IDynamicMapTypedSerializer;
 import com.chaosbuffalo.mkcore.serialization.ISerializableAttributeContainer;
 import com.chaosbuffalo.mkcore.serialization.attributes.ISerializableAttribute;
-import com.chaosbuffalo.mknpc.MKNpc;
 import com.google.common.collect.ImmutableMap;
 import com.mojang.serialization.Dynamic;
 import com.mojang.serialization.DynamicOps;
@@ -14,10 +13,16 @@ import net.minecraft.util.ResourceLocation;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
+import java.util.Optional;
+import java.util.function.Function;
 
 public abstract class QuestRequirement implements ISerializableAttributeContainer, IDynamicMapTypedSerializer {
+
+    public interface Deserializer extends Function<Dynamic<?>, QuestRequirement> {
+
+    }
+
     private static final String TYPE_ENTRY_NAME = "questReqType";
-    public final static ResourceLocation INVALID_OPTION = new ResourceLocation(MKNpc.MODID, "quest_requirement.invalid");
     private final List<ISerializableAttribute<?>> attributes = new ArrayList<>();
     private final ResourceLocation requirementType;
 
@@ -50,8 +55,8 @@ public abstract class QuestRequirement implements ISerializableAttributeContaine
         deserializeAttributeMap(dynamic, "attributes");
     }
 
-    public static <D> ResourceLocation getType(Dynamic<D> dynamic) {
-        return IDynamicMapTypedSerializer.getType(dynamic, TYPE_ENTRY_NAME).orElse(INVALID_OPTION);
+    public static <D> Optional<ResourceLocation> getType(Dynamic<D> dynamic) {
+        return IDynamicMapTypedSerializer.getType(dynamic, TYPE_ENTRY_NAME);
     }
 
     @Override
