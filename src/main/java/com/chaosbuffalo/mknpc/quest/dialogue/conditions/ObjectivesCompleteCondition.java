@@ -25,8 +25,16 @@ public class ObjectivesCompleteCondition extends DialogueCondition implements IR
 
 
     public ObjectivesCompleteCondition(String questName, String... objectiveNames) {
+        this(questName, Arrays.asList(objectiveNames));
+    }
+
+    public ObjectivesCompleteCondition(String questName, List<String> objectiveNames) {
+        this(questName);
+        this.objectiveNames.addAll(objectiveNames);
+    }
+
+    public ObjectivesCompleteCondition(String questName) {
         super(conditionTypeName);
-        this.objectiveNames.addAll(Arrays.asList(objectiveNames));
         this.chainId = Util.DUMMY_UUID;
         this.questName = questName;
     }
@@ -36,9 +44,14 @@ public class ObjectivesCompleteCondition extends DialogueCondition implements IR
     }
 
     @Override
+    public void setChainId(UUID chainId) {
+        this.chainId = chainId;
+    }
+
+    @Override
     public boolean meetsCondition(ServerPlayerEntity serverPlayerEntity, LivingEntity livingEntity) {
-        return MKNpc.getPlayerQuestData(serverPlayerEntity).map(x -> {
-            Optional<PlayerQuestChainInstance> chainInstance = x.getQuestChain(chainId);
+        return MKNpc.getPlayerQuestData(serverPlayerEntity).map(questLog -> {
+            Optional<PlayerQuestChainInstance> chainInstance = questLog.getQuestChain(chainId);
             if (chainInstance.isPresent()) {
                 PlayerQuestChainInstance chain = chainInstance.get();
                 return objectiveNames.stream().allMatch(name -> {
@@ -56,7 +69,7 @@ public class ObjectivesCompleteCondition extends DialogueCondition implements IR
 
     @Override
     public ObjectivesCompleteCondition copy() {
-        return new ObjectivesCompleteCondition(questName, objectiveNames.toArray(new String[0]));
+        return new ObjectivesCompleteCondition(questName, objectiveNames);
     }
 
     @Override
@@ -76,10 +89,5 @@ public class ObjectivesCompleteCondition extends DialogueCondition implements IR
                 .filter(Optional::isPresent).map(Optional::get).collect(Collectors.toList()));
         questName = dynamic.get("questName").asString("default");
         chainId = dynamic.get("chainId").asString().result().map(UUID::fromString).orElse(Util.DUMMY_UUID);
-    }
-
-    @Override
-    public void setChainId(UUID chainId) {
-        this.chainId = chainId;
     }
 }

@@ -19,8 +19,8 @@ public class HasGeneratedQuestsCondition extends DialogueCondition {
 
     @Override
     public boolean meetsCondition(ServerPlayerEntity player, LivingEntity source) {
-        return source.getCapability(NpcCapabilities.ENTITY_NPC_DATA_CAPABILITY).map(
-                IEntityNpcData::hasGeneratedQuest).orElse(false);
+        return source.getCapability(NpcCapabilities.ENTITY_NPC_DATA_CAPABILITY)
+                .map(IEntityNpcData::hasGeneratedQuest).orElse(false);
     }
 
     @Override

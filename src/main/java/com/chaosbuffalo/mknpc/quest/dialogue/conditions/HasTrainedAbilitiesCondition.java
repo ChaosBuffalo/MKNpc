@@ -10,50 +10,53 @@ import net.minecraft.entity.LivingEntity;
 import net.minecraft.entity.player.ServerPlayerEntity;
 import net.minecraft.util.ResourceLocation;
 
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.List;
-import java.util.Optional;
+import java.util.*;
 
 public class HasTrainedAbilitiesCondition extends DialogueCondition {
     public static final ResourceLocation conditionTypeName = new ResourceLocation(MKNpc.MODID, "has_trained_abilities");
     private final List<ResourceLocation> abilities = new ArrayList<>();
     private boolean allMatch;
 
-    public HasTrainedAbilitiesCondition(boolean allMatch, ResourceLocation... loc) {
-        super(conditionTypeName);
-        abilities.addAll(Arrays.asList(loc));
+    public HasTrainedAbilitiesCondition(boolean allMatch, ResourceLocation... abilityIds) {
+        this(allMatch, Arrays.asList(abilityIds));
+    }
+
+    public HasTrainedAbilitiesCondition(boolean allMatch, List<ResourceLocation> abilityIds) {
+        this();
         this.allMatch = allMatch;
+        abilities.addAll(abilityIds);
     }
 
     public HasTrainedAbilitiesCondition() {
         super(conditionTypeName);
     }
 
-
     @Override
     public boolean meetsCondition(ServerPlayerEntity player, LivingEntity source) {
-        if (allMatch) {
-            return abilities.stream().allMatch(x -> MKCore.getPlayer(player).map(
-                    pd -> pd.getAbilities().knowsAbility(x)).orElse(false));
-        } else {
-            return abilities.stream().anyMatch(x -> MKCore.getPlayer(player).map(
-                    pd -> pd.getAbilities().knowsAbility(x)).orElse(false));
-        }
+        return MKCore.getPlayer(player).map(playerData -> {
+            if (allMatch) {
+                return abilities.stream().allMatch(abilityId -> playerData.getAbilities().knowsAbility(abilityId));
+            } else {
+                return abilities.stream().anyMatch(abilityId -> playerData.getAbilities().knowsAbility(abilityId));
+            }
+        }).orElse(false);
     }
 
     @Override
     public HasTrainedAbilitiesCondition copy() {
-        return new HasTrainedAbilitiesCondition(allMatch, abilities.toArray(new ResourceLocation[0]));
+        return new HasTrainedAbilitiesCondition(allMatch, abilities);
     }
 
     @Override
     public <D> void readAdditionalData(Dynamic<D> dynamic) {
         super.readAdditionalData(dynamic);
         this.allMatch = dynamic.get("allMatch").asBoolean(false);
-        List<Optional<ResourceLocation>> locs = dynamic.get("abilities").asList(
-                d -> d.asString().result().map(ResourceLocation::new));
-        locs.forEach(loc -> loc.ifPresent(abilities::add));
+
+        dynamic.get("abilities").asStream()
+                .map(entry -> entry.asString().result()
+                        .map(ResourceLocation::new)
+                        .orElseThrow(() -> new IllegalStateException("Failed to decode ability from: %s" + entry)))
+                .forEach(abilities::add);
     }
 
     @Override
