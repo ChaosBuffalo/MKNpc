@@ -7,6 +7,7 @@ import com.chaosbuffalo.mkweapons.items.randomization.LootTier;
 import com.chaosbuffalo.mkweapons.items.randomization.LootTierManager;
 import com.chaosbuffalo.mkweapons.items.randomization.slots.LootSlot;
 import com.chaosbuffalo.mkweapons.items.randomization.slots.LootSlotManager;
+import com.mojang.serialization.Dynamic;
 import net.minecraft.entity.player.PlayerEntity;
 import net.minecraft.item.ItemStack;
 import net.minecraft.util.ResourceLocation;
@@ -26,9 +27,10 @@ public class MKLootReward extends QuestReward {
         addAttributes(this.lootTier, this.lootSlot);
     }
 
-    public MKLootReward() {
+    public MKLootReward(Dynamic<?> dynamic) {
         super(TYPE_NAME, defaultDescription);
         addAttributes(this.lootTier, this.lootSlot);
+        deserialize(dynamic);
     }
 
     @Override

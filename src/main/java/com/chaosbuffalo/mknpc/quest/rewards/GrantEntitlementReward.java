@@ -30,7 +30,12 @@ public class GrantEntitlementReward extends QuestReward {
         entitlementId.setValue(entitlement.getRegistryName());
     }
 
-    public GrantEntitlementReward() {
+    public GrantEntitlementReward(Dynamic<?> dynamic) {
+        this();
+        deserialize(dynamic);
+    }
+
+    private GrantEntitlementReward() {
         super(TYPE_NAME, defaultDescription);
         addAttribute(entitlementId);
     }

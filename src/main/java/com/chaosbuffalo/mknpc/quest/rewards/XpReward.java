@@ -2,6 +2,7 @@ package com.chaosbuffalo.mknpc.quest.rewards;
 
 import com.chaosbuffalo.mkcore.serialization.attributes.IntAttribute;
 import com.chaosbuffalo.mknpc.MKNpc;
+import com.mojang.serialization.Dynamic;
 import net.minecraft.entity.player.PlayerEntity;
 import net.minecraft.util.ResourceLocation;
 import net.minecraft.util.Util;
@@ -20,8 +21,9 @@ public class XpReward extends QuestReward {
         xpAmount.setValue(xp);
     }
 
-    public XpReward() {
+    public XpReward(Dynamic<?> dynamic) {
         this(0);
+        deserialize(dynamic);
     }
 
     @Override

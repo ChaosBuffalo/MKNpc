@@ -37,7 +37,7 @@ public class QuestDefinitionManager extends JsonReloadListener {
     public static final Map<ResourceLocation, QuestDefinition> DEFINITIONS = new HashMap<>();
 
     public static final Map<ResourceLocation, QuestObjective.Deserializer> OBJECTIVE_DESERIALIZERS = new HashMap<>();
-    public static final Map<ResourceLocation, Supplier<QuestReward>> REWARD_DESERIALIZERS = new HashMap<>();
+    public static final Map<ResourceLocation, QuestReward.Deserializer> REWARD_DESERIALIZERS = new HashMap<>();
     public static final Map<ResourceLocation, Supplier<QuestRequirement>> REQUIREMENT_DESERIALIZERS = new HashMap<>();
 
     public QuestDefinitionManager() {
@@ -62,13 +62,12 @@ public class QuestDefinitionManager extends JsonReloadListener {
         return REQUIREMENT_DESERIALIZERS.get(name);
     }
 
-    public static void putRewardDeserializer(ResourceLocation name, Supplier<QuestReward> deserializer) {
+    public static void setRewardDeserializer(ResourceLocation name, QuestReward.Deserializer deserializer) {
         REWARD_DESERIALIZERS.put(name, deserializer);
     }
 
-    @Nullable
-    public static Supplier<QuestReward> getRewardDeserializer(ResourceLocation name) {
-        return REWARD_DESERIALIZERS.get(name);
+    public static Optional<QuestReward.Deserializer> getRewardDeserializer(ResourceLocation name) {
+        return Optional.ofNullable(REWARD_DESERIALIZERS.get(name));
     }
 
     public static void setupDeserializers() {
@@ -81,9 +80,9 @@ public class QuestDefinitionManager extends JsonReloadListener {
         setObjectiveDeserializer(QuestLootNotableObjective.NAME, QuestLootNotableObjective::new);
         setObjectiveDeserializer(KillWithAbilityObjective.NAME, KillWithAbilityObjective::new);
 
-        putRewardDeserializer(XpReward.TYPE_NAME, XpReward::new);
-        putRewardDeserializer(MKLootReward.TYPE_NAME, MKLootReward::new);
-        putRewardDeserializer(GrantEntitlementReward.TYPE_NAME, GrantEntitlementReward::new);
+        setRewardDeserializer(XpReward.TYPE_NAME, XpReward::new);
+        setRewardDeserializer(MKLootReward.TYPE_NAME, MKLootReward::new);
+        setRewardDeserializer(GrantEntitlementReward.TYPE_NAME, GrantEntitlementReward::new);
 
         putRequirementDeserializer(HasEntitlementRequirement.TYPE_NAME, HasEntitlementRequirement::new);
     }

@@ -129,19 +129,15 @@ public class Quest {
             addObjective(objective);
         });
 
-        List<Optional<QuestReward>> rewards = dynamic.get("rewards").asList(x -> {
-            ResourceLocation type = QuestReward.getType(x);
-            Supplier<QuestReward> sup = QuestDefinitionManager.getRewardDeserializer(type);
-            if (sup != null) {
-                QuestReward reward = sup.get();
-                reward.deserialize(x);
-                return Optional.of(reward);
-            }
-            return Optional.empty();
+        dynamic.get("rewards").asStream().forEach(entry -> {
+            QuestReward objective = QuestReward.getType(entry)
+                    .flatMap(QuestDefinitionManager::getRewardDeserializer)
+                    .map(f -> f.apply(entry))
+                    .orElseThrow(() -> new IllegalStateException(String.format(Locale.ENGLISH, "Failed to parse quest " +
+                            "reward type from: %s", entry)));
+
+            addReward(objective);
         });
-        for (Optional<QuestReward> rewardOpt : rewards) {
-            rewardOpt.ifPresent(this::addReward);
-        }
     }
 
     public List<QuestObjective<?>> getObjectives() {

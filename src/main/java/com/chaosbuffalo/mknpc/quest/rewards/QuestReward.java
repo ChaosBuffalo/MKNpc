@@ -16,10 +16,16 @@ import net.minecraft.util.text.StringTextComponent;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
+import java.util.Optional;
+import java.util.function.Function;
 
 public abstract class QuestReward implements ISerializableAttributeContainer, IDynamicMapTypedSerializer {
+
+    public interface Deserializer extends Function<Dynamic<?>, QuestReward> {
+
+    }
+
     private static final String TYPE_NAME_FIELD = "rewardType";
-    public final static ResourceLocation INVALID_OPTION = new ResourceLocation(MKNpc.MODID, "quest_reward.invalid");
     protected static final IFormattableTextComponent defaultDescription = new StringTextComponent("Placeholder");
     private IFormattableTextComponent description;
     private final ResourceLocation typeName;
@@ -63,8 +69,8 @@ public abstract class QuestReward implements ISerializableAttributeContainer, ID
         return TYPE_NAME_FIELD;
     }
 
-    public static <D> ResourceLocation getType(Dynamic<D> dynamic) {
-        return IDynamicMapTypedSerializer.getType(dynamic, TYPE_NAME_FIELD).orElse(INVALID_OPTION);
+    public static <D> Optional<ResourceLocation> getType(Dynamic<D> dynamic) {
+        return IDynamicMapTypedSerializer.getType(dynamic, TYPE_NAME_FIELD);
     }
 
     @Override
