@@ -123,9 +123,9 @@ public class EntityNpcDataHandler implements IEntityNpcData {
                     LootSlot lootSlot = LootSlotManager.getSlotFromName(selected.lootSlotName);
                     LootTier lootTier = LootTierManager.getTierFromName(selected.lootTierName);
                     if (lootSlot != null && lootTier != null) {
-                        LootConstructor constructor = selected.hasTemplate() ? lootTier.generateConstructorForSlot(
-                                entity.getRNG(), lootSlot, selected.templateName) : lootTier.generateConstructorForSlot(
-                                entity.getRNG(), lootSlot);
+                        LootConstructor constructor = selected.hasTemplate() ?
+                                lootTier.generateConstructorForSlot(entity.getRNG(), lootSlot, selected.templateName) :
+                                lootTier.generateConstructorForSlot(entity.getRNG(), lootSlot);
                         if (constructor != null) {
                             ItemStack item = constructor.constructItem();
                             if (!item.isEmpty()) {
@@ -145,9 +145,9 @@ public class EntityNpcDataHandler implements IEntityNpcData {
             return;
         }
         MinecraftServer server = getEntity().getServer();
-        QuestDefinition npcDef = QuestDefinitionManager.getDefinition(entry.getQuestDef());
+        QuestDefinition npcDef = QuestDefinitionManager.getDefinition(entry.getQuestDefinitionId());
         if (npcDef == null) {
-            MKNpc.LOGGER.debug("Can't find definition for quest {}", entry.getQuestDef());
+            MKNpc.LOGGER.debug("Can't find definition for quest {}", entry.getQuestDefinitionId());
             questRequests.add(entry);
             return;
         }
@@ -167,19 +167,19 @@ public class EntityNpcDataHandler implements IEntityNpcData {
             }
         }
         if (entry.getQuestId() != null) {
-            MKNpc.LOGGER.debug("Adding offering for start quest {} to {}", entry.getQuestDef(), entity);
-            addQuestOffering(entry.getQuestDef(), entry.getQuestId());
+            MKNpc.LOGGER.debug("Adding offering for start quest {} to {}", entry.getQuestDefinitionId(), entity);
+            addQuestOffering(entry.getQuestDefinitionId(), entry.getQuestId());
             if (entry.getTree() == null) {
                 MKNpc.LOGGER.error("{} has quest offering for {} but no dialogue tree, dialogue won't be assigned. " +
-                        "There is probably a bug in this quest.", entity, entry.getQuestDef());
+                        "There is probably a bug in this quest.", entity, entry.getQuestDefinitionId());
             }
             if (entry.getTree() != null) {
-                MKNpc.LOGGER.debug("Adding dialogue offering for start quest {} to {}", entry.getQuestDef(), entity);
+                MKNpc.LOGGER.debug("Adding dialogue offering for start quest {} to {}", entry.getQuestDefinitionId(), entity);
                 entity.getCapability(ChatCapabilities.NPC_DIALOGUE_CAPABILITY).ifPresent(
                         chat -> chat.addAdditionalDialogueTree(entry.getTree()));
             }
         } else {
-            MKNpc.LOGGER.debug("Failed to generate quest request for: {} entity is {}", entry.getQuestDef(), entity);
+            MKNpc.LOGGER.debug("Failed to generate quest request for: {} entity is {}", entry.getQuestDefinitionId(), entity);
             questRequests.add(entry);
         }
     }
@@ -198,7 +198,7 @@ public class EntityNpcDataHandler implements IEntityNpcData {
 
     @Override
     public void requestQuest(QuestOfferingEntry entry) {
-        MKNpc.LOGGER.debug("Adding quest request for {} to {}", entry.getQuestDef(), entity);
+        MKNpc.LOGGER.debug("Adding quest request for {} to {}", entry.getQuestDefinitionId(), entity);
         questRequests.add(entry);
     }
 

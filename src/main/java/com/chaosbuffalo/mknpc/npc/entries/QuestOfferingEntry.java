@@ -40,7 +40,7 @@ public class QuestOfferingEntry implements INBTSerializable<CompoundNBT> {
         return tree;
     }
 
-    public ResourceLocation getQuestDef() {
+    public ResourceLocation getQuestDefinitionId() {
         return questDef;
     }
 
@@ -107,8 +107,6 @@ public class QuestOfferingEntry implements INBTSerializable<CompoundNBT> {
             MKNpc.LOGGER.debug("Set quest id called in quest generation with null id {}", questDef);
             return;
         }
-
-
     }
 
     @Override

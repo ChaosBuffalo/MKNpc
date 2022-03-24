@@ -1,38 +1,29 @@
 package com.chaosbuffalo.mknpc.npc.option_entries;
 
-import com.chaosbuffalo.mkchat.capabilities.ChatCapabilities;
 import com.chaosbuffalo.mknpc.MKNpc;
-import com.chaosbuffalo.mknpc.capabilities.NpcCapabilities;
 import com.chaosbuffalo.mknpc.npc.entries.QuestOfferingEntry;
-import com.chaosbuffalo.mknpc.quest.QuestChainInstance;
-import com.chaosbuffalo.mknpc.quest.QuestDefinition;
-import com.chaosbuffalo.mknpc.quest.QuestDefinitionManager;
 import net.minecraft.entity.Entity;
 import net.minecraft.nbt.CompoundNBT;
 import net.minecraft.nbt.INBT;
 import net.minecraft.nbt.ListNBT;
-import net.minecraft.server.MinecraftServer;
 import net.minecraft.util.ResourceLocation;
-import net.minecraft.util.math.BlockPos;
-import net.minecraft.world.World;
 import net.minecraftforge.common.util.Constants;
 
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
-import java.util.Optional;
 
-public class QuestOptionsEntry implements INpcOptionEntry{
+public class QuestOptionsEntry implements INpcOptionEntry {
 
-    private Map<ResourceLocation, QuestOfferingEntry> questOfferings = new HashMap<>();
+    private final Map<ResourceLocation, QuestOfferingEntry> questOfferings = new HashMap<>();
 
-    public QuestOptionsEntry(List<ResourceLocation> locs){
-        for (ResourceLocation loc : locs){
+    public QuestOptionsEntry(List<ResourceLocation> locs) {
+        for (ResourceLocation loc : locs) {
             questOfferings.put(loc, new QuestOfferingEntry(loc));
         }
     }
 
-    public QuestOptionsEntry(){
+    public QuestOptionsEntry() {
 
     }
 
@@ -61,7 +52,7 @@ public class QuestOptionsEntry implements INpcOptionEntry{
 //        }
         MKNpc.getNpcData(entity).ifPresent(x -> {
             x.putShouldHaveQuest(true);
-            for (QuestOfferingEntry entry : questOfferings.values()){
+            for (QuestOfferingEntry entry : questOfferings.values()) {
                 x.requestQuest(entry);
             }
         });
@@ -71,7 +62,7 @@ public class QuestOptionsEntry implements INpcOptionEntry{
     public CompoundNBT serializeNBT() {
         CompoundNBT nbt = new CompoundNBT();
         ListNBT offeringNbt = new ListNBT();
-        for (QuestOfferingEntry entry : questOfferings.values()){
+        for (QuestOfferingEntry entry : questOfferings.values()) {
             offeringNbt.add(entry.serializeNBT());
         }
         nbt.put("offerings", offeringNbt);
@@ -81,9 +72,9 @@ public class QuestOptionsEntry implements INpcOptionEntry{
     @Override
     public void deserializeNBT(CompoundNBT nbt) {
         ListNBT offeringNbt = nbt.getList("offerings", Constants.NBT.TAG_COMPOUND);
-        for (INBT offering : offeringNbt){
+        for (INBT offering : offeringNbt) {
             QuestOfferingEntry newEntry = new QuestOfferingEntry((CompoundNBT) offering);
-            questOfferings.put(newEntry.getQuestDef(), newEntry);
+            questOfferings.put(newEntry.getQuestDefinitionId(), newEntry);
         }
     }
 }
