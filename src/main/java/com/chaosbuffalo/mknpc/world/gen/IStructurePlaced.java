@@ -3,6 +3,7 @@ package com.chaosbuffalo.mknpc.world.gen;
 import net.minecraft.util.RegistryKey;
 import net.minecraft.util.ResourceLocation;
 import net.minecraft.util.math.BlockPos;
+import net.minecraft.util.math.GlobalPos;
 import net.minecraft.world.World;
 
 import javax.annotation.Nullable;
@@ -22,7 +23,7 @@ public interface IStructurePlaced {
 
     void setStructureId(UUID structureId);
 
-    BlockPos getBlockPos();
+    GlobalPos getBlockPos();
 
     @Nullable
     World getStructureWorld();

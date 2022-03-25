@@ -1,13 +1,14 @@
 package com.chaosbuffalo.mknpc.quest.data.player;
 
-import net.minecraft.nbt.CompoundNBT;
-import net.minecraft.nbt.INBT;
-import net.minecraft.nbt.ListNBT;
-import net.minecraft.nbt.StringNBT;
+import com.chaosbuffalo.mknpc.MKNpc;
+import net.minecraft.nbt.*;
+import net.minecraft.util.RegistryKey;
 import net.minecraft.util.ResourceLocation;
 import net.minecraft.util.math.BlockPos;
+import net.minecraft.util.math.GlobalPos;
 import net.minecraft.util.text.IFormattableTextComponent;
 import net.minecraft.util.text.ITextComponent;
+import net.minecraft.world.World;
 import net.minecraftforge.common.util.Constants;
 import net.minecraftforge.common.util.INBTSerializable;
 
@@ -18,7 +19,7 @@ public class PlayerQuestObjectiveData implements INBTSerializable<CompoundNBT> {
     private String objectiveName;
     private final Map<String, Integer> intData = new HashMap<>();
     private final Map<String, Double> doubleData = new HashMap<>();
-    private final Map<String, BlockPos> blockPosData = new HashMap<>();
+    private final Map<String, GlobalPos> blockPosData = new HashMap<>();
     private final Map<String, Float> floatData = new HashMap<>();
     private final Map<String, ResourceLocation> rlData = new HashMap<>();
     private final Map<String, ITextComponent> textData = new HashMap<>();
@@ -71,15 +72,15 @@ public class PlayerQuestObjectiveData implements INBTSerializable<CompoundNBT> {
         doubleData.put(name, value);
     }
 
-    public BlockPos getBlockPos(String name){
+    public GlobalPos getBlockPos(String name){
         return blockPosData.get(name);
     }
 
-    public void putBlockPos(String name, BlockPos value){
+    public void putBlockPos(String name, GlobalPos value){
         blockPosData.put(name, value);
     }
 
-    public Map<String, BlockPos> getBlockPosData() {
+    public Map<String, GlobalPos> getBlockPosData() {
         return blockPosData;
     }
 
@@ -133,8 +134,9 @@ public class PlayerQuestObjectiveData implements INBTSerializable<CompoundNBT> {
         }
         nbt.put("intData", intNbt);
         CompoundNBT blockPosNbt = new CompoundNBT();
-        for (Map.Entry<String, BlockPos> entry : blockPosData.entrySet()){
-            blockPosNbt.putLong(entry.getKey(), entry.getValue().toLong());
+        for (Map.Entry<String, GlobalPos> entry : blockPosData.entrySet()){
+            blockPosNbt.put(entry.getKey(), GlobalPos.CODEC.encodeStart(NBTDynamicOps.INSTANCE, entry.getValue())
+                    .getOrThrow(false, MKNpc.LOGGER::error));
         }
         nbt.put("blockPosData", blockPosNbt);
         CompoundNBT floatNbt = new CompoundNBT();
@@ -178,7 +180,8 @@ public class PlayerQuestObjectiveData implements INBTSerializable<CompoundNBT> {
         }
         CompoundNBT blockPosNbt = nbt.getCompound("blockPosData");
         for (String key : blockPosNbt.keySet()){
-            blockPosData.put(key, BlockPos.fromLong(blockPosNbt.getLong(key)));
+            blockPosData.put(key, GlobalPos.CODEC.parse(NBTDynamicOps.INSTANCE, blockPosNbt.getCompound(key)).result()
+                    .orElse(GlobalPos.getPosition(World.OVERWORLD, BlockPos.fromLong(blockPosNbt.getLong(key)))));
         }
         CompoundNBT floatNbt = nbt.getCompound("floatData");
         for (String key : floatNbt.keySet()){

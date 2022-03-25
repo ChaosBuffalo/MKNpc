@@ -25,6 +25,7 @@ import net.minecraft.util.Direction;
 import net.minecraft.util.RegistryKey;
 import net.minecraft.util.ResourceLocation;
 import net.minecraft.util.math.BlockPos;
+import net.minecraft.util.math.GlobalPos;
 import net.minecraft.util.math.vector.Vector3d;
 import net.minecraft.world.IServerWorld;
 import net.minecraft.world.World;
@@ -121,8 +122,8 @@ public class MKSpawnerTileEntity extends TileEntity implements ITickableTileEnti
     }
 
     @Override
-    public BlockPos getBlockPos() {
-        return getPos();
+    public GlobalPos getBlockPos() {
+        return GlobalPos.getPosition(getWorld().getDimensionKey(), getPos());
     }
 
     @Override

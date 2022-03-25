@@ -10,6 +10,7 @@ import net.minecraft.server.MinecraftServer;
 import net.minecraft.tileentity.ChestTileEntity;
 import net.minecraft.util.ResourceLocation;
 import net.minecraft.util.math.BlockPos;
+import net.minecraft.util.math.GlobalPos;
 import net.minecraft.util.text.ITextComponent;
 import net.minecraft.util.text.StringTextComponent;
 import net.minecraft.world.World;
@@ -101,8 +102,8 @@ public class ChestNpcDataHandler implements IChestNpcData{
     }
 
     @Override
-    public BlockPos getBlockPos() {
-        return entity.getPos();
+    public GlobalPos getBlockPos() {
+        return GlobalPos.getPosition(entity.getWorld().getDimensionKey(), entity.getPos());
     }
 
     @Nullable
