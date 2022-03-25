@@ -11,6 +11,7 @@ import net.minecraft.entity.player.ServerPlayerEntity;
 import net.minecraft.util.ResourceLocation;
 
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.UUID;
 
 public class OnQuestCondition extends DialogueCondition {
@@ -31,9 +32,9 @@ public class OnQuestCondition extends DialogueCondition {
 
     @Override
     public boolean meetsCondition(ServerPlayerEntity player, LivingEntity source) {
-        return MKNpc.getPlayerQuestData(player).map(
-                        x -> x.getQuestStatus(questId) == PlayerQuestingDataHandler.QuestStatus.IN_PROGRESS
-                                && x.getCurrentQuestSteps(questId).orElse(new ArrayList<>()).contains(questStep))
+        return MKNpc.getPlayerQuestData(player)
+                .map(x -> x.getQuestStatus(questId) == PlayerQuestingDataHandler.QuestStatus.IN_PROGRESS &&
+                        x.getCurrentQuestSteps(questId).orElse(Collections.emptyList()).contains(questStep))
                 .orElse(false);
     }
 

@@ -15,7 +15,6 @@ import net.minecraft.util.ResourceLocation;
 import net.minecraft.util.Util;
 
 import java.util.*;
-import java.util.stream.Collectors;
 
 public class ObjectivesCompleteCondition extends DialogueCondition implements IReceivesChainId {
     public static final ResourceLocation conditionTypeName = new ResourceLocation(MKNpc.MODID, "objectives_complete");
@@ -85,8 +84,12 @@ public class ObjectivesCompleteCondition extends DialogueCondition implements IR
     @Override
     public <D> void readAdditionalData(Dynamic<D> dynamic) {
         super.readAdditionalData(dynamic);
-        this.objectiveNames.addAll(dynamic.get("objectiveNames").asList(x -> x.asString().result()).stream()
-                .filter(Optional::isPresent).map(Optional::get).collect(Collectors.toList()));
+
+        objectiveNames.clear();
+        dynamic.get("objectiveNames").asStream()
+                .map(x -> x.asString().result().orElseThrow(() -> new IllegalStateException("Failed to parse objective name from: " + x)))
+                .forEach(objectiveNames::add);
+
         questName = dynamic.get("questName").asString("default");
         chainId = dynamic.get("chainId").asString().result().map(UUID::fromString).orElse(Util.DUMMY_UUID);
     }

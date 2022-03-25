@@ -17,10 +17,7 @@ import com.mojang.serialization.Dynamic;
 import net.minecraft.entity.player.PlayerEntity;
 import net.minecraft.util.ResourceLocation;
 import net.minecraft.util.Util;
-import net.minecraft.util.text.IFormattableTextComponent;
-import net.minecraft.util.text.StringTextComponent;
-import net.minecraft.util.text.TextFormatting;
-import net.minecraft.util.text.TranslationTextComponent;
+import net.minecraft.util.text.*;
 import net.minecraftforge.event.entity.living.LivingDeathEvent;
 
 import java.util.Collections;
@@ -65,12 +62,12 @@ public class KillWithAbilityObjective extends QuestObjective<EmptyInstanceData> 
         return Collections.singletonList(getDescriptionWithKillCount(0));
     }
 
-    private IFormattableTextComponent getDescriptionWithKillCount(int count) {
-        return this.ability.resolve().map(
-                        x -> new TranslationTextComponent("mknpc.objective.kill_w_ability.desc", x.getAbilityName(),
-                                count, this.count.value()))
-                .orElse(new TranslationTextComponent("mknpc.objective.kill_w_ability.desc",
-                        new StringTextComponent("Ability Not Found"), count, this.count.value()));
+    private IFormattableTextComponent getDescriptionWithKillCount(int currentCount) {
+        ITextComponent abilityName = ability.resolve()
+                .map(MKAbility::getAbilityName)
+                .orElse(new StringTextComponent("Ability Not Found"));
+
+        return new TranslationTextComponent("mknpc.objective.kill_w_ability.desc", abilityName, currentCount, count.value());
     }
 
     @Override

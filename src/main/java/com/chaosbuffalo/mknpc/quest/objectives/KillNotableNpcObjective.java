@@ -48,8 +48,9 @@ public class KillNotableNpcObjective extends StructureInstanceObjective<UUIDInst
                                             LivingDeathEvent event, QuestData quest, PlayerQuestChainInstance playerChain) {
         if (!isComplete(objectiveData)) {
             UUIDInstanceData objData = quest.getObjective(this);
-            boolean applies = event.getEntityLiving().getCapability(NpcCapabilities.ENTITY_NPC_DATA_CAPABILITY).map(
-                    x -> x.getNotableUUID().equals(objData.getUUID())).orElse(false);
+            boolean applies = event.getEntityLiving().getCapability(NpcCapabilities.ENTITY_NPC_DATA_CAPABILITY)
+                    .map(x -> x.getNotableUUID().equals(objData.getUUID()))
+                    .orElse(false);
             if (applies) {
                 objectiveData.putBool("hasKilled", true);
                 objectiveData.removeBlockPos("npcPos");

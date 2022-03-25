@@ -5,6 +5,7 @@ import com.chaosbuffalo.mkcore.serialization.attributes.DoubleAttribute;
 import com.chaosbuffalo.mkcore.serialization.attributes.IntAttribute;
 import com.chaosbuffalo.mkcore.serialization.attributes.ResourceLocationAttribute;
 import com.chaosbuffalo.mknpc.MKNpc;
+import com.chaosbuffalo.mknpc.capabilities.IEntityNpcData;
 import com.chaosbuffalo.mknpc.capabilities.IWorldNpcData;
 import com.chaosbuffalo.mknpc.capabilities.NpcCapabilities;
 import com.chaosbuffalo.mknpc.npc.MKStructureEntry;
@@ -83,8 +84,10 @@ public class QuestLootNpcObjective extends StructureInstanceObjective<UUIDInstan
                                             LivingDeathEvent event, QuestData quest, PlayerQuestChainInstance playerChain) {
         if (!isComplete(objectiveData)) {
             UUIDInstanceData objData = quest.getObjective(this);
-            boolean applies = event.getEntityLiving().getCapability(NpcCapabilities.ENTITY_NPC_DATA_CAPABILITY).map(
-                    x -> x.getStructureId().map(structId -> structId.equals(objData.getUUID())).orElse(false)).orElse(false)
+            boolean applies = event.getEntityLiving().getCapability(NpcCapabilities.ENTITY_NPC_DATA_CAPABILITY).resolve()
+                    .flatMap(IEntityNpcData::getStructureId)
+                    .map(structId -> structId.equals(objData.getUUID()))
+                    .orElse(false)
                     && def.getDefinitionName().equals(npcDefinition.getValue());
             if (applies && player.getRNG().nextDouble() <= chanceToFind.value()) {
                 int currentCount = objectiveData.getInt("lootCount");

@@ -5,7 +5,6 @@ import com.chaosbuffalo.mkchat.dialogue.ContextAwareTextComponent;
 import com.chaosbuffalo.mkchat.dialogue.DialogueManager;
 import com.chaosbuffalo.mkchat.dialogue.DialogueTree;
 import com.chaosbuffalo.mkchat.dialogue.IDialogueExtension;
-import com.chaosbuffalo.mkchat.json.SerializationUtils;
 import com.chaosbuffalo.mknpc.MKNpc;
 import com.chaosbuffalo.mknpc.capabilities.NpcCapabilities;
 import com.chaosbuffalo.mknpc.dialogue.effects.OpenLearnAbilitiesEffect;
@@ -14,17 +13,10 @@ import com.chaosbuffalo.mknpc.quest.dialogue.effects.AdvanceQuestChainEffect;
 import com.chaosbuffalo.mknpc.quest.dialogue.effects.GrantEntitlementEffect;
 import com.chaosbuffalo.mknpc.quest.dialogue.effects.ObjectiveCompleteEffect;
 import com.chaosbuffalo.mknpc.quest.dialogue.effects.StartQuestChainEffect;
-import com.google.common.collect.Lists;
-import net.minecraft.client.Minecraft;
-import net.minecraft.item.Item;
-import net.minecraft.server.MinecraftServer;
-import net.minecraft.util.ResourceLocation;
 import net.minecraft.util.text.ITextComponent;
 import net.minecraft.util.text.StringTextComponent;
-import net.minecraft.util.text.TranslationTextComponent;
 import net.minecraft.world.World;
 import net.minecraftforge.fml.InterModComms;
-import net.minecraftforge.registries.ForgeRegistries;
 
 import java.util.Collections;
 import java.util.UUID;
@@ -43,9 +35,9 @@ public class NPCDialogueExtension implements IDialogueExtension {
                 if (context.getPlayer().getServer() != null){
                     World overworld = context.getPlayer().getServer().getWorld(World.OVERWORLD);
                     if (overworld != null){
-                        return Collections.singletonList(overworld.getCapability(NpcCapabilities.WORLD_NPC_DATA_CAPABILITY).map(x ->
-                                x.getNotableNpc(UUID.fromString(name)).getName()).orElse(
-                                new StringTextComponent(String.format("notable:%s", name))));
+                        return Collections.singletonList(overworld.getCapability(NpcCapabilities.WORLD_NPC_DATA_CAPABILITY)
+                                .map(x -> x.getNotableNpc(UUID.fromString(name)).getName())
+                                .orElse(new StringTextComponent(String.format("notable:%s", name))));
                     }
                 }
                 return Collections.singletonList(new StringTextComponent(String.format("notable:%s", name)));

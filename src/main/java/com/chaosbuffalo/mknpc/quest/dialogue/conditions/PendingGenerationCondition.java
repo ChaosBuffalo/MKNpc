@@ -18,8 +18,9 @@ public class PendingGenerationCondition extends DialogueCondition {
 
     @Override
     public boolean meetsCondition(ServerPlayerEntity player, LivingEntity source) {
-        return source.getCapability(NpcCapabilities.ENTITY_NPC_DATA_CAPABILITY).map(
-                x -> x.shouldHaveQuest() && !x.hasGeneratedQuest()).orElse(false);
+        return source.getCapability(NpcCapabilities.ENTITY_NPC_DATA_CAPABILITY)
+                .map(x -> x.shouldHaveQuest() && !x.hasGeneratedQuest())
+                .orElse(false);
     }
 
     @Override

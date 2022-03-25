@@ -28,8 +28,9 @@ public class OnQuestChainCondition extends DialogueCondition {
 
     @Override
     public boolean meetsCondition(ServerPlayerEntity player, LivingEntity source) {
-        return MKNpc.getPlayerQuestData(player).map(x -> x.getQuestStatus(questId)
-                == PlayerQuestingDataHandler.QuestStatus.IN_PROGRESS).orElse(false);
+        return MKNpc.getPlayerQuestData(player)
+                .map(x -> x.getQuestStatus(questId) == PlayerQuestingDataHandler.QuestStatus.IN_PROGRESS)
+                .orElse(false);
     }
 
     @Override

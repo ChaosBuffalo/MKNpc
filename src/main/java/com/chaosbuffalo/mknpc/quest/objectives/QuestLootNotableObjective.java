@@ -84,8 +84,8 @@ public class QuestLootNotableObjective extends StructureInstanceObjective<UUIDIn
                                             LivingDeathEvent event, QuestData quest, PlayerQuestChainInstance playerChain) {
         if (!isComplete(objectiveData)) {
             UUIDInstanceData objData = quest.getObjective(this);
-            boolean applies = event.getEntityLiving().getCapability(NpcCapabilities.ENTITY_NPC_DATA_CAPABILITY).map(
-                    x -> x.getNotableUUID().equals(objData.getUUID())).orElse(false);
+            boolean applies = event.getEntityLiving().getCapability(NpcCapabilities.ENTITY_NPC_DATA_CAPABILITY)
+                    .map(x -> x.getNotableUUID().equals(objData.getUUID())).orElse(false);
             if (applies && player.getRNG().nextDouble() <= chanceToFind.value()) {
                 int currentCount = objectiveData.getInt("lootCount");
                 currentCount++;

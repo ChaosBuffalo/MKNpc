@@ -145,8 +145,8 @@ public class EntityNpcDataHandler implements IEntityNpcData {
             return;
         }
         MinecraftServer server = getEntity().getServer();
-        QuestDefinition npcDef = QuestDefinitionManager.getDefinition(entry.getQuestDefinitionId());
-        if (npcDef == null) {
+        QuestDefinition questDefinition = QuestDefinitionManager.getDefinition(entry.getQuestDefinitionId());
+        if (questDefinition == null) {
             MKNpc.LOGGER.debug("Can't find definition for quest {}", entry.getQuestDefinitionId());
             questRequests.add(entry);
             return;
@@ -154,16 +154,15 @@ public class EntityNpcDataHandler implements IEntityNpcData {
         if (server != null && entry.getQuestId() == null) {
             World overworld = server.getWorld(World.OVERWORLD);
             if (overworld != null) {
-                Optional<QuestChainBuildResult> quest = overworld.getCapability(NpcCapabilities.WORLD_NPC_DATA_CAPABILITY)
-                        .map(x -> x.buildQuest(npcDef, getSpawnPos())).orElse(Optional.empty());
-                if (quest.isPresent()) {
-                    QuestChainBuildResult result = quest.get();
-                    QuestChainInstance newQuest = result.instance;
+                Optional<QuestChainBuildResult> quest = overworld.getCapability(NpcCapabilities.WORLD_NPC_DATA_CAPABILITY).resolve()
+                        .flatMap(x -> x.buildQuest(questDefinition, getSpawnPos()));
+                quest.ifPresent(questChainBuildResult -> {
+                    QuestChainInstance newQuest = questChainBuildResult.instance;
                     MKNpc.getNpcData(entity).ifPresent(x -> newQuest.setQuestSourceNpc(x.getNotableUUID()));
                     MKNpc.LOGGER.debug("Assigning quest {}({}) to {}", newQuest.getDefinition().getName(), newQuest.getQuestId(), entity);
-                    entry.setupDialogue(result);
+                    entry.setupDialogue(questChainBuildResult);
                     entry.setQuestId(newQuest.getQuestId());
-                }
+                });
             }
         }
         if (entry.getQuestId() != null) {

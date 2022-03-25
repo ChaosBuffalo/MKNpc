@@ -79,9 +79,10 @@ public class TradeItemsObjective extends StructureInstanceObjective<UUIDInstance
     @Override
     public <D> void readAdditionalData(Dynamic<D> dynamic) {
         super.readAdditionalData(dynamic);
-        List<ItemStack> dStacks = dynamic.get("items").asList(SerializationUtils::deserializeItemStack);
         neededItems.clear();
-        neededItems.addAll(dStacks);
+        dynamic.get("items").asStream()
+                .map(SerializationUtils::deserializeItemStack)
+                .forEach(neededItems::add);
     }
 
     @Override
@@ -110,8 +111,9 @@ public class TradeItemsObjective extends StructureInstanceObjective<UUIDInstance
 
     @Nullable
     public int[] findMatches(List<ItemStack> nonEmptyInventoryContents) {
-        return RecipeMatcher.findMatches(nonEmptyInventoryContents, neededItems.stream().map(
-                TradeItemsObjective::getItemsEqualTester).collect(Collectors.toList()));
+        return RecipeMatcher.findMatches(nonEmptyInventoryContents, neededItems.stream()
+                .map(TradeItemsObjective::getItemsEqualTester)
+                .collect(Collectors.toList()));
     }
 
     @Override
