@@ -158,7 +158,7 @@ public class WorldNpcDataHandler implements IWorldNpcData{
             ServerWorld world = (ServerWorld) structureWorld;
             Structure<?> struct = ForgeRegistries.STRUCTURE_FEATURES.getValue(structurePlaced.getStructureName());
             if (struct != null){
-                StructureStart<?> start = world.getStructureManager().getStructureStart(structurePlaced.getBlockPos(), false, struct);
+                StructureStart<?> start = world.getStructureManager().getStructureStart(structurePlaced.getBlockPos().getPos(), false, struct);
                 structureData = new StructureData(structurePlaced.getStructureWorld().getDimensionKey(),
                         start.getChunkPosX(), start.getChunkPosZ(), start.getBoundingBox(), start.getComponents().stream().map(
                         this::getComponentDataFromPiece).collect(Collectors.toList()));

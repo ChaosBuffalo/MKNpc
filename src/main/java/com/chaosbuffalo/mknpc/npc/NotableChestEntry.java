@@ -1,9 +1,13 @@
 package com.chaosbuffalo.mknpc.npc;
 
+import com.chaosbuffalo.mknpc.MKNpc;
 import com.chaosbuffalo.mknpc.capabilities.IChestNpcData;
 import net.minecraft.nbt.CompoundNBT;
+import net.minecraft.nbt.NBTDynamicOps;
 import net.minecraft.nbt.NBTUtil;
 import net.minecraft.util.math.BlockPos;
+import net.minecraft.util.math.GlobalPos;
+import net.minecraft.world.World;
 import net.minecraftforge.common.util.INBTSerializable;
 
 import javax.annotation.Nullable;
@@ -11,7 +15,7 @@ import java.util.UUID;
 
 public class NotableChestEntry implements INBTSerializable<CompoundNBT> {
 
-    private BlockPos location;
+    private GlobalPos location;
     @Nullable
     private String label;
     private UUID structureId;
@@ -28,7 +32,7 @@ public class NotableChestEntry implements INBTSerializable<CompoundNBT> {
 
     }
 
-    public BlockPos getLocation() {
+    public GlobalPos getLocation() {
         return location;
     }
 
@@ -44,7 +48,8 @@ public class NotableChestEntry implements INBTSerializable<CompoundNBT> {
     @Override
     public CompoundNBT serializeNBT() {
         CompoundNBT tag = new CompoundNBT();
-        tag.put("location", NBTUtil.writeBlockPos(location));
+        tag.put("location", GlobalPos.CODEC.encodeStart(NBTDynamicOps.INSTANCE, getLocation())
+                .getOrThrow(false, MKNpc.LOGGER::error));
         tag.putUniqueId("chestId", chestId);
         tag.putUniqueId("structureId", structureId);
         if (label != null) {
@@ -55,7 +60,8 @@ public class NotableChestEntry implements INBTSerializable<CompoundNBT> {
 
     @Override
     public void deserializeNBT(CompoundNBT nbt) {
-        location = NBTUtil.readBlockPos(nbt.getCompound("location"));
+        location = GlobalPos.CODEC.parse(NBTDynamicOps.INSTANCE, nbt.getCompound("location"))
+                .result().orElse(GlobalPos.getPosition(World.OVERWORLD, NBTUtil.readBlockPos(nbt.getCompound("location"))));
         chestId = nbt.getUniqueId("chestId");
         structureId = nbt.getUniqueId("structureId");
         if (nbt.contains("label")){

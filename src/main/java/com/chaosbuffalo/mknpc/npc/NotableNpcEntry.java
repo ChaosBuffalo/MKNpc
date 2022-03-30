@@ -1,11 +1,15 @@
 package com.chaosbuffalo.mknpc.npc;
 
+import com.chaosbuffalo.mknpc.MKNpc;
 import com.chaosbuffalo.mknpc.spawn.MKSpawnerTileEntity;
 import net.minecraft.nbt.CompoundNBT;
+import net.minecraft.nbt.NBTDynamicOps;
 import net.minecraft.nbt.NBTUtil;
 import net.minecraft.util.ResourceLocation;
 import net.minecraft.util.math.BlockPos;
+import net.minecraft.util.math.GlobalPos;
 import net.minecraft.util.text.StringTextComponent;
+import net.minecraft.world.World;
 import net.minecraftforge.common.util.INBTSerializable;
 
 import javax.annotation.Nullable;
@@ -13,7 +17,7 @@ import java.util.UUID;
 
 public class NotableNpcEntry implements INBTSerializable<CompoundNBT> {
 
-    private BlockPos location;
+    private GlobalPos location;
     private StringTextComponent name;
     private ResourceLocation definition;
     private UUID structureId;
@@ -21,7 +25,7 @@ public class NotableNpcEntry implements INBTSerializable<CompoundNBT> {
     private UUID notableId;
 
     public NotableNpcEntry(NpcDefinition definition, MKSpawnerTileEntity spawner){
-        this.location = spawner.getPos();
+        this.location = GlobalPos.getPosition(spawner.getWorld().getDimensionKey(), spawner.getPos());
         this.name = definition.getNameForEntity(spawner.getWorld(), spawner.getSpawnUUID());
         this.definition = definition.getDefinitionName();
         this.structureId = spawner.getStructureId();
@@ -33,7 +37,7 @@ public class NotableNpcEntry implements INBTSerializable<CompoundNBT> {
 
     }
 
-    public BlockPos getLocation() {
+    public GlobalPos getLocation() {
         return location;
     }
 
@@ -61,7 +65,8 @@ public class NotableNpcEntry implements INBTSerializable<CompoundNBT> {
     @Override
     public CompoundNBT serializeNBT() {
         CompoundNBT tag = new CompoundNBT();
-        tag.put("location", NBTUtil.writeBlockPos(location));
+        tag.put("location", GlobalPos.CODEC.encodeStart(NBTDynamicOps.INSTANCE, getLocation())
+                .getOrThrow(false, MKNpc.LOGGER::error));
         tag.putUniqueId("spawnerId", spawnerId);
         tag.putUniqueId("structureId", structureId);
         tag.putUniqueId("notableId", notableId);
@@ -72,7 +77,8 @@ public class NotableNpcEntry implements INBTSerializable<CompoundNBT> {
 
     @Override
     public void deserializeNBT(CompoundNBT nbt) {
-        location = NBTUtil.readBlockPos(nbt.getCompound("location"));
+        location = GlobalPos.CODEC.parse(NBTDynamicOps.INSTANCE, nbt.getCompound("location"))
+                .result().orElse(GlobalPos.getPosition(World.OVERWORLD, NBTUtil.readBlockPos(nbt.getCompound("location"))));
         spawnerId = nbt.getUniqueId("spawnerId");
         structureId = nbt.getUniqueId("structureId");
         definition = new ResourceLocation(nbt.getString("definition"));
