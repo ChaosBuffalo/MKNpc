@@ -2,6 +2,7 @@ package com.chaosbuffalo.mknpc.capabilities;
 
 import com.chaosbuffalo.mkchat.capabilities.ChatCapabilities;
 import com.chaosbuffalo.mkcore.GameConstants;
+import com.chaosbuffalo.mkcore.utils.WorldUtils;
 import com.chaosbuffalo.mknpc.MKNpc;
 import com.chaosbuffalo.mknpc.npc.NpcDefinition;
 import com.chaosbuffalo.mknpc.npc.NpcDefinitionManager;
@@ -25,6 +26,7 @@ import net.minecraft.util.DamageSource;
 import net.minecraft.util.ResourceLocation;
 import net.minecraft.util.Util;
 import net.minecraft.util.math.BlockPos;
+import net.minecraft.util.math.GlobalPos;
 import net.minecraft.world.World;
 
 import javax.annotation.Nonnull;
@@ -122,11 +124,12 @@ public class EntityNpcDataHandler implements IEntityNpcData {
                     LootSlot lootSlot = LootSlotManager.getSlotFromName(selected.lootSlotName);
                     LootTier lootTier = LootTierManager.getTierFromName(selected.lootTierName);
                     if (lootSlot != null && lootTier != null){
-                        LootConstructor constructor = selected.hasTemplate() ? lootTier.generateConstructorForSlot(
-                                entity.getRNG(), lootSlot, selected.templateName) : lootTier.generateConstructorForSlot(
-                                        entity.getRNG(), lootSlot);
+                        LootConstructor constructor = lootTier.generateConstructorForSlot(entity.getRNG(), lootSlot);
                         if (constructor != null){
-                            ItemStack item = constructor.constructItem();
+                            ItemStack item = constructor.constructItem(entity.getRNG(),
+                                    WorldUtils.getDifficultyForGlobalPos(GlobalPos.getPosition(
+                                            entity.world.getDimensionKey(),
+                                            entity.getPosition())));
                             if (!item.isEmpty()){
                                 drops.add(entity.entityDropItem(item));
                             }

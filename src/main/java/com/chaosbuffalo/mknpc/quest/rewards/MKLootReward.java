@@ -1,6 +1,7 @@
 package com.chaosbuffalo.mknpc.quest.rewards;
 
 import com.chaosbuffalo.mkcore.serialization.attributes.ResourceLocationAttribute;
+import com.chaosbuffalo.mkcore.utils.WorldUtils;
 import com.chaosbuffalo.mknpc.MKNpc;
 import com.chaosbuffalo.mkweapons.items.randomization.LootConstructor;
 import com.chaosbuffalo.mkweapons.items.randomization.LootTier;
@@ -10,6 +11,7 @@ import com.chaosbuffalo.mkweapons.items.randomization.slots.LootSlotManager;
 import net.minecraft.entity.player.PlayerEntity;
 import net.minecraft.item.ItemStack;
 import net.minecraft.util.ResourceLocation;
+import net.minecraft.util.math.GlobalPos;
 import net.minecraft.util.text.IFormattableTextComponent;
 
 public class MKLootReward extends QuestReward {
@@ -38,7 +40,8 @@ public class MKLootReward extends QuestReward {
         if (tier != null && slot != null) {
             LootConstructor constructor = tier.generateConstructorForSlot(player.getRNG(), slot);
             if (constructor != null) {
-                ItemStack loot = constructor.constructItem();
+                ItemStack loot = constructor.constructItem(player.getRNG(), WorldUtils.getDifficultyForGlobalPos(
+                        GlobalPos.getPosition(player.getEntityWorld().getDimensionKey(), player.getPosition())));
                 player.inventory.placeItemBackInInventory(player.getEntityWorld(), loot);
             }
         }

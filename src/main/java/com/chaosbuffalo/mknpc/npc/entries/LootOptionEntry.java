@@ -11,19 +11,16 @@ public class LootOptionEntry {
 
     public ResourceLocation lootSlotName;
     public ResourceLocation lootTierName;
-    public ResourceLocation templateName;
     public double weight;
 
-    public LootOptionEntry(ResourceLocation lootSlotName, ResourceLocation lootTierName, ResourceLocation templateName, double weight){
+    public LootOptionEntry(ResourceLocation lootSlotName, ResourceLocation lootTierName, double weight){
         this.lootSlotName = lootSlotName;
         this.lootTierName = lootTierName;
-        this.templateName = templateName;
         this.weight = weight;
     }
 
     public LootOptionEntry(){
-        this(LootSlotManager.INVALID_LOOT_SLOT, LootTierManager.INVALID_LOOT_TIER,
-                LootTierManager.INVALID_RANDOMIZATION_TEMPLATE, 1.0);
+        this(LootSlotManager.INVALID_LOOT_SLOT, LootTierManager.INVALID_LOOT_TIER, 1.0);
     }
 
     public <D> void deserialize(Dynamic<D> dynamic){
@@ -31,8 +28,6 @@ public class LootOptionEntry {
                 .orElse(LootSlotManager.INVALID_LOOT_SLOT);
         lootTierName = dynamic.get("lootSlotTier").asString().result().map(ResourceLocation::new)
                 .orElse(LootTierManager.INVALID_LOOT_TIER);
-        templateName = dynamic.get("templateName").asString().result().map(ResourceLocation::new)
-                .orElse(LootTierManager.INVALID_RANDOMIZATION_TEMPLATE);
         weight = dynamic.get("weight").asDouble(1.0);
     }
 
@@ -41,15 +36,11 @@ public class LootOptionEntry {
                 !lootTierName.equals(LootTierManager.INVALID_LOOT_TIER);
     }
 
-    public boolean hasTemplate(){
-        return !templateName.equals(LootTierManager.INVALID_RANDOMIZATION_TEMPLATE);
-    }
 
     public <D> D serialize(DynamicOps<D> ops) {
         ImmutableMap.Builder<D, D> builder = ImmutableMap.builder();
         builder.put(ops.createString("lootSlotName"), ops.createString(lootSlotName.toString()));
         builder.put(ops.createString("lootSlotTier"), ops.createString(lootTierName.toString()));
-        builder.put(ops.createString("templateName"), ops.createString(templateName.toString()));
         builder.put(ops.createString("weight"), ops.createDouble(weight));
         return ops.createMap(builder.build());
     }
