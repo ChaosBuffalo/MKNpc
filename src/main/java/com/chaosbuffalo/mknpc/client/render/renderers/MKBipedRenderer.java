@@ -5,6 +5,7 @@ import com.chaosbuffalo.mkcore.client.rendering.skeleton.BipedSkeleton;
 import com.chaosbuffalo.mkcore.client.rendering.skeleton.MCBone;
 import com.chaosbuffalo.mkcore.fx.particles.ParticleAnimation;
 import com.chaosbuffalo.mkcore.fx.particles.ParticleAnimationManager;
+import com.chaosbuffalo.mknpc.MKNpc;
 import com.chaosbuffalo.mknpc.client.render.models.layers.MKAdditionalBipedLayer;
 import com.chaosbuffalo.mknpc.client.render.models.styling.LayerStyle;
 import com.chaosbuffalo.mknpc.client.render.models.styling.ModelLook;
@@ -68,7 +69,11 @@ public class MKBipedRenderer<T extends MKEntity, M extends BipedModel<T>> extend
 
     @Override
     public ResourceLocation getLayerTexture(String layerName, T entity) {
-        return getLook().getLayerTexture(layerName);
+        ResourceLocation tex = getLook().getLayerTexture(layerName);
+        if (tex == null) {
+            MKNpc.LOGGER.error("Layer texture {} missing for {}", layerName, entity);
+        }
+        return tex != null ? tex : ModelLook.MISSING_TEXTURE;
     }
 
     @Override
