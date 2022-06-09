@@ -26,17 +26,17 @@ public class NpcDefinitionEntry extends MKLayout {
         MKFaction faction = MKFactionRegistry.getFaction(definition.getFaction());
         String text;
         if (faction != null){
-            text = String.format("%s (%s)", definition.getName(),
+            text = String.format("%s (%s) %s", definition.getName(),
                     faction.getTranslationKey() != null ? I18n.format(faction.getTranslationKey()) :
-                            definition.getFaction().toString());
+                            definition.getFaction().toString(), definition.getDefinitionName().toString());
         } else {
             text = definition.getName();
         }
 
         MKText nameText = new MKText(font, text);
+        nameText.setMultiline(true);
         nameText.setWidth(width);
-        setMarginTop(6);
-        nameText.setIsCentered(true);
+        setMarginTop(3);
         addWidget(nameText);
         addConstraintToWidget(MarginConstraint.TOP, nameText);
         addConstraintToWidget(MarginConstraint.LEFT, nameText);
@@ -54,6 +54,7 @@ public class NpcDefinitionEntry extends MKLayout {
         addWidget(divider);
         addConstraintToWidget(MarginConstraint.BOTTOM, divider);
         addConstraintToWidget(MarginConstraint.LEFT, divider);
+        setHeight(Math.max(nameText.getHeight() + 1 + 5, 18));
     }
 
     @Override
