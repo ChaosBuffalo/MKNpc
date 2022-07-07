@@ -6,6 +6,7 @@ import com.chaosbuffalo.mkcore.abilities.AbilityContext;
 import com.chaosbuffalo.mkcore.abilities.MKAbility;
 import com.chaosbuffalo.mkcore.abilities.MKAbilityMemories;
 import com.chaosbuffalo.mkcore.abilities.ai.BrainAbilityContext;
+import com.chaosbuffalo.mknpc.MKNpc;
 import com.chaosbuffalo.mknpc.entity.MKEntity;
 import com.chaosbuffalo.mknpc.entity.ai.memory.MKMemoryModuleTypes;
 import net.minecraft.entity.LivingEntity;
@@ -84,7 +85,7 @@ public class UseAbilityGoal extends Goal {
             entity.getLookController().setLookPositionWithEntity(target, 50.0f, 50.0f);
         }
         AbilityContext context = new BrainAbilityContext(entity);
-        MKCore.LOGGER.info("ai {} casting {} on {}", entity, currentAbility.getAbilityId(), target);
+        MKNpc.LOGGER.debug("ai {} casting {} on {}", entity, currentAbility.getAbilityId(), target);
         entity.getCapability(CoreCapabilities.ENTITY_CAPABILITY).ifPresent(
                 (entityData) -> entityData.getAbilityExecutor().executeAbilityWithContext(currentAbility.getAbilityId(), context));
     }
@@ -109,6 +110,7 @@ public class UseAbilityGoal extends Goal {
         target = null;
         entity.getBrain().removeMemory(MKMemoryModuleTypes.CURRENT_ABILITY);
         entity.getBrain().removeMemory(MKAbilityMemories.ABILITY_TARGET);
+        entity.getBrain().removeMemory(MKAbilityMemories.ABILITY_POSITION_TARGET);
         entity.returnToDefaultMovementState();
         ticksSinceSeenTarget = 0;
 

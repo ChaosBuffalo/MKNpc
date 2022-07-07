@@ -22,7 +22,11 @@ apply plugin: 'org.spongepowered.mixin'
 apply plugin: 'eclipse'
 apply plugin: 'maven-publish'
 
+ext {
+    base_version = "default"
+}
 version = "0.14.1"
+base_version = version;
 if (System.getenv().RELEASE_MODE == null) {
     version += '-SNAPSHOT'
 }
@@ -142,6 +146,26 @@ dependencies {
     compileOnly fg.deobf("com.chaosbuffalo.mkweapons:mkweapons-${mc_version}:${mk_weapons_version}")
     runtimeOnly fg.deobf("com.chaosbuffalo.mkweapons:mkweapons-${mc_version}:${mk_weapons_version}")
 
+}
+
+def replaceResources = tasks.register("replaceResources", Copy) {
+    it.outputs.upToDateWhen { false }
+    //Copy it into the build dir
+    it.from(sourceSets.main.resources) {
+        include "META-INF/mods.toml"
+        expand project.properties
+    }
+    it.into "$buildDir/resources/main/"
+}
+
+processResources {
+    duplicatesStrategy = DuplicatesStrategy.FAIL
+    exclude('META-INF/mods.toml')
+    configure { finalizedBy(replaceResources) }
+}
+
+classes.configure {
+    dependsOn(replaceResources)
 }
 
 // Example for how to get properties into the manifest for reading by the runtime..
