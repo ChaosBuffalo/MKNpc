@@ -7,6 +7,7 @@ import com.chaosbuffalo.mkcore.abilities.MKAbilityInfo;
 import com.chaosbuffalo.mkcore.abilities.MKAbilityMemories;
 import com.chaosbuffalo.mkcore.abilities.ai.AbilityDecisionContext;
 import com.chaosbuffalo.mkcore.abilities.ai.AbilityTargetingDecision;
+import com.chaosbuffalo.mkcore.utils.TargetUtil;
 import com.chaosbuffalo.mknpc.entity.MKEntity;
 import com.chaosbuffalo.mknpc.entity.ai.memory.MKMemoryModuleTypes;
 import com.google.common.collect.ImmutableSet;
@@ -49,6 +50,7 @@ public class AbilityUseSensor extends Sensor<MKEntity> {
 
                 if (mkAbility.isValidTarget(entityIn, targetSelection.getTargetEntity())) {
                     entityIn.getBrain().setMemory(MKAbilityMemories.ABILITY_TARGET, targetSelection.getTargetEntity());
+                    entityIn.getBrain().setMemory(MKAbilityMemories.ABILITY_POSITION_TARGET, new TargetUtil.LivingOrPosition(targetSelection.getTargetEntity()));
                     entityIn.getBrain().setMemory(MKMemoryModuleTypes.CURRENT_ABILITY, mkAbility);
                     entityIn.getBrain().setMemory(MKMemoryModuleTypes.MOVEMENT_STRATEGY,
                             entityIn.getMovementStrategy(targetSelection));
@@ -73,6 +75,6 @@ public class AbilityUseSensor extends Sensor<MKEntity> {
     public Set<MemoryModuleType<?>> getUsedMemories() {
         return ImmutableSet.of(MKMemoryModuleTypes.CURRENT_ABILITY, MKMemoryModuleTypes.THREAT_TARGET,
                 MKAbilityMemories.ABILITY_TARGET, MKMemoryModuleTypes.ALLIES, MKMemoryModuleTypes.ENEMIES,
-                MKMemoryModuleTypes.MOVEMENT_STRATEGY, MKMemoryModuleTypes.ABILITY_TIMEOUT);
+                MKMemoryModuleTypes.MOVEMENT_STRATEGY, MKMemoryModuleTypes.ABILITY_TIMEOUT, MKAbilityMemories.ABILITY_POSITION_TARGET);
     }
 }
