@@ -2,11 +2,14 @@ package com.chaosbuffalo.mknpc.event;
 
 import com.chaosbuffalo.mkchat.event.PlayerNpcDialogueTreeGatherEvent;
 import com.chaosbuffalo.mkcore.core.damage.MKDamageSource;
+import com.chaosbuffalo.mkcore.core.healing.MKAbilityHealEvent;
+import com.chaosbuffalo.mkcore.effects.EntityEffectBuilder;
 import com.chaosbuffalo.mknpc.MKNpc;
 import com.chaosbuffalo.mknpc.capabilities.IChestNpcData;
 import com.chaosbuffalo.mknpc.capabilities.IEntityNpcData;
 import com.chaosbuffalo.mknpc.capabilities.IWorldNpcData;
 import com.chaosbuffalo.mknpc.capabilities.NpcCapabilities;
+import com.chaosbuffalo.mknpc.effects.HealingThreatEffect;
 import com.chaosbuffalo.mknpc.npc.NpcDefinition;
 import com.chaosbuffalo.mknpc.quest.Quest;
 import com.chaosbuffalo.mknpc.quest.QuestChainInstance;
@@ -16,7 +19,9 @@ import com.chaosbuffalo.mknpc.quest.data.player.PlayerQuestObjectiveData;
 import com.chaosbuffalo.mknpc.quest.objectives.IContainerObjectiveHandler;
 import com.chaosbuffalo.mknpc.quest.objectives.IKillObjectiveHandler;
 import com.chaosbuffalo.mknpc.quest.objectives.QuestObjective;
+import com.chaosbuffalo.mknpc.utils.NpcConstants;
 import com.chaosbuffalo.mknpc.world.gen.feature.structure.IControlNaturalSpawns;
+import com.chaosbuffalo.targeting_api.TargetingContexts;
 import net.minecraft.block.ChestBlock;
 import net.minecraft.entity.EntityClassification;
 import net.minecraft.entity.LivingEntity;
@@ -27,6 +32,7 @@ import net.minecraft.scoreboard.Team;
 import net.minecraft.server.MinecraftServer;
 import net.minecraft.tileentity.TileEntity;
 import net.minecraft.util.math.BlockPos;
+import net.minecraft.util.math.vector.Vector3d;
 import net.minecraft.world.World;
 import net.minecraft.world.gen.feature.structure.Structure;
 import net.minecraft.world.gen.feature.structure.StructureManager;
@@ -64,9 +70,12 @@ public class EntityHandler {
     @SubscribeEvent(priority = EventPriority.LOWEST)
     public static void onEntityDamage(LivingDamageEvent event) {
         if (event.getSource() instanceof MKDamageSource) {
-            if (event.getEntityLiving() instanceof PlayerEntity &&
-                    !(event.getSource().getTrueSource() instanceof PlayerEntity)) {
-                event.setAmount((float) (event.getAmount() * MKNpc.getDifficultyScale(event.getEntityLiving())));
+            if (event.getEntityLiving() instanceof PlayerEntity) {
+                if (!(event.getSource().getTrueSource() instanceof PlayerEntity)) {
+                    event.setAmount((float) (event.getAmount() * MKNpc.getDifficultyScale(event.getEntityLiving())));
+                }
+                //add threat to pets here
+
             }
         }
     }
@@ -267,5 +276,20 @@ public class EntityHandler {
 
     private static boolean stopSpawningForClassification(LivingEntity entity){
         return (entity.getClassification(false) == EntityClassification.MONSTER);
+    }
+
+    @SubscribeEvent
+    public static void onHealEvent(MKAbilityHealEvent event) {
+        LivingEntity healed = event.getEntityLiving();
+        LivingEntity source = event.getHealSource().getSourceEntity();
+        if (source != null && !(source instanceof PlayerEntity && ((PlayerEntity) source).isCreative())) {
+            EntityEffectBuilder.PointEffectBuilder.createPointEffectOnEntity(source, healed, Vector3d.ZERO)
+                    .radius(10.0f)
+                    .effect(HealingThreatEffect.from(source, healed, event.getAmount() * NpcConstants.HEALING_THREAT_MULTIPLIER),
+                            TargetingContexts.ENEMY)
+                    .spawn();
+        }
+
+
     }
 }

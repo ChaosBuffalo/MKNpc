@@ -31,6 +31,7 @@ import com.chaosbuffalo.mknpc.entity.attributes.NpcAttributes;
 import com.chaosbuffalo.mknpc.entity.boss.BossStage;
 import com.chaosbuffalo.mknpc.inventories.QuestGiverInventoryContainer;
 import com.chaosbuffalo.mknpc.npc.NpcDefinition;
+import com.chaosbuffalo.mknpc.utils.NpcConstants;
 import com.chaosbuffalo.mkweapons.items.MKBow;
 import com.chaosbuffalo.targeting_api.Targeting;
 import com.google.common.collect.ImmutableList;
@@ -649,11 +650,10 @@ public abstract class MKEntity extends CreatureEntity implements IModelLookProvi
 
 
 
-
     @Override
     public boolean attackEntityFrom(DamageSource source, float amount) {
         if (source.getTrueSource() instanceof LivingEntity) {
-            addThreat((LivingEntity) source.getTrueSource(), amount * 100.0f);
+            addThreat((LivingEntity) source.getTrueSource(), amount * NpcConstants.DAMAGE_THREAT_MULTIPLIER);
         }
         return super.attackEntityFrom(source, amount);
     }
@@ -671,16 +671,20 @@ public abstract class MKEntity extends CreatureEntity implements IModelLookProvi
         super.onDeath(cause);
     }
 
-    public void addTargetToThreat(@Nullable LivingEntity target, float baseThreat){
+    public void addTargetToThreat(LivingEntity target, float baseThreat){
         getBrain().getMemory(MKMemoryModuleTypes.THREAT_MAP).ifPresent(map ->
                 map.put(target, new ThreatMapEntry().addThreat(baseThreat)));
+    }
+
+    public boolean hasThreatWithTarget(LivingEntity target) {
+        return getBrain().getMemory(MKMemoryModuleTypes.THREAT_MAP).map(x -> x.containsKey(target)).orElse(false);
     }
 
     @Override
     public void setRevengeTarget(@Nullable LivingEntity target) {
         super.setRevengeTarget(target);
         if (target != null){
-            addTargetToThreat(target, 500);
+            addTargetToThreat(target, NpcConstants.INITIAL_THREAT);
         }
     }
 
