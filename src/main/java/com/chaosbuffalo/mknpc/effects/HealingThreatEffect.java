@@ -77,7 +77,7 @@ public class HealingThreatEffect extends MKEffect {
                 LivingEntity threatSource = getThreatSource();
                 if (source != null && threatSource != null) {
                     if (mkEntity.hasThreatWithTarget(threatSource)) {
-                        mkEntity.addThreat(source, getThreatValue());
+                        mkEntity.addThreat(source, getThreatValue(), true);
                     }
                 }
             }

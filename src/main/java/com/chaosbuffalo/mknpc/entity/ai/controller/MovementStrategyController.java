@@ -15,6 +15,12 @@ public class MovementStrategyController {
                 new FollowMovementStrategy(1.0f, meleeDistance));
     }
 
+    public static void enterFollowMode(LivingEntity entity, int followDistance, LivingEntity followTarget) {
+        entity.getBrain().setMemory(MKMemoryModuleTypes.MOVEMENT_STRATEGY,
+                new FollowMovementStrategy(1.0f, followDistance));
+        entity.getBrain().setMemory(MKMemoryModuleTypes.MOVEMENT_TARGET, followTarget);
+    }
+
     public static void enterStationary(LivingEntity entity) {
         entity.getBrain().setMemory(MKMemoryModuleTypes.MOVEMENT_STRATEGY,
                 StationaryMovementStrategy.STATIONARY_MOVEMENT_STRATEGY);
