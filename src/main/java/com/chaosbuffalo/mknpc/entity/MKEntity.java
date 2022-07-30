@@ -36,6 +36,7 @@ import com.chaosbuffalo.mknpc.inventories.QuestGiverInventoryContainer;
 import com.chaosbuffalo.mknpc.npc.NpcDefinition;
 import com.chaosbuffalo.mknpc.utils.NpcConstants;
 import com.chaosbuffalo.mkweapons.items.MKBow;
+import com.chaosbuffalo.targeting_api.ITargetingOwner;
 import com.chaosbuffalo.targeting_api.Targeting;
 import com.google.common.collect.ImmutableList;
 import net.minecraft.block.BlockState;
@@ -74,7 +75,7 @@ import java.util.function.Predicate;
 import java.util.stream.Collectors;
 
 @SuppressWarnings("EntityConstructor")
-public abstract class MKEntity extends CreatureEntity implements IModelLookProvider, IRangedAttackMob, IUpdateEngineProvider, IMKPet {
+public abstract class MKEntity extends CreatureEntity implements IModelLookProvider, IRangedAttackMob, IUpdateEngineProvider, IMKPet, ITargetingOwner {
     private static final DataParameter<String> LOOK_STYLE = EntityDataManager.createKey(MKEntity.class, DataSerializers.STRING);
     private static final DataParameter<Float> SCALE = EntityDataManager.createKey(MKEntity.class, DataSerializers.FLOAT);
     private static final DataParameter<Boolean> IS_GHOST = EntityDataManager.createKey(MKEntity.class, DataSerializers.BOOLEAN);
@@ -127,6 +128,17 @@ public abstract class MKEntity extends CreatureEntity implements IModelLookProvi
 
     public void setGhostTranslucency(float ghostTranslucency) {
         getDataManager().set(GHOST_TRANSLUCENCY, ghostTranslucency);
+    }
+
+    @Nullable
+    @Override
+    public Entity getTargetingOwner() {
+        IMKEntityData data = MKCore.getEntityDataOrNull(this);
+        if (data != null) {
+            return data.getPets().getOwner();
+        } else {
+            return null;
+        }
     }
 
     public float getGhostTranslucency() {
