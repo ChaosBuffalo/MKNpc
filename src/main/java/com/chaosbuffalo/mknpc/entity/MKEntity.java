@@ -472,9 +472,9 @@ public abstract class MKEntity extends CreatureEntity implements IModelLookProvi
     }
 
     public void returnToSpawnTick(){
-        boolean isReturningTOPlayer = MKCore.getEntityData(this).map(x -> x.getPets().isPet()
+        boolean isReturningToPlayer = MKCore.getEntityData(this).map(x -> x.getPets().isPet()
                 && x.getPets().getOwner() instanceof PlayerEntity).orElse(false);
-        if (!isReturningTOPlayer) {
+        if (!isReturningToPlayer) {
             setHealth(Math.min(getHealth() + getMaxHealth() * .2f * 1.0f / GameConstants.TICKS_PER_SECOND,
                     getMaxHealth()));
         }
