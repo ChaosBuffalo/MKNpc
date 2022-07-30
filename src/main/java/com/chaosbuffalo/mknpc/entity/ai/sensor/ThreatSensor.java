@@ -78,6 +78,7 @@ public class ThreatSensor extends Sensor<MKEntity> {
                 entityIn.getBrain().setMemory(MKMemoryModuleTypes.THREAT_TARGET, ent.getKey());
             } else {
                 entityIn.getBrain().removeMemory(MKMemoryModuleTypes.THREAT_TARGET);
+
             }
         }
     }

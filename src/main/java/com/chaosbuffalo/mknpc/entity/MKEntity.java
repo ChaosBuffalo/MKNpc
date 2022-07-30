@@ -3,11 +3,14 @@ package com.chaosbuffalo.mknpc.entity;
 import com.chaosbuffalo.mkchat.capabilities.ChatCapabilities;
 import com.chaosbuffalo.mkcore.CoreCapabilities;
 import com.chaosbuffalo.mkcore.GameConstants;
+import com.chaosbuffalo.mkcore.MKCore;
 import com.chaosbuffalo.mkcore.abilities.MKAbility;
 import com.chaosbuffalo.mkcore.abilities.MKAbilityMemories;
 import com.chaosbuffalo.mkcore.abilities.ai.AbilityTargetingDecision;
 import com.chaosbuffalo.mkcore.core.IMKEntityData;
 import com.chaosbuffalo.mkcore.core.MKAttributes;
+import com.chaosbuffalo.mkcore.core.pets.IMKPet;
+import com.chaosbuffalo.mkcore.core.pets.PetNonCombatBehavior;
 import com.chaosbuffalo.mkcore.core.player.ParticleEffectInstanceTracker;
 import com.chaosbuffalo.mkcore.core.player.SyncComponent;
 import com.chaosbuffalo.mkcore.entities.IUpdateEngineProvider;
@@ -31,7 +34,9 @@ import com.chaosbuffalo.mknpc.entity.attributes.NpcAttributes;
 import com.chaosbuffalo.mknpc.entity.boss.BossStage;
 import com.chaosbuffalo.mknpc.inventories.QuestGiverInventoryContainer;
 import com.chaosbuffalo.mknpc.npc.NpcDefinition;
+import com.chaosbuffalo.mknpc.utils.NpcConstants;
 import com.chaosbuffalo.mkweapons.items.MKBow;
+import com.chaosbuffalo.targeting_api.ITargetingOwner;
 import com.chaosbuffalo.targeting_api.Targeting;
 import com.google.common.collect.ImmutableList;
 import net.minecraft.block.BlockState;
@@ -67,9 +72,10 @@ import net.minecraftforge.fml.common.registry.IEntityAdditionalSpawnData;
 import javax.annotation.Nullable;
 import java.util.*;
 import java.util.function.Predicate;
+import java.util.stream.Collectors;
 
 @SuppressWarnings("EntityConstructor")
-public abstract class MKEntity extends CreatureEntity implements IModelLookProvider, IRangedAttackMob, IUpdateEngineProvider {
+public abstract class MKEntity extends CreatureEntity implements IModelLookProvider, IRangedAttackMob, IUpdateEngineProvider, IMKPet, ITargetingOwner {
     private static final DataParameter<String> LOOK_STYLE = EntityDataManager.createKey(MKEntity.class, DataSerializers.STRING);
     private static final DataParameter<Float> SCALE = EntityDataManager.createKey(MKEntity.class, DataSerializers.FLOAT);
     private static final DataParameter<Boolean> IS_GHOST = EntityDataManager.createKey(MKEntity.class, DataSerializers.BOOLEAN);
@@ -91,6 +97,8 @@ public abstract class MKEntity extends CreatureEntity implements IModelLookProvi
     private final EntityTradeContainer entityTradeContainer;
     private final List<BossStage> bossStages = new ArrayList<>();
     private int currentStage;
+    @Nullable
+    private PetNonCombatBehavior nonCombatBehavior;
 
 
     public enum CombatMoveType {
@@ -122,6 +130,17 @@ public abstract class MKEntity extends CreatureEntity implements IModelLookProvi
         getDataManager().set(GHOST_TRANSLUCENCY, ghostTranslucency);
     }
 
+    @Nullable
+    @Override
+    public Entity getTargetingOwner() {
+        IMKEntityData data = MKCore.getEntityDataOrNull(this);
+        if (data != null) {
+            return data.getPets().getOwner();
+        } else {
+            return null;
+        }
+    }
+
     public float getGhostTranslucency() {
         return getDataManager().get(GHOST_TRANSLUCENCY);
     }
@@ -145,6 +164,7 @@ public abstract class MKEntity extends CreatureEntity implements IModelLookProvi
         nonCombatMoveType = NonCombatMoveType.RANDOM_WANDER;
         combatMoveType = CombatMoveType.MELEE;
         getCapability(CoreCapabilities.ENTITY_CAPABILITY).ifPresent((mkEntityData -> {
+            mkEntityData.attachUpdateEngine(updateEngine);
             mkEntityData.getAbilityExecutor().setStartCastCallback(this::startCast);
             mkEntityData.getAbilityExecutor().setCompleteAbilityCallback(this::endCast);
         }));
@@ -334,7 +354,7 @@ public abstract class MKEntity extends CreatureEntity implements IModelLookProvi
            x.forEach(ent -> {
                if (ent instanceof MKEntity){
                    if (ent.getDistanceSq(this) < 9.0){
-                       ((MKEntity) ent).addTargetToThreat(entity, threatVal);
+                       ((MKEntity) ent).addThreat(entity, threatVal, true);
                    }
                }
            });
@@ -355,6 +375,12 @@ public abstract class MKEntity extends CreatureEntity implements IModelLookProvi
         if (slotIn == EquipmentSlotType.MAINHAND){
             handleCombatMovementDetect(stack);
         }
+    }
+
+    @Override
+    public void onKillEntity(ServerWorld world, LivingEntity killedEntity) {
+        super.onKillEntity(world, killedEntity);
+        enterNonCombatMovementState();
     }
 
     public MKMeleeAttackGoal getMeleeAttackGoal(){
@@ -397,7 +423,12 @@ public abstract class MKEntity extends CreatureEntity implements IModelLookProvi
         return comboCooldown;
     }
 
-
+    @Override
+    public void clearThreat() {
+        getBrain().removeMemory(MKMemoryModuleTypes.THREAT_MAP);
+        getBrain().removeMemory(MKMemoryModuleTypes.THREAT_TARGET);
+        getBrain().removeMemory(MKMemoryModuleTypes.THREAT_LIST);
+    }
 
     @Override
     public void notifyDataManagerChange(DataParameter<?> key) {
@@ -441,8 +472,12 @@ public abstract class MKEntity extends CreatureEntity implements IModelLookProvi
     }
 
     public void returnToSpawnTick(){
-        setHealth(Math.min(getHealth() + getMaxHealth() * .2f * 1.0f / GameConstants.TICKS_PER_SECOND,
-                getMaxHealth()));
+        boolean isReturningToPlayer = MKCore.getEntityData(this).map(x -> x.getPets().isPet()
+                && x.getPets().getOwner() instanceof PlayerEntity).orElse(false);
+        if (!isReturningToPlayer) {
+            setHealth(Math.min(getHealth() + getMaxHealth() * .2f * 1.0f / GameConstants.TICKS_PER_SECOND,
+                    getMaxHealth()));
+        }
     }
 
     @Nullable
@@ -459,11 +494,25 @@ public abstract class MKEntity extends CreatureEntity implements IModelLookProvi
         return entityData;
     }
 
-    public void addThreat(LivingEntity entity, float value) {
+    @Override
+    public void addThreat(LivingEntity entity, float value, boolean propagate) {
         Optional<Map<LivingEntity, ThreatMapEntry>> threatMap = this.brain.getMemory(MKMemoryModuleTypes.THREAT_MAP);
         Map<LivingEntity, ThreatMapEntry> newMap = threatMap.orElse(new HashMap<>());
         newMap.put(entity, newMap.getOrDefault(entity, new ThreatMapEntry()).addThreat(value));
         this.brain.setMemory(MKMemoryModuleTypes.THREAT_MAP, newMap);
+        if (propagate) {
+            MKCore.getEntityData(this).ifPresent(x -> {
+                if (x.getPets().hasPet()) {
+                    x.getPets().addThreatToPets(entity, value, false);
+                }
+            });
+        }
+    }
+
+    @Override
+    public void setNoncombatBehavior(PetNonCombatBehavior petNonCombatBehavior) {
+        nonCombatBehavior = petNonCombatBehavior;
+        enterNonCombatMovementState();
     }
 
     protected void updateEntityCastState() {
@@ -483,6 +532,9 @@ public abstract class MKEntity extends CreatureEntity implements IModelLookProvi
         updateEntityCastState();
         ticksSinceLastSwing++;
         super.livingTick();
+        if (nonCombatBehavior != null && !hasThreatTarget()){
+            nonCombatBehavior.getEntity().ifPresent(x -> getBrain().setMemory(MKMemoryModuleTypes.SPAWN_POINT, x.getPosition()));
+        }
     }
 
     public void resetSwing(){
@@ -550,6 +602,7 @@ public abstract class MKEntity extends CreatureEntity implements IModelLookProvi
         return 10;
     }
 
+    @Override
     public void enterCombatMovementState(LivingEntity target) {
         getBrain().setMemory(MKMemoryModuleTypes.MOVEMENT_TARGET, target);
         switch (getCombatMoveType()){
@@ -566,17 +619,25 @@ public abstract class MKEntity extends CreatureEntity implements IModelLookProvi
         }
     }
 
+    @Override
     public void enterNonCombatMovementState() {
-        switch (getNonCombatMoveType()){
-            case RANDOM_WANDER:
-                MovementStrategyController.enterRandomWander(this);
-                break;
-            case STATIONARY:
-            default:
-                MovementStrategyController.enterStationary(this);
-                break;
+        if (nonCombatBehavior != null) {
+            if (nonCombatBehavior.getBehaviorType() == PetNonCombatBehavior.Behavior.FOLLOW) {
+                nonCombatBehavior.getEntity().ifPresent(x -> MovementStrategyController.enterFollowMode(this, 2, x));
+            } else if (nonCombatBehavior.getBehaviorType() == PetNonCombatBehavior.Behavior.GUARD) {
+                nonCombatBehavior.getPos().ifPresent(x -> getBrain().setMemory(MKMemoryModuleTypes.SPAWN_POINT, new BlockPos(x)));
+            }
+        } else {
+            switch (getNonCombatMoveType()){
+                case RANDOM_WANDER:
+                    MovementStrategyController.enterRandomWander(this);
+                    break;
+                case STATIONARY:
+                default:
+                    MovementStrategyController.enterStationary(this);
+                    break;
+            }
         }
-
     }
 
     public boolean hasThreatTarget(){
@@ -649,11 +710,10 @@ public abstract class MKEntity extends CreatureEntity implements IModelLookProvi
 
 
 
-
     @Override
     public boolean attackEntityFrom(DamageSource source, float amount) {
         if (source.getTrueSource() instanceof LivingEntity) {
-            addThreat((LivingEntity) source.getTrueSource(), amount * 100.0f);
+            addThreat((LivingEntity) source.getTrueSource(), amount * NpcConstants.DAMAGE_THREAT_MULTIPLIER, true);
         }
         return super.attackEntityFrom(source, amount);
     }
@@ -671,16 +731,15 @@ public abstract class MKEntity extends CreatureEntity implements IModelLookProvi
         super.onDeath(cause);
     }
 
-    public void addTargetToThreat(@Nullable LivingEntity target, float baseThreat){
-        getBrain().getMemory(MKMemoryModuleTypes.THREAT_MAP).ifPresent(map ->
-                map.put(target, new ThreatMapEntry().addThreat(baseThreat)));
+    public boolean hasThreatWithTarget(LivingEntity target) {
+        return getBrain().getMemory(MKMemoryModuleTypes.THREAT_MAP).map(x -> x.containsKey(target)).orElse(false);
     }
 
     @Override
     public void setRevengeTarget(@Nullable LivingEntity target) {
         super.setRevengeTarget(target);
         if (target != null){
-            addTargetToThreat(target, 500);
+            addThreat(target, NpcConstants.INITIAL_THREAT, true);
         }
     }
 
@@ -700,6 +759,19 @@ public abstract class MKEntity extends CreatureEntity implements IModelLookProvi
             return ActionResultType.CONSUME;
         }
         return ActionResultType.PASS;
+    }
+
+    @Override
+    public float getHighestThreat() {
+        return getBrain().getMemory(MKMemoryModuleTypes.THREAT_MAP).map(x -> {
+            List<ThreatMapEntry> sorted = x.values().stream()
+                    .sorted(Comparator.comparingDouble(ThreatMapEntry::getCurrentThreat))
+                    .collect(Collectors.toList());
+            if (sorted.size() == 0) {
+                return 0f;
+            }
+            return sorted.get(sorted.size() - 1).getCurrentThreat();
+        }).orElse(0f);
     }
 
 

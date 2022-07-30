@@ -1,6 +1,7 @@
 package com.chaosbuffalo.mknpc.entity.ai.goal;
 
 import com.chaosbuffalo.mkcore.GameConstants;
+import com.chaosbuffalo.mkcore.MKCore;
 import com.chaosbuffalo.mknpc.entity.MKEntity;
 import com.chaosbuffalo.mknpc.entity.ai.memory.MKMemoryModuleTypes;
 import net.minecraft.entity.LivingEntity;
@@ -69,7 +70,7 @@ public class ReturnToSpawnGoal extends Goal {
         if (targetOpt.isPresent()){
             return distFromSpawn > LEASH_RANGE;
         } else {
-            if (entity.getNonCombatMoveType() == MKEntity.NonCombatMoveType.RANDOM_WANDER){
+            if (entity.getNonCombatMoveType() == MKEntity.NonCombatMoveType.RANDOM_WANDER ){
                 return distFromSpawn > LEASH_RANGE;
             }
             return true;
