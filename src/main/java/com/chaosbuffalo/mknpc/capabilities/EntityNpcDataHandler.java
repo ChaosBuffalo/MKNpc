@@ -46,6 +46,7 @@ public class EntityNpcDataHandler implements IEntityNpcData {
     private int dropChances;
     private double noLootChanceIncrease;
     private boolean shouldHaveQuest;
+    private double difficultyValue;
     private final List<LootOptionEntry> options;
     private final Map<ResourceLocation, UUID> questOfferings = new HashMap<>();
     private final Queue<QuestOfferingEntry> questRequests = new ArrayDeque<>();
@@ -69,6 +70,7 @@ public class EntityNpcDataHandler implements IEntityNpcData {
         shouldHaveQuest = false;
         options = new ArrayList<>();
         questGenCd = 0;
+        difficultyValue = 0.0;
     }
 
     public boolean needsDefinitionApplied() {
@@ -77,7 +79,7 @@ public class EntityNpcDataHandler implements IEntityNpcData {
 
     public void applyDefinition(){
         if (definition != null){
-            definition.applyDefinition(getEntity());
+            definition.applyDefinition(getEntity(), difficultyValue);
             needsDefinitionApplied = false;
         }
     }
@@ -126,10 +128,7 @@ public class EntityNpcDataHandler implements IEntityNpcData {
                     if (lootSlot != null && lootTier != null){
                         LootConstructor constructor = lootTier.generateConstructorForSlot(entity.getRNG(), lootSlot);
                         if (constructor != null){
-                            ItemStack item = constructor.constructItem(entity.getRNG(),
-                                    WorldUtils.getDifficultyForGlobalPos(GlobalPos.getPosition(
-                                            entity.world.getDimensionKey(),
-                                            entity.getPosition())));
+                            ItemStack item = constructor.constructItem(entity.getRNG(), getDifficultyValue());
                             if (!item.isEmpty()){
                                 drops.add(entity.entityDropItem(item));
                             }
@@ -212,6 +211,16 @@ public class EntityNpcDataHandler implements IEntityNpcData {
     @Override
     public NpcDefinition getDefinition() {
         return definition;
+    }
+
+    @Override
+    public double getDifficultyValue() {
+        return difficultyValue;
+    }
+
+    @Override
+    public void setDifficultyValue(double difficultyValue) {
+        this.difficultyValue = difficultyValue;
     }
 
     @Override
@@ -323,6 +332,7 @@ public class EntityNpcDataHandler implements IEntityNpcData {
         }
         tag.putUniqueId("spawn_id", spawnID);
         tag.putBoolean("mk_spawned", mkSpawned);
+        tag.putDouble("difficulty_value", difficultyValue);
         return tag;
     }
 
@@ -336,9 +346,11 @@ public class EntityNpcDataHandler implements IEntityNpcData {
         }
         if (nbt.contains("npc_definition")){
             ResourceLocation defName = new ResourceLocation(nbt.getString("npc_definition"));
-            NpcDefinition def = NpcDefinitionManager.getDefinition(defName);
-            this.definition = def;
+            this.definition = NpcDefinitionManager.getDefinition(defName);
             needsDefinitionApplied = true;
+        }
+        if (nbt.contains("difficulty_value")) {
+            difficultyValue = nbt.getDouble("difficulty_value");
         }
     }
 }

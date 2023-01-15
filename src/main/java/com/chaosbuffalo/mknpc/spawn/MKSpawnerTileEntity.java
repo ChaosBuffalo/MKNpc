@@ -1,6 +1,7 @@
 package com.chaosbuffalo.mknpc.spawn;
 
 import com.chaosbuffalo.mkcore.GameConstants;
+import com.chaosbuffalo.mkcore.utils.WorldUtils;
 import com.chaosbuffalo.mknpc.MKNpc;
 import com.chaosbuffalo.mknpc.blocks.MKSpawnerBlock;
 import com.chaosbuffalo.mknpc.capabilities.NpcCapabilities;
@@ -22,7 +23,6 @@ import net.minecraft.tileentity.ITickableTileEntity;
 import net.minecraft.tileentity.TileEntity;
 import net.minecraft.tileentity.TileEntityType;
 import net.minecraft.util.Direction;
-import net.minecraft.util.RegistryKey;
 import net.minecraft.util.ResourceLocation;
 import net.minecraft.util.math.BlockPos;
 import net.minecraft.util.math.GlobalPos;
@@ -259,8 +259,22 @@ public class MKSpawnerTileEntity extends TileEntity implements ITickableTileEnti
         if (getWorld() != null){
             NpcDefinition definition = randomSpawns.next();
             Vector3d spawnPos = Vector3d.copy(getPos()).add(0.5, 0.125, 0.5);
-
-            Entity entity = definition.createEntity(getWorld(), spawnPos, spawnUUID);
+            double difficultyValue = WorldUtils.getDifficultyForGlobalPos(
+                    GlobalPos.getPosition(getWorld().getDimensionKey(), getPos()));
+            switch (getWorld().getDifficulty()) {
+                case EASY:
+                    difficultyValue *= .5;
+                    break;
+                case NORMAL:
+                    difficultyValue *= .75;
+                    break;
+                case PEACEFUL:
+                    difficultyValue = 0.0;
+                    break;
+                default:
+                    break;
+            }
+            Entity entity = definition.createEntity(getWorld(), spawnPos, spawnUUID, difficultyValue);
             this.entity = entity;
             if (entity != null){
                 float rot = getBlockState().get(MKSpawnerBlock.ORIENTATION).getAngleInDegrees();
@@ -272,6 +286,7 @@ public class MKSpawnerTileEntity extends TileEntity implements ITickableTileEnti
                     0.0f);
                 entity.setRotationYawHead(rot);
                 getWorld().addEntity(entity);
+                final double finDiff = difficultyValue;
                 MKNpc.getNpcData(entity).ifPresent((cap) -> {
                     cap.setMKSpawned(true);
                     cap.setSpawnPos(new BlockPos(spawnPos).up());
@@ -279,6 +294,7 @@ public class MKSpawnerTileEntity extends TileEntity implements ITickableTileEnti
                         cap.setNotableUUID(notableIds.get(definition.getDefinitionName()));
                     }
                     cap.setStructureId(getStructureId());
+                    cap.setDifficultyValue(finDiff);
                 });
                 if (entity instanceof MKEntity){
                     ((MKEntity) entity).setNonCombatMoveType(getMoveType());

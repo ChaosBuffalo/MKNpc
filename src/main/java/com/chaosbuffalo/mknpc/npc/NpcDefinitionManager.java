@@ -90,6 +90,7 @@ public class NpcDefinitionManager extends JsonReloadListener {
         putOptionDeserializer(BossStageOption.NAME, BossStageOption::new);
         putOptionDeserializer(TempAbilitiesOption.NAME, TempAbilitiesOption::new);
         putOptionDeserializer(GhostOption.NAME, GhostOption::new);
+        putOptionDeserializer(SkillOption.NAME, SkillOption::new);
     }
 
     public static void putOptionDeserializer(ResourceLocation optionName,

@@ -52,7 +52,7 @@ public class AttributesOption extends NpcDefinitionOption {
     }
 
     @Override
-    public void applyToEntity(NpcDefinition definition, Entity entity) {
+    public void applyToEntity(NpcDefinition definition, Entity entity, double difficultyLevel) {
         if (entity instanceof LivingEntity) {
             AttributeModifierManager manager = ((LivingEntity) entity).getAttributeManager();
             for (NpcAttributeEntry entry : attributes) {

@@ -23,7 +23,7 @@ public abstract class SimpleOption<T> extends NpcDefinitionOption {
     }
 
     @Override
-    public void applyToEntity(NpcDefinition definition, Entity entity) {
+    public void applyToEntity(NpcDefinition definition, Entity entity, double difficultyLevel) {
         applyToEntity(definition, entity, getValue());
     }
 }

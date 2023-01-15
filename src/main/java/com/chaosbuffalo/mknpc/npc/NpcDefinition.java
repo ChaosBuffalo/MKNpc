@@ -1,21 +1,23 @@
 package com.chaosbuffalo.mknpc.npc;
 
+import com.chaosbuffalo.mkcore.GameConstants;
+import com.chaosbuffalo.mkcore.utils.WorldUtils;
 import com.chaosbuffalo.mkfaction.faction.MKFaction;
 import com.chaosbuffalo.mknpc.MKNpc;
 import com.chaosbuffalo.mknpc.entity.MKEntity;
 import com.chaosbuffalo.mknpc.npc.options.*;
 import com.google.common.collect.ImmutableMap;
-import com.google.gson.Gson;
-import com.google.gson.JsonElement;
-import com.google.gson.JsonObject;
-import com.mojang.datafixers.util.Pair;
 import com.mojang.serialization.Dynamic;
 import com.mojang.serialization.DynamicOps;
 import net.minecraft.entity.Entity;
 import net.minecraft.entity.EntityType;
 import net.minecraft.entity.LivingEntity;
-import net.minecraft.inventory.EquipmentSlotType;
+import net.minecraft.entity.ai.attributes.AttributeModifier;
+import net.minecraft.entity.ai.attributes.AttributeModifierManager;
+import net.minecraft.entity.ai.attributes.Attributes;
+import net.minecraft.entity.ai.attributes.ModifiableAttributeInstance;
 import net.minecraft.util.ResourceLocation;
+import net.minecraft.util.math.GlobalPos;
 import net.minecraft.util.math.vector.Vector3d;
 import net.minecraft.util.text.StringTextComponent;
 import net.minecraft.world.World;
@@ -23,7 +25,6 @@ import net.minecraftforge.registries.ForgeRegistries;
 
 import javax.annotation.Nullable;
 import java.util.*;
-import java.util.stream.Collectors;
 
 public class NpcDefinition {
     private ResourceLocation entityType;
@@ -32,11 +33,9 @@ public class NpcDefinition {
     public static final NpcDefinitionOption INVALID_OPTION = new InvalidOption();
     private NpcDefinition parent;
     private final Map<ResourceLocation, NpcDefinitionOption> options;
-    private static final Set<String> toSkip = new HashSet<>();
     private static final List<NpcDefinitionOption.ApplyOrder> orders = new ArrayList<>();
+    private static final UUID HEALTH_SCALING_UUID = UUID.fromString("3508a0ad-a2d5-40f2-8ce7-110401cc1a2c");
     static {
-        toSkip.add("entityType");
-        toSkip.add("parent");
         orders.add(NpcDefinitionOption.ApplyOrder.EARLY);
         orders.add(NpcDefinitionOption.ApplyOrder.MIDDLE);
         orders.add(NpcDefinitionOption.ApplyOrder.LATE);
@@ -172,31 +171,45 @@ public class NpcDefinition {
         }
     }
 
-    public void applyDefinition(Entity entity){
+    public void applyDefinition(Entity entity, double difficultyValue){
         for (NpcDefinitionOption.ApplyOrder order : orders){
-            apply(entity, order);
+            apply(entity, order, difficultyValue);
         }
+        applyDifficultyScaling(entity, difficultyValue);
         // hack to make sure we're at our new max health
         if (entity instanceof LivingEntity){
             ((LivingEntity) entity).setHealth(((LivingEntity) entity).getMaxHealth());
         }
     }
 
+    private void applyDifficultyScaling(Entity entity, double difficultyValue) {
+        if (entity instanceof LivingEntity) {
+            double diffScale = difficultyValue / GameConstants.SKILL_POINTS_PER_LEVEL;
+            AttributeModifierManager manager =((LivingEntity) entity).getAttributeManager();
+            ModifiableAttributeInstance inst = manager.createInstanceIfAbsent(Attributes.MAX_HEALTH);
+            if (inst != null) {
+                inst.applyNonPersistentModifier(new AttributeModifier(
+                        HEALTH_SCALING_UUID, "Health Difficulty Scaling",
+                        diffScale, AttributeModifier.Operation.MULTIPLY_TOTAL));
+            }
+        }
+    }
 
-    private void apply(Entity entity, NpcDefinitionOption.ApplyOrder order){
+
+    private void apply(Entity entity, NpcDefinitionOption.ApplyOrder order, double difficultyValue){
         if (hasParent()){
-            getParent().apply(entity, order);
+            getParent().apply(entity, order, difficultyValue);
         }
         for (Map.Entry<ResourceLocation, NpcDefinitionOption> option : options.entrySet()){
             if (option.getValue().getOrdering() == order){
-                option.getValue().applyToEntity(this, entity);
+                option.getValue().applyToEntity(this, entity, difficultyValue);
             }
         }
     }
 
     @Nullable
-    public Entity createEntity(World world, Vector3d pos){
-        return createEntity(world, pos, UUID.randomUUID());
+    public Entity createEntity(World world, Vector3d pos, double difficultyValue){
+        return createEntity(world, pos, UUID.randomUUID(), difficultyValue);
     }
 
     protected <D> D getDynamicType(DynamicOps<D> ops){
@@ -247,7 +260,7 @@ public class NpcDefinition {
     }
 
     @Nullable
-    public Entity createEntity(World world, Vector3d pos, UUID uuid){
+    public Entity createEntity(World world, Vector3d pos, UUID uuid, double difficultyValue){
         EntityType<?> type = ForgeRegistries.ENTITIES.getValue(getEntityType());
         if (type != null){
             Entity entity = type.create(world);
@@ -259,7 +272,7 @@ public class NpcDefinition {
                 cap.setDefinition(this);
                 cap.setSpawnID(uuid);
             });
-            applyDefinition(entity);
+            applyDefinition(entity, difficultyValue);
             if (entity instanceof MKEntity){
                 ((MKEntity) entity).postDefinitionApply(this);
             }

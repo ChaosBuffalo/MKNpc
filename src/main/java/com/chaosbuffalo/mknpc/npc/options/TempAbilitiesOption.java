@@ -42,7 +42,7 @@ public class TempAbilitiesOption extends NpcDefinitionOption {
     }
 
     @Override
-    public void applyToEntity(NpcDefinition definition, Entity entity) {
+    public void applyToEntity(NpcDefinition definition, Entity entity, double difficultyLevel) {
         if (entity instanceof LivingEntity) {
             LivingEntity livingEntity = (LivingEntity) entity;
             livingEntity.getCapability(CoreCapabilities.ENTITY_CAPABILITY).ifPresent((cap) -> {
