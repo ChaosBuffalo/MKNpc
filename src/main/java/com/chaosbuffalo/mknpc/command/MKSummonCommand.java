@@ -3,6 +3,7 @@ package com.chaosbuffalo.mknpc.command;
 import com.chaosbuffalo.mknpc.npc.NpcDefinitionManager;
 import com.chaosbuffalo.mknpc.npc.NpcDefinition;
 import com.mojang.brigadier.Command;
+import com.mojang.brigadier.arguments.DoubleArgumentType;
 import com.mojang.brigadier.builder.LiteralArgumentBuilder;
 import com.mojang.brigadier.context.CommandContext;
 import com.mojang.brigadier.exceptions.CommandSyntaxException;
@@ -28,7 +29,8 @@ public class MKSummonCommand {
         return Commands.literal("mksummon")
                 .then(Commands.argument("npc_definition", NpcDefinitionIdArgument.definition())
                         .suggests(MKSummonCommand::suggestNpcDefinitions)
-                        .executes(MKSummonCommand::summon));
+                        .then(Commands.argument("difficulty_value", DoubleArgumentType.doubleArg(0.0, 200.0))
+                        .executes(MKSummonCommand::summon)));
     }
 
     static CompletableFuture<Suggestions> suggestNpcDefinitions(final CommandContext<CommandSource> context,
@@ -40,9 +42,10 @@ public class MKSummonCommand {
     static int summon(CommandContext<CommandSource> ctx) throws CommandSyntaxException {
         ServerPlayerEntity player = ctx.getSource().asPlayer();
         ResourceLocation definition_id = ctx.getArgument("npc_definition", ResourceLocation.class);
+        double difficulty_value = DoubleArgumentType.getDouble(ctx, "difficulty_value");
         NpcDefinition definition = NpcDefinitionManager.getDefinition(definition_id);
         if (definition != null){
-            Entity entity = definition.createEntity(player.getServerWorld(), player.getPositionVec());
+            Entity entity = definition.createEntity(player.getServerWorld(), player.getPositionVec(), difficulty_value);
             if (entity != null){
                 player.getServerWorld().addEntity(entity);
                 if (entity instanceof MobEntity){

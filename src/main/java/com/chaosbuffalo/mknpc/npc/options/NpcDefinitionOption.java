@@ -35,7 +35,7 @@ public abstract class NpcDefinitionOption implements IDynamicMapTypedSerializer 
         return name;
     }
 
-    public abstract void applyToEntity(NpcDefinition definition, Entity entity);
+    public abstract void applyToEntity(NpcDefinition definition, Entity entity, double difficultyLevel);
 
     public boolean canBeBossStage() {
         return false;

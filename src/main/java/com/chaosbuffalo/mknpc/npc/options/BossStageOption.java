@@ -49,7 +49,7 @@ public class BossStageOption extends NpcDefinitionOption {
     }
 
     @Override
-    public void applyToEntity(NpcDefinition definition, Entity entity) {
+    public void applyToEntity(NpcDefinition definition, Entity entity, double difficultyLevel) {
         if (entity instanceof MKEntity) {
             for (BossStage stage : stages) {
                 BossStage copy = stage.copy();

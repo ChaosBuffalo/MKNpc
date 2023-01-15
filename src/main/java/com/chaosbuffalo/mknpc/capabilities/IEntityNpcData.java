@@ -25,6 +25,10 @@ public interface IEntityNpcData extends INBTSerializable<CompoundNBT> {
     @Nullable
     NpcDefinition getDefinition();
 
+    double getDifficultyValue();
+
+    void setDifficultyValue(double difficultyValue);
+
     void setDefinition(NpcDefinition definition);
 
     int getBonusXp();

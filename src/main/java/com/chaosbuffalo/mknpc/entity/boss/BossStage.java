@@ -1,6 +1,5 @@
 package com.chaosbuffalo.mknpc.entity.boss;
 
-import com.chaosbuffalo.mkchat.dialogue.DialogueNode;
 import com.chaosbuffalo.mkcore.network.MKParticleEffectSpawnPacket;
 import com.chaosbuffalo.mkcore.network.PacketHandler;
 import com.chaosbuffalo.mkcore.utils.SoundUtils;
@@ -80,7 +79,7 @@ public class BossStage {
 
     public void apply(MKEntity entity){
         for (NpcDefinitionOption option : options){
-            option.applyToEntity(def, entity);
+            option.applyToEntity(def, entity, 0.0f);
         }
     }
 

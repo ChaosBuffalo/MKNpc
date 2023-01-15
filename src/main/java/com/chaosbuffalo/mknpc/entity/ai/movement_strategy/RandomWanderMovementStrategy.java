@@ -38,7 +38,7 @@ public class RandomWanderMovementStrategy extends MovementStrategy{
             }).orElse(RandomPositionGenerator.getLandPos(entity, entity.getWanderRange() / 2,
                     entity.getWanderRange() / 2));
             if (position != null){
-                brain.setMemory(MemoryModuleType.WALK_TARGET, new WalkTarget(position, 1.0f, 1));
+                brain.setMemory(MemoryModuleType.WALK_TARGET, new WalkTarget(position, 0.5f, 1));
             }
         }
     }

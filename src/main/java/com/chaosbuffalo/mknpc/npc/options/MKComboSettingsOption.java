@@ -31,7 +31,7 @@ public class MKComboSettingsOption extends NpcDefinitionOption {
     }
 
     @Override
-    public void applyToEntity(NpcDefinition definition, Entity entity) {
+    public void applyToEntity(NpcDefinition definition, Entity entity, double difficultyLevel) {
         if (entity instanceof MKEntity) {
             ((MKEntity) entity).setAttackComboStatsAndDefault(comboCount, ticks);
         }
