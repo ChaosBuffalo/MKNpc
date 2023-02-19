@@ -25,7 +25,7 @@ apply plugin: 'maven-publish'
 ext {
     base_version = "default"
 }
-version = "0.14.2"
+version = "0.15.0"
 base_version = version;
 if (System.getenv().RELEASE_MODE == null) {
     version += '-SNAPSHOT'
