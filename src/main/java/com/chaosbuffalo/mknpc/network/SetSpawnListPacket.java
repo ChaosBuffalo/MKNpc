@@ -1,7 +1,7 @@
 package com.chaosbuffalo.mknpc.network;
 
 import com.chaosbuffalo.mknpc.entity.MKEntity;
-import com.chaosbuffalo.mknpc.spawn.MKSpawnerTileEntity;
+import com.chaosbuffalo.mknpc.tile_entities.MKSpawnerTileEntity;
 import com.chaosbuffalo.mknpc.spawn.SpawnList;
 import net.minecraft.entity.player.ServerPlayerEntity;
 import net.minecraft.nbt.CompoundNBT;

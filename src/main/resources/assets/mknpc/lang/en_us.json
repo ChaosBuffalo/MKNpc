@@ -19,5 +19,7 @@
   "mknpc.quest_reward.entitlement.message": "Grants Entitlement: %s",
   "mknpc.objective.quest_loot_npc.desc": "Loot %s from %s (%s / %s)",
   "mknpc.objective.quest_loot_npc.progress": "You found %s on the corpse of %s (%s / %s).",
-  "mknpc.objective.kill_w_ability.desc": "Land Killing Blows with %s (%s / %s)"
+  "mknpc.objective.kill_w_ability.desc": "Land Killing Blows with %s (%s / %s)",
+  "mknpc.command.in_struct": "You are in a structure: %s with ID: %s",
+  "mknpc.command.not_in_struct": "You are not in a structure"
 }

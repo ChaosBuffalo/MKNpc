@@ -1,7 +1,7 @@
 package com.chaosbuffalo.mknpc.network;
 
 import com.chaosbuffalo.mknpc.client.gui.screens.MKSpawnerScreen;
-import com.chaosbuffalo.mknpc.spawn.MKSpawnerTileEntity;
+import com.chaosbuffalo.mknpc.tile_entities.MKSpawnerTileEntity;
 import net.minecraft.client.Minecraft;
 import net.minecraft.network.PacketBuffer;
 import net.minecraft.tileentity.TileEntity;

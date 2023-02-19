@@ -1,10 +1,13 @@
 package com.chaosbuffalo.mknpc.npc;
 
 import com.chaosbuffalo.mknpc.capabilities.IChestNpcData;
+import com.chaosbuffalo.mknpc.capabilities.PointOfInterestEntry;
 import com.chaosbuffalo.mknpc.capabilities.WorldNpcDataHandler;
 import com.chaosbuffalo.mknpc.capabilities.structure_tracking.StructureData;
-import com.chaosbuffalo.mknpc.spawn.MKSpawnerTileEntity;
+import com.chaosbuffalo.mknpc.tile_entities.MKSpawnerTileEntity;
 import com.chaosbuffalo.mknpc.spawn.SpawnOption;
+import com.chaosbuffalo.mknpc.tile_entities.MKPoiTileEntity;
+import com.google.common.collect.Lists;
 import net.minecraft.nbt.CompoundNBT;
 import net.minecraft.nbt.INBT;
 import net.minecraft.nbt.ListNBT;
@@ -23,6 +26,7 @@ public class MKStructureEntry implements INBTSerializable<CompoundNBT> {
     private UUID structureId;
     private final List<NotableChestEntry> notableChests;
     private final List<NotableNpcEntry> notables;
+    private final Map<String, List<PointOfInterestEntry>> pois;
     private final Set<ResourceLocation> mobs;
     private final Set<ResourceLocation> factions;
     @Nullable
@@ -51,6 +55,7 @@ public class MKStructureEntry implements INBTSerializable<CompoundNBT> {
         mobs = new HashSet<>();
         factions = new HashSet<>();
         notableChests = new ArrayList<>();
+        pois = new HashMap<>();
         structureData = null;
     }
 
@@ -101,6 +106,17 @@ public class MKStructureEntry implements INBTSerializable<CompoundNBT> {
         }
     }
 
+    private void putPoi(PointOfInterestEntry entry) {
+        List<PointOfInterestEntry> entries = pois.computeIfAbsent(entry.getLabel(), (key) -> new ArrayList<>());
+        entries.add(entry);
+        worldData.putNotablePOI(entry);
+    }
+
+    public void addPOI(MKPoiTileEntity poi) {
+        PointOfInterestEntry entry = new PointOfInterestEntry(poi);
+        putPoi(entry);
+    }
+
     public void addChest(IChestNpcData chestData){
         NotableChestEntry entry = new NotableChestEntry(chestData);
         worldData.putNotableChest(entry);
@@ -135,6 +151,14 @@ public class MKStructureEntry implements INBTSerializable<CompoundNBT> {
             chestNbt.add(chest.serializeNBT());
         }
         tag.put("chests", chestNbt);
+        CompoundNBT poiTag = new CompoundNBT();
+        for (String key : pois.keySet()) {
+            ListNBT poiList = new ListNBT();
+            for (PointOfInterestEntry entry : pois.getOrDefault(key, new ArrayList<>())) {
+                poiList.add(entry.serializeNBT());
+            }
+        }
+        tag.put("pois", poiTag);
         return tag;
     }
 
@@ -169,6 +193,16 @@ public class MKStructureEntry implements INBTSerializable<CompoundNBT> {
             chestEntry.deserializeNBT((CompoundNBT) chest);
             worldData.putNotableChest(chestEntry);
             notableChests.add(chestEntry);
+        }
+        pois.clear();
+        CompoundNBT poiNbt = nbt.getCompound("pois");
+        for (String key : poiNbt.keySet()) {
+            ListNBT poiLNbt = poiNbt.getList(key, Constants.NBT.TAG_COMPOUND);
+            for (INBT poi : poiLNbt) {
+                PointOfInterestEntry entry  = new PointOfInterestEntry();
+                entry.deserializeNBT((CompoundNBT) poi);
+                putPoi(entry);
+            }
         }
     }
 }

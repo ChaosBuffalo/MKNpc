@@ -82,7 +82,10 @@ public class LootChestObjective extends StructureInstanceObjective<UUIDInstanceD
     public PlayerQuestObjectiveData generatePlayerData(IWorldNpcData worldData, QuestData questData) {
         UUIDInstanceData objData = getInstanceData(questData);
         PlayerQuestObjectiveData newObj = playerDataFactory();
-        newObj.putBlockPos("chestPos", worldData.getNotableChest(objData.getUuid()).getLocation());
+        NotableChestEntry chest = worldData.getNotableChest(objData.getUuid());
+        if (chest != null) {
+            newObj.putBlockPos("chestPos", chest.getLocation());
+        }
         newObj.putBool("hasLooted", false);
         return newObj;
     }

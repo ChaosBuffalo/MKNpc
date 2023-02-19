@@ -1,12 +1,9 @@
 package com.chaosbuffalo.mknpc.network;
 
-import com.chaosbuffalo.mknpc.entity.MKEntity;
-import com.chaosbuffalo.mknpc.spawn.MKSpawnerTileEntity;
-import com.chaosbuffalo.mknpc.spawn.SpawnList;
+import com.chaosbuffalo.mknpc.tile_entities.MKSpawnerTileEntity;
 import net.minecraft.block.BlockState;
 import net.minecraft.block.Blocks;
 import net.minecraft.entity.player.ServerPlayerEntity;
-import net.minecraft.nbt.CompoundNBT;
 import net.minecraft.network.PacketBuffer;
 import net.minecraft.tileentity.StructureBlockTileEntity;
 import net.minecraft.tileentity.TileEntity;

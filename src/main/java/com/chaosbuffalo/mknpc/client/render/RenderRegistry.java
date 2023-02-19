@@ -18,6 +18,7 @@ public class RenderRegistry {
     @SubscribeEvent
     public static void registerModels(ModelRegistryEvent evt) {
         RenderTypeLookup.setRenderLayer(MKNpcBlocks.MK_SPAWNER_BLOCK.get(), RenderType.getCutout());
+        RenderTypeLookup.setRenderLayer(MKNpcBlocks.MK_POI_BLOCK.get(), RenderType.getCutout());
 
         RenderingRegistry.registerEntityRenderingHandler(MKNpcEntityTypes.SKELETON_TYPE, (rendererManager) ->
                 new SkeletalGroupRenderer(rendererManager, SkeletonStyles.SKELETON_LOOKS));

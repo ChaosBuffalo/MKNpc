@@ -9,7 +9,8 @@ import com.chaosbuffalo.mknpc.npc.option_entries.INpcOptionEntry;
 import com.chaosbuffalo.mknpc.npc.options.WorldPermanentOption;
 import com.chaosbuffalo.mknpc.quest.QuestChainInstance;
 import com.chaosbuffalo.mknpc.quest.QuestDefinition;
-import com.chaosbuffalo.mknpc.spawn.MKSpawnerTileEntity;
+import com.chaosbuffalo.mknpc.tile_entities.MKSpawnerTileEntity;
+import com.chaosbuffalo.mknpc.tile_entities.MKPoiTileEntity;
 import com.chaosbuffalo.mknpc.world.gen.IStructurePlaced;
 import com.chaosbuffalo.mknpc.world.gen.feature.structure.MKSingleJigsawPiece;
 import com.mojang.datafixers.util.Pair;
@@ -40,6 +41,7 @@ public class WorldNpcDataHandler implements IWorldNpcData{
     private final HashMap<UUID, QuestChainInstance> quests;
     private final HashMap<UUID, NotableChestEntry> notableChests;
     private final HashMap<UUID, NotableNpcEntry> notableNpcs;
+    private final HashMap<UUID, PointOfInterestEntry> pointOfInterests;
     private final World world;
 
     public WorldNpcDataHandler(World world) {
@@ -50,6 +52,7 @@ public class WorldNpcDataHandler implements IWorldNpcData{
         notableChests = new HashMap<>();
         notableNpcs = new HashMap<>();
         quests = new HashMap<>();
+        pointOfInterests = new HashMap<>();
     }
 
     @Override
@@ -77,8 +80,17 @@ public class WorldNpcDataHandler implements IWorldNpcData{
         return notableNpcs.get(id);
     }
 
+    @Override
+    public PointOfInterestEntry getPointOfInterest(UUID id) {
+        return pointOfInterests.get(id);
+    }
+
     public void putNotableNpc(NotableNpcEntry notableNpcEntry){
         notableNpcs.put(notableNpcEntry.getNotableId(), notableNpcEntry);
+    }
+
+    public void putNotablePOI(PointOfInterestEntry entry) {
+        pointOfInterests.put(entry.getPointId(), entry);
     }
 
     @Override
@@ -199,6 +211,13 @@ public class WorldNpcDataHandler implements IWorldNpcData{
                 key -> computeStructureEntry(chestData));
         structure.addChest(chestData);
 
+    }
+
+    @Override
+    public void addPointOfInterest(MKPoiTileEntity entity) {
+        MKStructureEntry structure = structureIndex.computeIfAbsent(entity.getStructureId(),
+                key -> computeStructureEntry(entity));
+        structure.addPOI(entity);
     }
 
     protected boolean hasStructureInstance(UUID structureId){

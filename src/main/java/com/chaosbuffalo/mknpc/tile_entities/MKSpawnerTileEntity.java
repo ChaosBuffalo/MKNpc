@@ -1,4 +1,4 @@
-package com.chaosbuffalo.mknpc.spawn;
+package com.chaosbuffalo.mknpc.tile_entities;
 
 import com.chaosbuffalo.mkcore.GameConstants;
 import com.chaosbuffalo.mkcore.utils.WorldUtils;
@@ -8,6 +8,8 @@ import com.chaosbuffalo.mknpc.capabilities.NpcCapabilities;
 import com.chaosbuffalo.mknpc.entity.MKEntity;
 import com.chaosbuffalo.mknpc.init.MKNpcTileEntityTypes;
 import com.chaosbuffalo.mknpc.npc.NpcDefinition;
+import com.chaosbuffalo.mknpc.spawn.SpawnList;
+import com.chaosbuffalo.mknpc.spawn.SpawnOption;
 import com.chaosbuffalo.mknpc.utils.RandomCollection;
 import com.chaosbuffalo.mknpc.world.gen.IStructurePlaced;
 import net.minecraft.block.BlockState;

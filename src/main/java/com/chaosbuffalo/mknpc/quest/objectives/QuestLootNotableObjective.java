@@ -131,8 +131,10 @@ public class QuestLootNotableObjective extends StructureInstanceObjective<UUIDIn
         UUIDInstanceData objData = getInstanceData(questData);
         PlayerQuestObjectiveData newObj = playerDataFactory();
         NotableNpcEntry notable = worldData.getNotableNpc(objData.getUuid());
-        newObj.setDescription(getDescriptionWithCount(notable.getName(), 0));
-        newObj.putBlockPos("npcPos", notable.getLocation());
+        if (notable != null) {
+            newObj.setDescription(getDescriptionWithCount(notable.getName(), 0));
+            newObj.putBlockPos("npcPos", notable.getLocation());
+        }
         newObj.putInt("lootCount", 0);
         return newObj;
     }
