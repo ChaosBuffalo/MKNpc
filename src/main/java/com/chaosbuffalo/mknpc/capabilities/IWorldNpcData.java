@@ -1,5 +1,6 @@
 package com.chaosbuffalo.mknpc.capabilities;
 
+import com.chaosbuffalo.mknpc.npc.MKStructureEntry;
 import com.chaosbuffalo.mknpc.npc.NotableChestEntry;
 import com.chaosbuffalo.mknpc.npc.NotableNpcEntry;
 import com.chaosbuffalo.mknpc.npc.NpcDefinition;
@@ -39,6 +40,13 @@ public interface IWorldNpcData extends INBTSerializable<CompoundNBT> {
     void addChest(IChestNpcData chestData);
 
     void addPointOfInterest(MKPoiTileEntity entry);
+
+    void update();
+
+    WorldStructureManager getStructureManager();
+
+    @Nullable
+    MKStructureEntry getStructureData(UUID structId);
 
     @Nullable
     QuestChainInstance getQuest(UUID questId);

@@ -42,6 +42,7 @@ public class WorldNpcDataHandler implements IWorldNpcData{
     private final HashMap<UUID, NotableChestEntry> notableChests;
     private final HashMap<UUID, NotableNpcEntry> notableNpcs;
     private final HashMap<UUID, PointOfInterestEntry> pointOfInterests;
+    private final WorldStructureManager structureManager;
     private final World world;
 
     public WorldNpcDataHandler(World world) {
@@ -53,6 +54,7 @@ public class WorldNpcDataHandler implements IWorldNpcData{
         notableNpcs = new HashMap<>();
         quests = new HashMap<>();
         pointOfInterests = new HashMap<>();
+        structureManager = new WorldStructureManager(this);
     }
 
     @Override
@@ -218,6 +220,21 @@ public class WorldNpcDataHandler implements IWorldNpcData{
         MKStructureEntry structure = structureIndex.computeIfAbsent(entity.getStructureId(),
                 key -> computeStructureEntry(entity));
         structure.addPOI(entity);
+    }
+
+    @Override
+    public void update() {
+        structureManager.tick();
+    }
+
+    @Override
+    public WorldStructureManager getStructureManager() {
+        return structureManager;
+    }
+
+    @Override
+    public MKStructureEntry getStructureData(UUID structId) {
+        return structureIndex.get(structId);
     }
 
     protected boolean hasStructureInstance(UUID structureId){

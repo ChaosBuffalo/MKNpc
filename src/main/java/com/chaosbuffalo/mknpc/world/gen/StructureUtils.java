@@ -1,10 +1,10 @@
 package com.chaosbuffalo.mknpc.world.gen;
 
 import com.chaosbuffalo.mknpc.capabilities.NpcCapabilities;
+import com.chaosbuffalo.mknpc.event.WorldStructureHandler;
 import com.chaosbuffalo.mknpc.init.MKNpcBlocks;
 import com.chaosbuffalo.mknpc.tile_entities.MKPoiTileEntity;
 import com.chaosbuffalo.mknpc.tile_entities.MKSpawnerTileEntity;
-import com.chaosbuffalo.mknpc.world.gen.feature.structure.IControlNaturalSpawns;
 import com.chaosbuffalo.mknpc.world.gen.feature.structure.MKJigsawStructure;
 import net.minecraft.block.Blocks;
 import net.minecraft.entity.Entity;
@@ -15,14 +15,10 @@ import net.minecraft.util.Rotation;
 import net.minecraft.util.math.BlockPos;
 import net.minecraft.util.math.MutableBoundingBox;
 import net.minecraft.world.IWorld;
-import net.minecraft.world.gen.feature.structure.Structure;
 import net.minecraft.world.gen.feature.structure.StructureManager;
 import net.minecraft.world.gen.feature.structure.StructureStart;
 import net.minecraft.world.server.ServerWorld;
-import net.minecraftforge.eventbus.api.Event;
-import net.minecraftforge.registries.ForgeRegistries;
 
-import javax.annotation.Nullable;
 import java.util.List;
 import java.util.Optional;
 import java.util.Random;
@@ -72,6 +68,7 @@ public class StructureUtils {
         } else if (function.startsWith("mkpoi")) {
             String[] names = function.split("#", 2);
             String tag = names[1];
+            worldIn.destroyBlock(pos, false);
             worldIn.setBlockState(pos, MKNpcBlocks.MK_POI_BLOCK.get().getDefaultState(), 3);
             TileEntity tile = worldIn.getTileEntity(pos);
             if (tile instanceof MKPoiTileEntity) {
@@ -87,7 +84,7 @@ public class StructureUtils {
     public static Optional<List<MKJigsawStructure.Start>> getStructuresOverlaps(Entity entity) {
         if (entity.getEntityWorld() instanceof ServerWorld){
             StructureManager manager = ((ServerWorld) entity.getEntityWorld()).getStructureManager();
-            return Optional.of(ForgeRegistries.STRUCTURE_FEATURES.getValues().stream().filter(x -> x instanceof MKJigsawStructure).map(
+            return Optional.of(WorldStructureHandler.MK_STRUCTURE_CACHE.stream().map(
                     x -> manager.getStructureStart(entity.getPosition(), false, x)).filter(x -> x != StructureStart.DUMMY)
                     .map(x -> (MKJigsawStructure.Start) x)
                     .collect(Collectors.toList()));

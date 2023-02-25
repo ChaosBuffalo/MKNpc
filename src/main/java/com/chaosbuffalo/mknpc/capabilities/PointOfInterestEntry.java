@@ -43,6 +43,7 @@ public class PointOfInterestEntry implements INBTSerializable<CompoundNBT> {
         return label;
     }
 
+
     @Override
     public CompoundNBT serializeNBT() {
         CompoundNBT tag = new CompoundNBT();

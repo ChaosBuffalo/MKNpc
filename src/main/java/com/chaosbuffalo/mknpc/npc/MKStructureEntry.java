@@ -7,6 +7,7 @@ import com.chaosbuffalo.mknpc.capabilities.structure_tracking.StructureData;
 import com.chaosbuffalo.mknpc.tile_entities.MKSpawnerTileEntity;
 import com.chaosbuffalo.mknpc.spawn.SpawnOption;
 import com.chaosbuffalo.mknpc.tile_entities.MKPoiTileEntity;
+import com.chaosbuffalo.mknpc.utils.NBTSerializableMappedData;
 import com.google.common.collect.Lists;
 import net.minecraft.nbt.CompoundNBT;
 import net.minecraft.nbt.INBT;
@@ -32,12 +33,14 @@ public class MKStructureEntry implements INBTSerializable<CompoundNBT> {
     @Nullable
     private StructureData structureData;
     private final WorldNpcDataHandler worldData;
+    private final NBTSerializableMappedData customStructureData;
 
     public MKStructureEntry(WorldNpcDataHandler worldData, ResourceLocation structureName, UUID structureId, @Nullable StructureData structureData){
         this(worldData);
         this.structureName = structureName;
         this.structureId = structureId;
         this.structureData = structureData;
+
     }
 
     public ChunkPos getChunkPos(){
@@ -57,6 +60,11 @@ public class MKStructureEntry implements INBTSerializable<CompoundNBT> {
         notableChests = new ArrayList<>();
         pois = new HashMap<>();
         structureData = null;
+        customStructureData = new NBTSerializableMappedData();
+    }
+
+    public Map<String, List<PointOfInterestEntry>> getPointsOfInterest() {
+        return pois;
     }
 
     public boolean hasChestWithTag(String tag){
@@ -157,8 +165,12 @@ public class MKStructureEntry implements INBTSerializable<CompoundNBT> {
             for (PointOfInterestEntry entry : pois.getOrDefault(key, new ArrayList<>())) {
                 poiList.add(entry.serializeNBT());
             }
+            poiTag.put(key, poiList);
         }
         tag.put("pois", poiTag);
+        if (!customStructureData.isEmpty()) {
+            tag.put("customData", customStructureData.serializeNBT());
+        }
         return tag;
     }
 
@@ -203,6 +215,9 @@ public class MKStructureEntry implements INBTSerializable<CompoundNBT> {
                 entry.deserializeNBT((CompoundNBT) poi);
                 putPoi(entry);
             }
+        }
+        if (nbt.contains("customData")) {
+            customStructureData.deserializeNBT(nbt.getCompound("customData"));
         }
     }
 }

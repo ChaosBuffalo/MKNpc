@@ -21,5 +21,12 @@
   "mknpc.objective.quest_loot_npc.progress": "You found %s on the corpse of %s (%s / %s).",
   "mknpc.objective.kill_w_ability.desc": "Land Killing Blows with %s (%s / %s)",
   "mknpc.command.in_struct": "You are in a structure: %s with ID: %s",
-  "mknpc.command.not_in_struct": "You are not in a structure"
+  "mknpc.command.not_in_struct": "You are not in a structure",
+  "mknpc.command.cant_find_cap": "Can't find mknpc World Capability, Command Failed",
+  "mknpc.command.pois_for_struct": "POIs for Structure: %s (ID: %s): ",
+  "mknpc.command.pois_struct_not_found": "No Data Found For Structure %s (ID: %s)",
+  "mknpc.command.pois_struct_no_poi": "No POI Found For Structure %s (ID: %s)",
+  "mknpc.command.pois_struct_desc": "POI: %s at %s",
+  "mknpc.debug.enter_structure": "Entered structure %s (ID: %s)",
+  "mknpc.debug.exit_structure": "Exited structure %s (ID: %s)"
 }

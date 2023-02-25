@@ -48,6 +48,7 @@ public class MKNpc {
         FMLJavaModLoadingContext.get().getModEventBus().addListener(this::enqueueIMC);
         FMLJavaModLoadingContext.get().getModEventBus().addListener(this::processIMC);
         FMLJavaModLoadingContext.get().getModEventBus().addListener(this::doClientStuff);
+//
         MKNpcBlocks.register();
         MKNpcTileEntityTypes.register();
         NpcDialogueUtils.setupMKNpcHandlers();
@@ -57,6 +58,7 @@ public class MKNpc {
         TestJigsawStructurePools.registerPatterns();
         MinecraftForge.EVENT_BUS.addListener(MKNpcWorldGen::biomeSetup);
         MinecraftForge.EVENT_BUS.addListener(MKNpcWorldGen::worldSetup);
+        //make sure not to class load server specific events on client
     }
 
     private void enqueueIMC(final InterModEnqueueEvent event) {
@@ -90,6 +92,8 @@ public class MKNpc {
         QuestDefinitionManager.setupDeserializers();
         NpcCommands.registerArguments();
     }
+
+
 
     public static double getDifficultyScale(LivingEntity entity) {
         switch (entity.getEntityWorld().getDifficulty()) {

@@ -240,6 +240,8 @@ public class EntityHandler {
         }
     }
 
+
+
     @SubscribeEvent
     public static void onEntityTick(LivingEvent.LivingUpdateEvent event){
         MKNpc.getNpcData(event.getEntityLiving()).ifPresent(IEntityNpcData::tick);
