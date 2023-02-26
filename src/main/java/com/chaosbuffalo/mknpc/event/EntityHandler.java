@@ -182,6 +182,9 @@ public class EntityHandler {
 
     private static void handleKillEntityForPlayer(PlayerEntity player, LivingDeathEvent event, IWorldNpcData worldData){
         MKNpc.getNpcData(event.getEntityLiving()).ifPresent(x -> {
+            if (x.getStructureId().isPresent()) {
+                worldData.getStructureManager().onNpcDeath(x);
+            }
             if (x.getDefinition() != null){
                 NpcDefinition def = x.getDefinition();
                 MKNpc.getPlayerQuestData(player).ifPresent(pData -> pData.getQuestChains().forEach(

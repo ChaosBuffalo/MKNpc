@@ -1,9 +1,12 @@
 package com.chaosbuffalo.mknpc.world.gen.feature.structure;
 
 import com.chaosbuffalo.mknpc.MKNpc;
+import com.chaosbuffalo.mknpc.capabilities.IEntityNpcData;
 import com.chaosbuffalo.mknpc.capabilities.WorldStructureManager;
 import com.chaosbuffalo.mknpc.npc.MKStructureEntry;
 import com.mojang.serialization.Codec;
+import net.minecraft.entity.Entity;
+import net.minecraft.entity.LivingEntity;
 import net.minecraft.entity.player.PlayerEntity;
 import net.minecraft.entity.player.ServerPlayerEntity;
 import net.minecraft.nbt.CompoundNBT;
@@ -69,6 +72,10 @@ public class MKJigsawStructure extends JigsawStructure implements IControlNatura
     }
 
     public void onActiveTick(MKStructureEntry entry, WorldStructureManager.ActiveStructure activeStructure, World world) {
+
+    }
+
+    public void onNpcDeath(MKStructureEntry entry, WorldStructureManager.ActiveStructure activeStructure, IEntityNpcData npcData) {
 
     }
 

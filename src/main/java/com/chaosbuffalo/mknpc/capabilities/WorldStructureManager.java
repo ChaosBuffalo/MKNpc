@@ -5,6 +5,7 @@ import com.chaosbuffalo.mknpc.MKNpc;
 import com.chaosbuffalo.mknpc.event.WorldStructureHandler;
 import com.chaosbuffalo.mknpc.npc.MKStructureEntry;
 import com.chaosbuffalo.mknpc.world.gen.feature.structure.MKJigsawStructure;
+import net.minecraft.entity.LivingEntity;
 import net.minecraft.entity.player.ServerPlayerEntity;
 
 import java.util.*;
@@ -54,8 +55,6 @@ public class WorldStructureManager {
                 playerRemoveCallback.accept(entry.player, this);
             }
             activePlayers.remove(uuid);
-
-
         }
 
         // returns true if we are not already in structure
@@ -133,6 +132,22 @@ public class WorldStructureManager {
                 mkStruct.onPlayerExit(player, entry, activeStructure);
             }
         }
+
+    }
+
+    public void onNpcDeath(IEntityNpcData npcData) {
+        npcData.getStructureId().ifPresent(structureId -> {
+            if (activeStructures.containsKey(structureId)) {
+                MKStructureEntry entry = handler.getStructureData(structureId);
+                ActiveStructure activeStruct = activeStructures.get(structureId);
+                if (entry != null && activeStruct != null) {
+                    MKJigsawStructure mkStruct = WorldStructureHandler.MK_STRUCTURE_INDEX.get(entry.getStructureName());
+                    if (mkStruct != null) {
+                        mkStruct.onNpcDeath(entry, activeStruct, npcData);
+                    }
+                }
+            }
+        });
 
     }
 
