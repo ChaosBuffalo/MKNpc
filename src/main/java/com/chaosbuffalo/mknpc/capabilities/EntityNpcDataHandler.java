@@ -2,8 +2,8 @@ package com.chaosbuffalo.mknpc.capabilities;
 
 import com.chaosbuffalo.mkchat.capabilities.ChatCapabilities;
 import com.chaosbuffalo.mkcore.GameConstants;
-import com.chaosbuffalo.mkcore.utils.WorldUtils;
 import com.chaosbuffalo.mknpc.MKNpc;
+import com.chaosbuffalo.mknpc.npc.INotifyOnEntityDeath;
 import com.chaosbuffalo.mknpc.npc.NpcDefinition;
 import com.chaosbuffalo.mknpc.npc.NpcDefinitionManager;
 import com.chaosbuffalo.mknpc.npc.entries.LootOptionEntry;
@@ -26,7 +26,6 @@ import net.minecraft.util.DamageSource;
 import net.minecraft.util.ResourceLocation;
 import net.minecraft.util.Util;
 import net.minecraft.util.math.BlockPos;
-import net.minecraft.util.math.GlobalPos;
 import net.minecraft.world.World;
 
 import javax.annotation.Nonnull;
@@ -54,9 +53,12 @@ public class EntityNpcDataHandler implements IEntityNpcData {
     private UUID notableId;
     @Nullable
     private UUID structureId;
+    @Nullable
+    private INotifyOnEntityDeath deathReceiver;
 
     public EntityNpcDataHandler(LivingEntity entity) {
         this.entity = entity;
+        deathReceiver = null;
         mkSpawned = false;
         bonusXp = 0;
         notable = false;
@@ -201,6 +203,16 @@ public class EntityNpcDataHandler implements IEntityNpcData {
     public void requestQuest(QuestOfferingEntry entry) {
         MKNpc.LOGGER.debug("Adding quest request for {} to {}", entry.getQuestDef(), entity);
         questRequests.add(entry);
+    }
+
+    @Override
+    public Optional<INotifyOnEntityDeath> getDeathReceiver() {
+        return Optional.ofNullable(deathReceiver);
+    }
+
+    @Override
+    public void setDeathReceiver(INotifyOnEntityDeath receiver) {
+        deathReceiver = receiver;
     }
 
     @Override

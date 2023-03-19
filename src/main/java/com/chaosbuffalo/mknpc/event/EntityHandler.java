@@ -182,6 +182,9 @@ public class EntityHandler {
 
     private static void handleKillEntityForPlayer(PlayerEntity player, LivingDeathEvent event, IWorldNpcData worldData){
         MKNpc.getNpcData(event.getEntityLiving()).ifPresent(x -> {
+            if (x.getStructureId().isPresent()) {
+                worldData.getStructureManager().onNpcDeath(x);
+            }
             if (x.getDefinition() != null){
                 NpcDefinition def = x.getDefinition();
                 MKNpc.getPlayerQuestData(player).ifPresent(pData -> pData.getQuestChains().forEach(
@@ -215,6 +218,8 @@ public class EntityHandler {
         if (event.isCanceled() || event.getEntityLiving().world.isRemote){
             return;
         }
+        MKNpc.getNpcData(event.getEntityLiving()).ifPresent(npcData ->
+                npcData.getDeathReceiver().ifPresent(receiver -> receiver.onEntityDeath(npcData, event)));
         if (event.getSource().getTrueSource() instanceof PlayerEntity){
             PlayerEntity player = (PlayerEntity) event.getSource().getTrueSource();
             MinecraftServer server = player.getServer();
@@ -239,6 +244,8 @@ public class EntityHandler {
             });
         }
     }
+
+
 
     @SubscribeEvent
     public static void onEntityTick(LivingEvent.LivingUpdateEvent event){

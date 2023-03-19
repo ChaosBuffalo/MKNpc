@@ -1,10 +1,15 @@
 package com.chaosbuffalo.mknpc.npc;
 
+import com.chaosbuffalo.mkcore.core.AbilityTracker;
 import com.chaosbuffalo.mknpc.capabilities.IChestNpcData;
+import com.chaosbuffalo.mknpc.capabilities.PointOfInterestEntry;
 import com.chaosbuffalo.mknpc.capabilities.WorldNpcDataHandler;
 import com.chaosbuffalo.mknpc.capabilities.structure_tracking.StructureData;
-import com.chaosbuffalo.mknpc.spawn.MKSpawnerTileEntity;
+import com.chaosbuffalo.mknpc.tile_entities.MKSpawnerTileEntity;
 import com.chaosbuffalo.mknpc.spawn.SpawnOption;
+import com.chaosbuffalo.mknpc.tile_entities.MKPoiTileEntity;
+import com.chaosbuffalo.mknpc.utils.NBTSerializableMappedData;
+import com.google.common.collect.Lists;
 import net.minecraft.nbt.CompoundNBT;
 import net.minecraft.nbt.INBT;
 import net.minecraft.nbt.ListNBT;
@@ -23,17 +28,39 @@ public class MKStructureEntry implements INBTSerializable<CompoundNBT> {
     private UUID structureId;
     private final List<NotableChestEntry> notableChests;
     private final List<NotableNpcEntry> notables;
+    private final Map<String, List<PointOfInterestEntry>> pois;
     private final Set<ResourceLocation> mobs;
     private final Set<ResourceLocation> factions;
     @Nullable
     private StructureData structureData;
     private final WorldNpcDataHandler worldData;
+    private final NBTSerializableMappedData customStructureData;
+    private final AbilityTracker cooldownTracker;
+    private final Set<String> activeEvents = new HashSet<>();
 
     public MKStructureEntry(WorldNpcDataHandler worldData, ResourceLocation structureName, UUID structureId, @Nullable StructureData structureData){
         this(worldData);
         this.structureName = structureName;
         this.structureId = structureId;
         this.structureData = structureData;
+
+
+    }
+
+    public AbilityTracker getCooldownTracker() {
+        return cooldownTracker;
+    }
+
+    public void addActiveEvent(String name) {
+        activeEvents.add(name);
+    }
+
+    public Set<String> getActiveEvents() {
+        return activeEvents;
+    }
+
+    public void clearActiveEvents() {
+        activeEvents.clear();
     }
 
     public ChunkPos getChunkPos(){
@@ -51,7 +78,22 @@ public class MKStructureEntry implements INBTSerializable<CompoundNBT> {
         mobs = new HashSet<>();
         factions = new HashSet<>();
         notableChests = new ArrayList<>();
+        pois = new HashMap<>();
         structureData = null;
+        customStructureData = new NBTSerializableMappedData();
+        cooldownTracker = new AbilityTracker();
+    }
+
+    public Map<String, List<PointOfInterestEntry>> getPointsOfInterest() {
+        return pois;
+    }
+
+    public List<PointOfInterestEntry> getPoisWithTag(String tag) {
+        return pois.get(tag);
+    }
+
+    public Optional<PointOfInterestEntry> getFirstPoiWithTag(String tag) {
+        return pois.containsKey(tag) ? pois.get(tag).stream().findFirst() : Optional.empty();
     }
 
     public boolean hasChestWithTag(String tag){
@@ -64,6 +106,10 @@ public class MKStructureEntry implements INBTSerializable<CompoundNBT> {
 
     public Optional<NotableNpcEntry> getFirstNotableOfType(ResourceLocation npcDef){
         return notables.stream().filter(x -> x.getDefinition() != null && x.getDefinition().getDefinitionName().equals(npcDef)).findFirst();
+    }
+
+    public List<NotableNpcEntry> getAllNotablesOfType(ResourceLocation npcDef) {
+        return notables.stream().filter(x -> x. getDefinition() != null && x.getDefinition().getDefinitionName().equals(npcDef)).collect(Collectors.toList());
     }
 
     public Optional<NotableChestEntry> getFirstChestWithTag(String tag){
@@ -101,6 +147,25 @@ public class MKStructureEntry implements INBTSerializable<CompoundNBT> {
         }
     }
 
+    public boolean hasPoi(String name) {
+        return pois.containsKey(name) && !pois.get(name).isEmpty();
+    }
+
+    private void putPoi(PointOfInterestEntry entry) {
+        List<PointOfInterestEntry> entries = pois.computeIfAbsent(entry.getLabel(), (key) -> new ArrayList<>());
+        entries.add(entry);
+        worldData.putNotablePOI(entry);
+    }
+
+    public NBTSerializableMappedData getCustomData() {
+        return customStructureData;
+    }
+
+    public void addPOI(MKPoiTileEntity poi) {
+        PointOfInterestEntry entry = new PointOfInterestEntry(poi);
+        putPoi(entry);
+    }
+
     public void addChest(IChestNpcData chestData){
         NotableChestEntry entry = new NotableChestEntry(chestData);
         worldData.putNotableChest(entry);
@@ -135,6 +200,19 @@ public class MKStructureEntry implements INBTSerializable<CompoundNBT> {
             chestNbt.add(chest.serializeNBT());
         }
         tag.put("chests", chestNbt);
+        CompoundNBT poiTag = new CompoundNBT();
+        for (String key : pois.keySet()) {
+            ListNBT poiList = new ListNBT();
+            for (PointOfInterestEntry entry : pois.getOrDefault(key, new ArrayList<>())) {
+                poiList.add(entry.serializeNBT());
+            }
+            poiTag.put(key, poiList);
+        }
+        tag.put("pois", poiTag);
+        if (!customStructureData.isEmpty()) {
+            tag.put("customData", customStructureData.serializeNBT());
+        }
+        tag.put("cooldowns", cooldownTracker.serialize());
         return tag;
     }
 
@@ -170,5 +248,22 @@ public class MKStructureEntry implements INBTSerializable<CompoundNBT> {
             worldData.putNotableChest(chestEntry);
             notableChests.add(chestEntry);
         }
+        pois.clear();
+        CompoundNBT poiNbt = nbt.getCompound("pois");
+        for (String key : poiNbt.keySet()) {
+            ListNBT poiLNbt = poiNbt.getList(key, Constants.NBT.TAG_COMPOUND);
+            for (INBT poi : poiLNbt) {
+                PointOfInterestEntry entry  = new PointOfInterestEntry();
+                entry.deserializeNBT((CompoundNBT) poi);
+                putPoi(entry);
+            }
+        }
+        if (nbt.contains("customData")) {
+            customStructureData.deserializeNBT(nbt.getCompound("customData"));
+        }
+        if (nbt.contains("cooldowns")) {
+            cooldownTracker.deserialize(nbt.getCompound("cooldowns"));
+        }
+
     }
 }

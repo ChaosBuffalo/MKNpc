@@ -6,14 +6,16 @@ import com.chaosbuffalo.mknpc.command.NpcCommands;
 import com.chaosbuffalo.mknpc.dialogue.NPCDialogueExtension;
 import com.chaosbuffalo.mknpc.event.NpcClientEventHandler;
 import com.chaosbuffalo.mknpc.init.MKNpcBlocks;
+import com.chaosbuffalo.mknpc.init.MKNpcEntityTypes;
 import com.chaosbuffalo.mknpc.init.MKNpcTileEntityTypes;
 import com.chaosbuffalo.mknpc.init.MKNpcWorldGen;
 import com.chaosbuffalo.mknpc.network.PacketHandler;
-import com.chaosbuffalo.mknpc.npc.INpcOptionExtension;
+import com.chaosbuffalo.mknpc.npc.IMKNpcExtension;
 import com.chaosbuffalo.mknpc.npc.NpcDefinitionManager;
 import com.chaosbuffalo.mknpc.quest.QuestDefinitionManager;
 import com.chaosbuffalo.mknpc.quest.dialogue.NpcDialogueUtils;
 import com.chaosbuffalo.mknpc.world.gen.feature.structure.TestJigsawStructurePools;
+import com.chaosbuffalo.mknpc.world.gen.feature.structure.events.StructureEventManager;
 import net.minecraft.entity.Entity;
 import net.minecraft.entity.LivingEntity;
 import net.minecraft.entity.player.PlayerEntity;
@@ -38,7 +40,7 @@ import org.apache.logging.log4j.Logger;
 public class MKNpc {
     public static final Logger LOGGER = LogManager.getLogger();
     public static final String MODID = "mknpc";
-    public static final String REGISTER_NPC_OPTIONS_EXTENSION = "register_npc_options_extension";
+    public static final String REGISTER_NPC_OPTIONS_EXTENSION = "register_npc_extension";
     private NpcDefinitionManager npcDefinitionManager;
     private QuestDefinitionManager questDefinitionManager;
 
@@ -48,8 +50,10 @@ public class MKNpc {
         FMLJavaModLoadingContext.get().getModEventBus().addListener(this::enqueueIMC);
         FMLJavaModLoadingContext.get().getModEventBus().addListener(this::processIMC);
         FMLJavaModLoadingContext.get().getModEventBus().addListener(this::doClientStuff);
+//
         MKNpcBlocks.register();
         MKNpcTileEntityTypes.register();
+        MKNpcEntityTypes.register();
         NpcDialogueUtils.setupMKNpcHandlers();
         npcDefinitionManager = new NpcDefinitionManager();
         questDefinitionManager = new QuestDefinitionManager();
@@ -57,6 +61,7 @@ public class MKNpc {
         TestJigsawStructurePools.registerPatterns();
         MinecraftForge.EVENT_BUS.addListener(MKNpcWorldGen::biomeSetup);
         MinecraftForge.EVENT_BUS.addListener(MKNpcWorldGen::worldSetup);
+        //make sure not to class load server specific events on client
     }
 
     private void enqueueIMC(final InterModEnqueueEvent event) {
@@ -67,14 +72,21 @@ public class MKNpc {
 
     private void processIMC(final InterModProcessEvent event) {
         LOGGER.info("MKNpc.processIMC");
+        internalIMCSetup();
         event.getIMCStream().forEach(m -> {
             if (m.getMethod().equals(REGISTER_NPC_OPTIONS_EXTENSION)) {
                 LOGGER.info("IMC register npc option extension from mod {} {}", m.getSenderModId(),
                         m.getMethod());
-                INpcOptionExtension ext = (INpcOptionExtension) m.getMessageSupplier().get();
-                ext.registerNpcOptionExtension();
+                IMKNpcExtension ext = (IMKNpcExtension) m.getMessageSupplier().get();
+                ext.registerNpcExtension();
             }
         });
+    }
+
+    private void internalIMCSetup() {
+        NpcDefinitionManager.setupDeserializers();
+        QuestDefinitionManager.setupDeserializers();
+        StructureEventManager.setupDeserializers();
     }
 
     @SubscribeEvent
@@ -86,10 +98,10 @@ public class MKNpc {
     private void setup(final FMLCommonSetupEvent event) {
         NpcCapabilities.registerCapabilities();
         PacketHandler.setupHandler();
-        NpcDefinitionManager.setupDeserializers();
-        QuestDefinitionManager.setupDeserializers();
         NpcCommands.registerArguments();
     }
+
+
 
     public static double getDifficultyScale(LivingEntity entity) {
         switch (entity.getEntityWorld().getDifficulty()) {

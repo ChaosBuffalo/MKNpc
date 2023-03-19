@@ -89,8 +89,10 @@ public class KillNotableNpcObjective extends StructureInstanceObjective<UUIDInst
         UUIDInstanceData objData = getInstanceData(questData);
         PlayerQuestObjectiveData newObj = playerDataFactory();
         NotableNpcEntry notable = worldData.getNotableNpc(objData.getUuid());
-        newObj.setDescription((new TranslationTextComponent("mknpc.objective.kill_notable.desc", notable.getName())));
-        newObj.putBlockPos("npcPos", notable.getLocation());
+        if (notable != null) {
+            newObj.setDescription((new TranslationTextComponent("mknpc.objective.kill_notable.desc", notable.getName())));
+            newObj.putBlockPos("npcPos", notable.getLocation());
+        }
         newObj.putBool("hasKilled", false);
         return newObj;
     }

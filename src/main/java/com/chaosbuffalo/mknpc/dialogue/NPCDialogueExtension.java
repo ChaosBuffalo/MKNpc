@@ -9,6 +9,7 @@ import com.chaosbuffalo.mkchat.json.SerializationUtils;
 import com.chaosbuffalo.mknpc.MKNpc;
 import com.chaosbuffalo.mknpc.capabilities.NpcCapabilities;
 import com.chaosbuffalo.mknpc.dialogue.effects.OpenLearnAbilitiesEffect;
+import com.chaosbuffalo.mknpc.npc.NotableNpcEntry;
 import com.chaosbuffalo.mknpc.quest.dialogue.conditions.*;
 import com.chaosbuffalo.mknpc.quest.dialogue.effects.AdvanceQuestChainEffect;
 import com.chaosbuffalo.mknpc.quest.dialogue.effects.GrantEntitlementEffect;
@@ -43,9 +44,15 @@ public class NPCDialogueExtension implements IDialogueExtension {
                 if (context.getPlayer().getServer() != null){
                     World overworld = context.getPlayer().getServer().getWorld(World.OVERWORLD);
                     if (overworld != null){
-                        return Collections.singletonList(overworld.getCapability(NpcCapabilities.WORLD_NPC_DATA_CAPABILITY).map(x ->
-                                x.getNotableNpc(UUID.fromString(name)).getName()).orElse(
-                                new StringTextComponent(String.format("notable:%s", name))));
+                        return Collections.singletonList(overworld.getCapability(NpcCapabilities.WORLD_NPC_DATA_CAPABILITY)
+                                .map(x -> {
+                                    NotableNpcEntry entry = x.getNotableNpc(UUID.fromString(name));
+                                    if (entry != null) {
+                                        return entry.getName();
+                                    } else {
+                                        return new StringTextComponent(String.format("notable:%s", name));
+                                    }
+                                }).orElse(new StringTextComponent(String.format("notable:%s", name))));
                     }
                 }
                 return Collections.singletonList(new StringTextComponent(String.format("notable:%s", name)));

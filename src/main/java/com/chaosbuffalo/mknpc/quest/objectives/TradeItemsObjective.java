@@ -20,6 +20,7 @@ import net.minecraft.entity.player.PlayerEntity;
 import net.minecraft.item.ItemStack;
 import net.minecraft.util.ResourceLocation;
 import net.minecraft.util.Util;
+import net.minecraft.util.math.BlockPos;
 import net.minecraft.util.text.IFormattableTextComponent;
 import net.minecraft.util.text.TextFormatting;
 import net.minecraft.util.text.TranslationTextComponent;
@@ -71,7 +72,10 @@ public class TradeItemsObjective extends StructureInstanceObjective<UUIDInstance
     public PlayerQuestObjectiveData generatePlayerData(IWorldNpcData worldData, QuestData questData) {
         UUIDInstanceData objData = getInstanceData(questData);
         PlayerQuestObjectiveData newObj = playerDataFactory();
-        newObj.putBlockPos("npcPos", worldData.getNotableNpc(objData.getUuid()).getLocation());
+        NotableNpcEntry entry = worldData.getNotableNpc(objData.getUuid());
+        if (entry != null) {
+            newObj.putBlockPos("npcPos", entry.getLocation());
+        }
         return newObj;
     }
 

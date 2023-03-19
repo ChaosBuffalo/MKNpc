@@ -1,13 +1,17 @@
-package com.chaosbuffalo.mknpc.spawn;
+package com.chaosbuffalo.mknpc.tile_entities;
 
 import com.chaosbuffalo.mkcore.GameConstants;
 import com.chaosbuffalo.mkcore.utils.WorldUtils;
 import com.chaosbuffalo.mknpc.MKNpc;
 import com.chaosbuffalo.mknpc.blocks.MKSpawnerBlock;
+import com.chaosbuffalo.mknpc.capabilities.IEntityNpcData;
 import com.chaosbuffalo.mknpc.capabilities.NpcCapabilities;
 import com.chaosbuffalo.mknpc.entity.MKEntity;
 import com.chaosbuffalo.mknpc.init.MKNpcTileEntityTypes;
+import com.chaosbuffalo.mknpc.npc.INotifyOnEntityDeath;
 import com.chaosbuffalo.mknpc.npc.NpcDefinition;
+import com.chaosbuffalo.mknpc.spawn.SpawnList;
+import com.chaosbuffalo.mknpc.spawn.SpawnOption;
 import com.chaosbuffalo.mknpc.utils.RandomCollection;
 import com.chaosbuffalo.mknpc.world.gen.IStructurePlaced;
 import net.minecraft.block.BlockState;
@@ -31,6 +35,7 @@ import net.minecraft.world.IServerWorld;
 import net.minecraft.world.World;
 import net.minecraftforge.common.capabilities.Capability;
 import net.minecraftforge.common.util.LazyOptional;
+import net.minecraftforge.event.entity.living.LivingDeathEvent;
 
 import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
@@ -38,14 +43,13 @@ import java.util.HashMap;
 import java.util.Map;
 import java.util.UUID;
 
-public class MKSpawnerTileEntity extends TileEntity implements ITickableTileEntity, IStructurePlaced {
+public class MKSpawnerTileEntity extends TileEntity implements ITickableTileEntity, IStructurePlaced, INotifyOnEntityDeath {
     private final SpawnList spawnList;
     private UUID spawnUUID;
     private Entity entity;
     private int respawnTime;
     private int ticksSinceDeath;
     private int ticksSincePlayer;
-    private boolean wasAlive;
     private final static double SPAWN_RANGE = 100.0;
     private final static double DESPAWN_RANGE = 150.0;
     private static final int IDLE_TIME = GameConstants.TICKS_PER_SECOND * 10;
@@ -72,7 +76,6 @@ public class MKSpawnerTileEntity extends TileEntity implements ITickableTileEnti
         this.ticksSinceDeath = 0;
         this.ticksSincePlayer = 0;
         this.entity = null;
-        this.wasAlive = false;
         this.moveType = MKEntity.NonCombatMoveType.STATIONARY;
         this.randomSpawns = new RandomCollection<>();
         this.placedByStructure = false;
@@ -295,6 +298,7 @@ public class MKSpawnerTileEntity extends TileEntity implements ITickableTileEnti
                     }
                     cap.setStructureId(getStructureId());
                     cap.setDifficultyValue(finDiff);
+                    cap.setDeathReceiver(this);
                 });
                 if (entity instanceof MKEntity){
                     ((MKEntity) entity).setNonCombatMoveType(getMoveType());
@@ -334,12 +338,15 @@ public class MKSpawnerTileEntity extends TileEntity implements ITickableTileEnti
         return false;
     }
 
+    public boolean isOnRespawnTimer() {
+        return ticksSinceDeath > 0;
+    }
+
     public void clearSpawn(){
         if (entity != null){
             entity.remove();
             entity = null;
         }
-        wasAlive = false;
         ticksSinceDeath = 0;
     }
 
@@ -381,15 +388,10 @@ public class MKSpawnerTileEntity extends TileEntity implements ITickableTileEnti
 
             if (isPlayerInDespawnRange()){
                 if (!isAlive){
-                    if (wasAlive && isSpawnDead()){
-                        ticksSinceDeath = getRespawnTime();
-                    }
                     if (ticksSinceDeath <= 0 && isPlayerInRange()){
                         spawnEntity();
-                        isAlive = true;
                     }
                 }
-                wasAlive = isAlive;
                 ticksSincePlayer = 0;
             } else {
                 if (isAlive){
@@ -398,12 +400,16 @@ public class MKSpawnerTileEntity extends TileEntity implements ITickableTileEnti
                         entity.remove();
                         this.entity = null;
                         ticksSinceDeath = 0;
-                        wasAlive = false;
                         ticksSincePlayer = 0;
                     }
                 }
             }
 
         }
+    }
+
+    @Override
+    public void onEntityDeath(IEntityNpcData npcData, LivingDeathEvent event) {
+        ticksSinceDeath = getRespawnTime();
     }
 }
