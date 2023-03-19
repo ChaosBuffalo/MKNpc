@@ -55,6 +55,7 @@ public class WorldStructureHandler {
                             .map(x -> (MKJigsawStructure.Start) x)
                             .collect(Collectors.toList());
                     for (MKJigsawStructure.Start start : starts) {
+                        over.setupStructureDataIfAbsent(start, ev.world);
                         activeStructures.visitStructure(start.getInstanceId(), player);
                     }
                 }

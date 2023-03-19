@@ -5,7 +5,6 @@ import com.chaosbuffalo.mknpc.MKNpc;
 import com.chaosbuffalo.mknpc.event.WorldStructureHandler;
 import com.chaosbuffalo.mknpc.npc.MKStructureEntry;
 import com.chaosbuffalo.mknpc.world.gen.feature.structure.MKJigsawStructure;
-import net.minecraft.entity.LivingEntity;
 import net.minecraft.entity.player.ServerPlayerEntity;
 
 import java.util.*;
@@ -164,6 +163,7 @@ public class WorldStructureManager {
             if (structureEntry != null) {
                 MKJigsawStructure mkStruct = WorldStructureHandler.MK_STRUCTURE_INDEX.get(structureEntry.getStructureName());
                 if (mkStruct != null) {
+                    structureEntry.getCooldownTracker().tick();
                     mkStruct.onActiveTick(structureEntry, entry.getValue(), handler.getWorld());
                 }
             }

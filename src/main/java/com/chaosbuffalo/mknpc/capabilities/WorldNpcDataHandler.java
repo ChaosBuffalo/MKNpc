@@ -12,6 +12,7 @@ import com.chaosbuffalo.mknpc.quest.QuestDefinition;
 import com.chaosbuffalo.mknpc.tile_entities.MKSpawnerTileEntity;
 import com.chaosbuffalo.mknpc.tile_entities.MKPoiTileEntity;
 import com.chaosbuffalo.mknpc.world.gen.IStructurePlaced;
+import com.chaosbuffalo.mknpc.world.gen.feature.structure.MKJigsawStructure;
 import com.chaosbuffalo.mknpc.world.gen.feature.structure.MKSingleJigsawPiece;
 import com.mojang.datafixers.util.Pair;
 import net.minecraft.entity.Entity;
@@ -81,6 +82,18 @@ public class WorldNpcDataHandler implements IWorldNpcData{
     public NotableNpcEntry getNotableNpc(UUID id){
         return notableNpcs.get(id);
     }
+
+    @Override
+    public void setupStructureDataIfAbsent(MKJigsawStructure.Start start, World world) {
+        Structure<?> struct = start.getStructure();
+        StructureData structureData = new StructureData(world.getDimensionKey(),
+                start.getChunkPosX(), start.getChunkPosZ(), start.getBoundingBox(), start.getComponents().stream().map(
+                this::getComponentDataFromPiece).collect(Collectors.toList()));
+        MKStructureEntry structureEntry = new MKStructureEntry(this, struct.getRegistryName(),
+                start.getInstanceId(), structureData);
+        indexStructureEntry(structureEntry);
+    }
+
 
     @Override
     public PointOfInterestEntry getPointOfInterest(UUID id) {

@@ -218,6 +218,8 @@ public class EntityHandler {
         if (event.isCanceled() || event.getEntityLiving().world.isRemote){
             return;
         }
+        MKNpc.getNpcData(event.getEntityLiving()).ifPresent(npcData ->
+                npcData.getDeathReceiver().ifPresent(receiver -> receiver.onEntityDeath(npcData, event)));
         if (event.getSource().getTrueSource() instanceof PlayerEntity){
             PlayerEntity player = (PlayerEntity) event.getSource().getTrueSource();
             MinecraftServer server = player.getServer();

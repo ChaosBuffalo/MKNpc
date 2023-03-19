@@ -29,6 +29,10 @@ public class NBTSerializableMappedData implements INBTSerializable<CompoundNBT> 
         return uuidData.get(name);
     }
 
+    public UUID computeUUID(String name) {
+        return uuidData.computeIfAbsent(name, k -> UUID.randomUUID());
+    }
+
     public void putUUID(String name, UUID value) {
         uuidData.put(name, value);
     }

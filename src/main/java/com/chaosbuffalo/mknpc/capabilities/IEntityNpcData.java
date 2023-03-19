@@ -1,5 +1,6 @@
 package com.chaosbuffalo.mknpc.capabilities;
 
+import com.chaosbuffalo.mknpc.npc.INotifyOnEntityDeath;
 import com.chaosbuffalo.mknpc.npc.NpcDefinition;
 import com.chaosbuffalo.mknpc.npc.entries.LootOptionEntry;
 import com.chaosbuffalo.mknpc.npc.entries.QuestOfferingEntry;
@@ -87,4 +88,8 @@ public interface IEntityNpcData extends INBTSerializable<CompoundNBT> {
     void handleExtraLoot(int lootingLevel, Collection<ItemEntity> drops, DamageSource source);
 
     void requestQuest(QuestOfferingEntry entry);
+
+    Optional<INotifyOnEntityDeath> getDeathReceiver();
+
+    void setDeathReceiver(INotifyOnEntityDeath receiver);
 }

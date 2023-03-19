@@ -4,10 +4,8 @@ import com.chaosbuffalo.mknpc.MKNpc;
 import com.chaosbuffalo.mknpc.capabilities.IEntityNpcData;
 import com.chaosbuffalo.mknpc.capabilities.WorldStructureManager;
 import com.chaosbuffalo.mknpc.npc.MKStructureEntry;
+import com.chaosbuffalo.mknpc.world.gen.feature.structure.events.StructureEvent;
 import com.mojang.serialization.Codec;
-import net.minecraft.entity.Entity;
-import net.minecraft.entity.LivingEntity;
-import net.minecraft.entity.player.PlayerEntity;
 import net.minecraft.entity.player.ServerPlayerEntity;
 import net.minecraft.nbt.CompoundNBT;
 import net.minecraft.util.Util;
@@ -15,7 +13,6 @@ import net.minecraft.util.math.BlockPos;
 import net.minecraft.util.math.MutableBoundingBox;
 import net.minecraft.util.registry.DynamicRegistries;
 import net.minecraft.util.text.ITextComponent;
-import net.minecraft.util.text.TranslationTextComponent;
 import net.minecraft.world.World;
 import net.minecraft.world.biome.Biome;
 import net.minecraft.world.gen.ChunkGenerator;
@@ -24,6 +21,8 @@ import net.minecraft.world.gen.feature.structure.*;
 import net.minecraft.world.gen.feature.template.TemplateManager;
 
 import javax.annotation.Nullable;
+import java.util.HashMap;
+import java.util.Map;
 import java.util.UUID;
 
 public class MKJigsawStructure extends JigsawStructure implements IControlNaturalSpawns {
@@ -33,6 +32,7 @@ public class MKJigsawStructure extends JigsawStructure implements IControlNatura
     private ITextComponent enterMessage;
     @Nullable
     private ITextComponent exitMessage;
+    private final Map<String, StructureEvent> events = new HashMap<>();
 
 
     public MKJigsawStructure(Codec<VillageConfig> codec, int groundLevel, boolean offsetVertical,
@@ -41,6 +41,12 @@ public class MKJigsawStructure extends JigsawStructure implements IControlNatura
         this.allowSpawns = allowSpawns;
         enterMessage = null;
         exitMessage = null;
+    }
+
+    public MKJigsawStructure addEvent(String name, StructureEvent event) {
+        event.setEventName(name);
+        events.put(name, event);
+        return this;
     }
 
     @Override
@@ -65,27 +71,66 @@ public class MKJigsawStructure extends JigsawStructure implements IControlNatura
 
     public void onStructureActivate(MKStructureEntry entry, WorldStructureManager.ActiveStructure activeStructure, World world) {
         MKNpc.LOGGER.debug("Activating structure {} (ID: {})", entry.getStructureName(), entry.getStructureId());
+        for (Map.Entry<String, StructureEvent> ev : events.entrySet()) {
+            if (ev.getValue().meetsRequirements(entry, activeStructure, world)) {
+                entry.addActiveEvent(ev.getKey());
+            }
+        }
+        for (String key : entry.getActiveEvents()) {
+            StructureEvent ev = events.get(key);
+            if (ev != null && ev.canTrigger(StructureEvent.EventTrigger.ON_ACTIVATE)) {
+                checkAndExecuteEvent(ev, entry, activeStructure, world);
+            }
+        }
     }
 
     public void onStructureDeactivate(MKStructureEntry entry, WorldStructureManager.ActiveStructure activeStructure, World world) {
         MKNpc.LOGGER.debug("Deactivating structure {} (ID: {})", entry.getStructureName(), entry.getStructureId());
+        for (String key : entry.getActiveEvents()) {
+            StructureEvent ev = events.get(key);
+            if (ev != null && ev.canTrigger(StructureEvent.EventTrigger.ON_DEACTIVATE)) {
+                checkAndExecuteEvent(ev, entry, activeStructure, world);
+            }
+        }
+        entry.clearActiveEvents();
     }
 
     public void onActiveTick(MKStructureEntry entry, WorldStructureManager.ActiveStructure activeStructure, World world) {
+        for (String key : entry.getActiveEvents()) {
+            StructureEvent ev = events.get(key);
+            if (ev != null && ev.canTrigger(StructureEvent.EventTrigger.ON_TICK)) {
+                checkAndExecuteEvent(ev, entry, activeStructure, world);
+            }
+        }
 
+    }
+
+    protected void checkAndExecuteEvent(StructureEvent ev, MKStructureEntry entry,
+                                        WorldStructureManager.ActiveStructure activeStructure, World world) {
+        if (!entry.getCooldownTracker().hasTimer(ev.getTimerName()) && ev.meetsConditions(entry, activeStructure, world)) {
+            ev.execute(entry, activeStructure, world);
+            entry.getCooldownTracker().setTimer(ev.getTimerName(), ev.getCooldown());
+        }
     }
 
     public void onNpcDeath(MKStructureEntry entry, WorldStructureManager.ActiveStructure activeStructure, IEntityNpcData npcData) {
-
+        for (String key : entry.getActiveEvents()) {
+            StructureEvent ev = events.get(key);
+            if (ev != null && ev.canTrigger(StructureEvent.EventTrigger.ON_DEATH)) {
+                checkAndExecuteEvent(ev, entry, activeStructure, npcData.getEntity().getEntityWorld());
+            }
+        }
     }
 
-    public void onPlayerEnter(ServerPlayerEntity player, MKStructureEntry structureEntry, WorldStructureManager.ActiveStructure activeStructure) {
+    public void onPlayerEnter(ServerPlayerEntity player, MKStructureEntry structureEntry,
+                              WorldStructureManager.ActiveStructure activeStructure) {
         if (getEnterMessage() != null) {
             player.sendMessage(getEnterMessage(), Util.DUMMY_UUID);
         }
     }
 
-    public void onPlayerExit(ServerPlayerEntity player, MKStructureEntry structureEntry, WorldStructureManager.ActiveStructure activeStructure) {
+    public void onPlayerExit(ServerPlayerEntity player, MKStructureEntry structureEntry,
+                             WorldStructureManager.ActiveStructure activeStructure) {
         if (getExitMessage() != null) {
             player.sendMessage(getExitMessage(), Util.DUMMY_UUID);
         }
