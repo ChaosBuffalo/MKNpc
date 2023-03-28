@@ -2,7 +2,7 @@ package com.chaosbuffalo.mknpc.entity.ai.sensor;
 
 
 import com.chaosbuffalo.mknpc.MKNpc;
-import net.minecraft.entity.ai.brain.sensor.SensorType;
+import net.minecraft.world.entity.ai.sensing.SensorType;
 import net.minecraftforge.event.RegistryEvent;
 import net.minecraftforge.eventbus.api.SubscribeEvent;
 import net.minecraftforge.fml.common.Mod;

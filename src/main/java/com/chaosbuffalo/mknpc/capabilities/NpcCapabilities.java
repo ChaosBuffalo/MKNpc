@@ -1,22 +1,19 @@
 package com.chaosbuffalo.mknpc.capabilities;
 
-import com.chaosbuffalo.mkcore.CoreCapabilities;
 import com.chaosbuffalo.mknpc.MKNpc;
-import com.chaosbuffalo.mknpc.entity.MKEntity;
-import net.minecraft.nbt.CompoundNBT;
-import net.minecraft.nbt.INBT;
-import net.minecraft.util.Direction;
-import net.minecraft.util.ResourceLocation;
-import net.minecraftforge.common.capabilities.Capability;
-import net.minecraftforge.common.capabilities.CapabilityInject;
-import net.minecraftforge.common.capabilities.CapabilityManager;
-import net.minecraftforge.common.capabilities.ICapabilitySerializable;
+import net.minecraft.nbt.CompoundTag;
+import net.minecraft.core.Direction;
+import net.minecraft.resources.ResourceLocation;
+import net.minecraftforge.common.capabilities.*;
 import net.minecraftforge.common.util.INBTSerializable;
 import net.minecraftforge.common.util.LazyOptional;
+import net.minecraftforge.eventbus.api.SubscribeEvent;
+import net.minecraftforge.fml.common.Mod;
 
 import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
 
+@Mod.EventBusSubscriber(modid = MKNpc.MODID, bus = Mod.EventBusSubscriber.Bus.MOD)
 public class NpcCapabilities {
     public static ResourceLocation MK_NPC_CAP_ID = new ResourceLocation(MKNpc.MODID,
             "npc_data");
@@ -29,40 +26,28 @@ public class NpcCapabilities {
     public static ResourceLocation MK_QUEST_CAP_ID = new ResourceLocation(MKNpc.MODID,
             "player_quest_data");
 
-    @CapabilityInject(IEntityNpcData.class)
-    public static final Capability<IEntityNpcData> ENTITY_NPC_DATA_CAPABILITY;
+    public static final Capability<IEntityNpcData> ENTITY_NPC_DATA_CAPABILITY = CapabilityManager.get(new CapabilityToken<>(){});
 
-    @CapabilityInject(IWorldNpcData.class)
-    public static final Capability<IWorldNpcData> WORLD_NPC_DATA_CAPABILITY;
+    public static final Capability<IWorldNpcData> WORLD_NPC_DATA_CAPABILITY = CapabilityManager.get(new CapabilityToken<>(){});
 
-    @CapabilityInject(IChunkNpcData.class)
-    public static final Capability<IChunkNpcData> CHUNK_NPC_DATA_CAPABILITY;
+    public static final Capability<IChunkNpcData> CHUNK_NPC_DATA_CAPABILITY = CapabilityManager.get(new CapabilityToken<>(){});
 
-    @CapabilityInject(IChestNpcData.class)
-    public static final Capability<IChestNpcData> CHEST_NPC_DATA_CAPABILITY;
+    public static final Capability<IChestNpcData> CHEST_NPC_DATA_CAPABILITY = CapabilityManager.get(new CapabilityToken<>(){});
 
-    @CapabilityInject(IPlayerQuestingData.class)
-    public static final Capability<IPlayerQuestingData> PLAYER_QUEST_DATA_CAPABILITY;
+    public static final Capability<IPlayerQuestingData> PLAYER_QUEST_DATA_CAPABILITY = CapabilityManager.get(new CapabilityToken<>(){});
 
 
-    static {
-        ENTITY_NPC_DATA_CAPABILITY = null;
-        WORLD_NPC_DATA_CAPABILITY = null;
-        CHUNK_NPC_DATA_CAPABILITY = null;
-        CHEST_NPC_DATA_CAPABILITY = null;
-        PLAYER_QUEST_DATA_CAPABILITY = null;
+    @SubscribeEvent
+    public static void registerCapabilities(RegisterCapabilitiesEvent event) {
+        event.register(IEntityNpcData.class);
+        event.register(IWorldNpcData.class);
+        event.register(IChestNpcData.class);
+        event.register(IChunkNpcData.class);
+        event.register(IPlayerQuestingData.class);
     }
 
-    public static void registerCapabilities() {
-        CoreCapabilities.registerLivingEntity(e -> e instanceof MKEntity);
-        CapabilityManager.INSTANCE.register(IEntityNpcData.class, new NBTStorage<>(), () -> null);
-        CapabilityManager.INSTANCE.register(IWorldNpcData.class, new NBTStorage<>(), () -> null);
-        CapabilityManager.INSTANCE.register(IChunkNpcData.class, new NBTStorage<>(), () -> null);
-        CapabilityManager.INSTANCE.register(IChestNpcData.class, new NBTStorage<>(), () -> null);
-        CapabilityManager.INSTANCE.register(IPlayerQuestingData.class, new NBTStorage<>(), () -> null);
-    }
 
-    public abstract static class Provider<CapTarget, CapType extends INBTSerializable<CompoundNBT>> implements ICapabilitySerializable<CompoundNBT> {
+    public abstract static class Provider<CapTarget, CapType extends INBTSerializable<CompoundTag>> implements ICapabilitySerializable<CompoundTag> {
 
         private final CapType data;
         private final LazyOptional<CapType> capOpt;
@@ -87,33 +72,13 @@ public class NpcCapabilities {
         }
 
         @Override
-        public CompoundNBT serializeNBT() {
+        public CompoundTag serializeNBT() {
             return data.serializeNBT();
         }
 
         @Override
-        public void deserializeNBT(CompoundNBT nbt) {
+        public void deserializeNBT(CompoundTag nbt) {
             data.deserializeNBT(nbt);
-        }
-    }
-
-    public static class NBTStorage<T extends INBTSerializable<CompoundNBT>> implements Capability.IStorage<T> {
-
-        @Nullable
-        @Override
-        public INBT writeNBT(Capability<T> capability, T instance, Direction side) {
-            if (instance == null) {
-                return null;
-            }
-            return instance.serializeNBT();
-        }
-
-        @Override
-        public void readNBT(Capability<T> capability, T instance, Direction side, INBT nbt) {
-            if (nbt instanceof CompoundNBT && instance != null) {
-                CompoundNBT tag = (CompoundNBT) nbt;
-                instance.deserializeNBT(tag);
-            }
         }
     }
 }

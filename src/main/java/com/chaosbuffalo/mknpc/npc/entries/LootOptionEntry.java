@@ -5,7 +5,7 @@ import com.chaosbuffalo.mkweapons.items.randomization.slots.LootSlotManager;
 import com.google.common.collect.ImmutableMap;
 import com.mojang.serialization.Dynamic;
 import com.mojang.serialization.DynamicOps;
-import net.minecraft.util.ResourceLocation;
+import net.minecraft.resources.ResourceLocation;
 
 public class LootOptionEntry {
 

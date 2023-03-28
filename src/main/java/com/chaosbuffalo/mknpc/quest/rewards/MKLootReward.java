@@ -8,11 +8,11 @@ import com.chaosbuffalo.mkweapons.items.randomization.LootTier;
 import com.chaosbuffalo.mkweapons.items.randomization.LootTierManager;
 import com.chaosbuffalo.mkweapons.items.randomization.slots.LootSlot;
 import com.chaosbuffalo.mkweapons.items.randomization.slots.LootSlotManager;
-import net.minecraft.entity.player.PlayerEntity;
-import net.minecraft.item.ItemStack;
-import net.minecraft.util.ResourceLocation;
-import net.minecraft.util.math.GlobalPos;
-import net.minecraft.util.text.IFormattableTextComponent;
+import net.minecraft.world.entity.player.Player;
+import net.minecraft.world.item.ItemStack;
+import net.minecraft.resources.ResourceLocation;
+import net.minecraft.core.GlobalPos;
+import net.minecraft.network.chat.MutableComponent;
 
 public class MKLootReward extends QuestReward {
     public final static ResourceLocation TYPE_NAME = new ResourceLocation(MKNpc.MODID, "quest_reward.mk_loot");
@@ -21,7 +21,7 @@ public class MKLootReward extends QuestReward {
     protected final ResourceLocationAttribute lootSlot = new ResourceLocationAttribute("loot_slot",
             LootSlotManager.INVALID_LOOT_SLOT);
 
-    public MKLootReward(ResourceLocation lootTier, ResourceLocation lootSlot, IFormattableTextComponent description) {
+    public MKLootReward(ResourceLocation lootTier, ResourceLocation lootSlot, MutableComponent description) {
         super(TYPE_NAME, description);
         this.lootSlot.setValue(lootSlot);
         this.lootTier.setValue(lootTier);
@@ -34,15 +34,15 @@ public class MKLootReward extends QuestReward {
     }
 
     @Override
-    public void grantReward(PlayerEntity player) {
+    public void grantReward(Player player) {
         LootTier tier = LootTierManager.getTierFromName(lootTier.getValue());
         LootSlot slot = LootSlotManager.getSlotFromName(lootSlot.getValue());
         if (tier != null && slot != null) {
-            LootConstructor constructor = tier.generateConstructorForSlot(player.getRNG(), slot);
+            LootConstructor constructor = tier.generateConstructorForSlot(player.getRandom(), slot);
             if (constructor != null) {
-                ItemStack loot = constructor.constructItem(player.getRNG(), WorldUtils.getDifficultyForGlobalPos(
-                        GlobalPos.getPosition(player.getEntityWorld().getDimensionKey(), player.getPosition())));
-                player.inventory.placeItemBackInInventory(player.getEntityWorld(), loot);
+                ItemStack loot = constructor.constructItem(player.getRandom(), WorldUtils.getDifficultyForGlobalPos(
+                        GlobalPos.of(player.getCommandSenderWorld().dimension(), player.blockPosition())));
+                player.getInventory().placeItemBackInInventory(loot, true);
             }
         }
     }

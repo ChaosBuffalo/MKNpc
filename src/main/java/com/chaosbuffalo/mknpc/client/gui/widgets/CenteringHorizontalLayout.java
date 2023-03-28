@@ -5,17 +5,17 @@ import com.chaosbuffalo.mkwidgets.client.gui.constraints.LayoutRelativeHeightCon
 import com.chaosbuffalo.mkwidgets.client.gui.constraints.StackConstraint;
 import com.chaosbuffalo.mkwidgets.client.gui.layouts.MKStackLayoutHorizontal;
 import com.chaosbuffalo.mkwidgets.client.gui.widgets.IMKWidget;
-import net.minecraft.client.gui.FontRenderer;
+import net.minecraft.client.gui.Font;
 
 public abstract class CenteringHorizontalLayout extends MKStackLayoutHorizontal {
-    protected final FontRenderer fontRenderer;
+    protected final Font fontRenderer;
 
-    public CenteringHorizontalLayout(int x, int y, int height, FontRenderer fontRenderer) {
+    public CenteringHorizontalLayout(int x, int y, int height, Font fontRenderer) {
         super(x, y, height);
         this.fontRenderer = fontRenderer;
     }
 
-    public FontRenderer getFontRenderer() {
+    public Font getFontRenderer() {
         return fontRenderer;
     }
 

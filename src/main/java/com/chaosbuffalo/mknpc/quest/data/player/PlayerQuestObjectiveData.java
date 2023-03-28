@@ -2,32 +2,31 @@ package com.chaosbuffalo.mknpc.quest.data.player;
 
 import com.chaosbuffalo.mknpc.utils.NBTSerializableMappedData;
 import net.minecraft.nbt.*;
-import net.minecraft.util.text.IFormattableTextComponent;
-import net.minecraft.util.text.ITextComponent;
-import net.minecraftforge.common.util.Constants;
+import net.minecraft.network.chat.MutableComponent;
+import net.minecraft.network.chat.Component;
 
 import java.util.*;
 
 public class PlayerQuestObjectiveData extends NBTSerializableMappedData {
 
     private String objectiveName;
-    private List<IFormattableTextComponent> description = new ArrayList<>();
+    private List<MutableComponent> description = new ArrayList<>();
 
-    public PlayerQuestObjectiveData(String objectiveName, IFormattableTextComponent... description){
+    public PlayerQuestObjectiveData(String objectiveName, MutableComponent... description){
         this(objectiveName, Arrays.asList(description));
     }
 
-    public PlayerQuestObjectiveData(String objectiveName, List<IFormattableTextComponent> description){
+    public PlayerQuestObjectiveData(String objectiveName, List<MutableComponent> description){
         this.objectiveName = objectiveName;
         this.description.addAll(description);
     }
 
-    public void setDescription(IFormattableTextComponent... description) {
+    public void setDescription(MutableComponent... description) {
         this.description.clear();
         this.description.addAll(Arrays.asList(description));
     }
 
-    public List<IFormattableTextComponent> getDescription() {
+    public List<MutableComponent> getDescription() {
         return description;
     }
 
@@ -35,7 +34,7 @@ public class PlayerQuestObjectiveData extends NBTSerializableMappedData {
         return objectiveName;
     }
 
-    public PlayerQuestObjectiveData(CompoundNBT nbt){
+    public PlayerQuestObjectiveData(CompoundTag nbt){
         deserializeNBT(nbt);
     }
 
@@ -44,24 +43,24 @@ public class PlayerQuestObjectiveData extends NBTSerializableMappedData {
     }
 
     @Override
-    public CompoundNBT serializeNBT() {
-        CompoundNBT nbt = super.serializeNBT();
+    public CompoundTag serializeNBT() {
+        CompoundTag nbt = super.serializeNBT();
         nbt.putString("name", objectiveName);
-        ListNBT descriptions = new ListNBT();
-        for (IFormattableTextComponent comp : this.description){
-            descriptions.add(StringNBT.valueOf(ITextComponent.Serializer.toJson(comp)));
+        ListTag descriptions = new ListTag();
+        for (MutableComponent comp : this.description){
+            descriptions.add(StringTag.valueOf(Component.Serializer.toJson(comp)));
         }
         nbt.put("description", descriptions);
         return nbt;
     }
 
     @Override
-    public void deserializeNBT(CompoundNBT nbt) {
+    public void deserializeNBT(CompoundTag nbt) {
         super.deserializeNBT(nbt);
         objectiveName = nbt.getString("name");
-        ListNBT descriptions = nbt.getList("description", Constants.NBT.TAG_STRING);
-        for (INBT desc : descriptions){
-            description.add(ITextComponent.Serializer.getComponentFromJson(desc.getString()));
+        ListTag descriptions = nbt.getList("description", Tag.TAG_STRING);
+        for (Tag desc : descriptions){
+            description.add(Component.Serializer.fromJson(desc.getAsString()));
         }
     }
 }

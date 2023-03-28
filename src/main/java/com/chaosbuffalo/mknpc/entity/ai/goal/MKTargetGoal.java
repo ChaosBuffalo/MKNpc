@@ -3,8 +3,8 @@ package com.chaosbuffalo.mknpc.entity.ai.goal;
 
 import com.chaosbuffalo.mknpc.entity.MKEntity;
 import com.chaosbuffalo.mknpc.entity.ai.memory.MKMemoryModuleTypes;
-import net.minecraft.entity.LivingEntity;
-import net.minecraft.entity.ai.goal.TargetGoal;
+import net.minecraft.world.entity.LivingEntity;
+import net.minecraft.world.entity.ai.goal.target.TargetGoal;
 
 import java.util.Optional;
 
@@ -17,31 +17,31 @@ public class MKTargetGoal extends TargetGoal {
     }
 
     @Override
-    public boolean shouldExecute() {
-        Optional<LivingEntity> opt = goalOwner.getBrain().getMemory(MKMemoryModuleTypes.THREAT_TARGET);
-        if (opt.isPresent() && (this.target == null || !this.target.isEntityEqual(opt.get()))) {
-            this.target = opt.get();
+    public boolean canUse() {
+        Optional<LivingEntity> opt = mob.getBrain().getMemory(MKMemoryModuleTypes.THREAT_TARGET);
+        if (opt.isPresent() && (this.targetMob == null || !this.targetMob.is(opt.get()))) {
+            this.targetMob = opt.get();
             return true;
         }
         return false;
     }
 
     @Override
-    public boolean shouldContinueExecuting() {
-        Optional<LivingEntity> opt = goalOwner.getBrain().getMemory(MKMemoryModuleTypes.THREAT_TARGET);
-        return opt.isPresent() && opt.get().isEntityEqual(target);
+    public boolean canContinueToUse() {
+        Optional<LivingEntity> opt = mob.getBrain().getMemory(MKMemoryModuleTypes.THREAT_TARGET);
+        return opt.isPresent() && opt.get().is(targetMob);
     }
 
     @Override
-    public void resetTask() {
-        super.resetTask();
-        entity.setAggroed(false);
+    public void stop() {
+        super.stop();
+        entity.setAggressive(false);
     }
 
-    public void startExecuting() {
-        this.goalOwner.setAttackTarget(this.target);
-        entity.setAggroed(true);
-        entity.enterCombatMovementState(target);
-        super.startExecuting();
+    public void start() {
+        this.mob.setTarget(this.targetMob);
+        entity.setAggressive(true);
+        entity.enterCombatMovementState(targetMob);
+        super.start();
     }
 }

@@ -2,10 +2,10 @@ package com.chaosbuffalo.mknpc.npc.options;
 
 import com.chaosbuffalo.mknpc.MKNpc;
 import com.chaosbuffalo.mknpc.npc.NpcDefinition;
-import net.minecraft.entity.Entity;
-import net.minecraft.util.ResourceLocation;
-import net.minecraft.util.text.StringTextComponent;
-import net.minecraft.world.World;
+import net.minecraft.world.entity.Entity;
+import net.minecraft.resources.ResourceLocation;
+import net.minecraft.network.chat.TextComponent;
+import net.minecraft.world.level.Level;
 
 import javax.annotation.Nullable;
 import java.util.UUID;
@@ -18,14 +18,14 @@ public class NameOption extends StringOption implements INameProvider {
     }
 
     @Override
-    public StringTextComponent getEntityName(NpcDefinition definition, World world, UUID spawnId) {
-        return new StringTextComponent(getValue());
+    public TextComponent getEntityName(NpcDefinition definition, Level world, UUID spawnId) {
+        return new TextComponent(getValue());
     }
 
     @Override
     public void applyToEntity(NpcDefinition definition, Entity entity, String value) {
         if (!value.isEmpty()) {
-            entity.setCustomName(new StringTextComponent(value));
+            entity.setCustomName(new TextComponent(value));
         }
     }
 

@@ -1,22 +1,22 @@
 package com.chaosbuffalo.mknpc.capabilities;
 
-import net.minecraft.nbt.CompoundNBT;
-import net.minecraft.world.chunk.Chunk;
+import net.minecraft.nbt.CompoundTag;
+import net.minecraft.world.level.chunk.LevelChunk;
 
 public class ChunkNpcDataHandler implements IChunkNpcData {
-    private final Chunk chunk;
+    private final LevelChunk chunk;
 
-    public ChunkNpcDataHandler(Chunk chunk) {
+    public ChunkNpcDataHandler(LevelChunk chunk) {
         this.chunk = chunk;
     }
 
     @Override
-    public CompoundNBT serializeNBT() {
-        return new CompoundNBT();
+    public CompoundTag serializeNBT() {
+        return new CompoundTag();
     }
 
     @Override
-    public void deserializeNBT(CompoundNBT nbt) {
+    public void deserializeNBT(CompoundTag nbt) {
 
     }
 }

@@ -1,9 +1,9 @@
 package com.chaosbuffalo.mknpc.world.gen.feature.structure;
 
-import net.minecraft.world.gen.feature.jigsaw.IJigsawDeserializer;
+import net.minecraft.world.level.levelgen.feature.structures.StructurePoolElementType;
 
 public class MKJigsawDeserializers {
 
-    public static final IJigsawDeserializer<MKSingleJigsawPiece> MK_SINGLE_JIGSAW_DESERIALIZER = IJigsawDeserializer.
-            func_236851_a_("mk_single_jigsaw", MKSingleJigsawPiece.codec);
+    public static final StructurePoolElementType<MKSingleJigsawPiece> MK_SINGLE_JIGSAW_DESERIALIZER = StructurePoolElementType.
+            register("mk_single_jigsaw", MKSingleJigsawPiece.codec);
 }

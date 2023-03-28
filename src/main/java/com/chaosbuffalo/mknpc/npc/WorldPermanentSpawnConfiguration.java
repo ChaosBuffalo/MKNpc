@@ -2,14 +2,14 @@ package com.chaosbuffalo.mknpc.npc;
 
 import com.chaosbuffalo.mknpc.npc.option_entries.INpcOptionEntry;
 import com.chaosbuffalo.mknpc.npc.options.WorldPermanentOption;
-import net.minecraft.nbt.CompoundNBT;
-import net.minecraft.util.ResourceLocation;
+import net.minecraft.nbt.CompoundTag;
+import net.minecraft.resources.ResourceLocation;
 import net.minecraftforge.common.util.INBTSerializable;
 
 import java.util.HashMap;
 
 
-public class WorldPermanentSpawnConfiguration implements INBTSerializable<CompoundNBT> {
+public class WorldPermanentSpawnConfiguration implements INBTSerializable<CompoundTag> {
 
     private final HashMap<ResourceLocation, HashMap<ResourceLocation, INpcOptionEntry>> definitionMap;
 
@@ -38,10 +38,10 @@ public class WorldPermanentSpawnConfiguration implements INBTSerializable<Compou
     }
 
     @Override
-    public CompoundNBT serializeNBT() {
-        CompoundNBT tag = new CompoundNBT();
+    public CompoundTag serializeNBT() {
+        CompoundTag tag = new CompoundTag();
         for (ResourceLocation definitionName : definitionMap.keySet()){
-            CompoundNBT defTag = new CompoundNBT();
+            CompoundTag defTag = new CompoundTag();
             HashMap<ResourceLocation, INpcOptionEntry> optionMap = definitionMap.get(definitionName);
             for (ResourceLocation attributeName : optionMap.keySet()){
                 INpcOptionEntry entry = optionMap.get(attributeName);
@@ -53,13 +53,13 @@ public class WorldPermanentSpawnConfiguration implements INBTSerializable<Compou
     }
 
     @Override
-    public void deserializeNBT(CompoundNBT nbt) {
+    public void deserializeNBT(CompoundTag nbt) {
         definitionMap.clear();
-        for (String defKey : nbt.keySet()){
+        for (String defKey : nbt.getAllKeys()){
             ResourceLocation defLoc = new ResourceLocation(defKey);
-            CompoundNBT defTag = nbt.getCompound(defKey);
+            CompoundTag defTag = nbt.getCompound(defKey);
             HashMap<ResourceLocation, INpcOptionEntry> entryMap = new HashMap<>();
-            for (String entryKey : defTag.keySet()){
+            for (String entryKey : defTag.getAllKeys()){
                 ResourceLocation entryLoc = new ResourceLocation(entryKey);
                 INpcOptionEntry entry = NpcDefinitionManager.getNpcOptionEntry(entryLoc);
                 if (entry != null){

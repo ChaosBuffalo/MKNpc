@@ -3,12 +3,12 @@ package com.chaosbuffalo.mknpc.network;
 import com.chaosbuffalo.mknpc.client.gui.screens.MKSpawnerScreen;
 import com.chaosbuffalo.mknpc.tile_entities.MKSpawnerTileEntity;
 import net.minecraft.client.Minecraft;
-import net.minecraft.network.PacketBuffer;
-import net.minecraft.tileentity.TileEntity;
-import net.minecraft.world.World;
+import net.minecraft.network.FriendlyByteBuf;
+import net.minecraft.world.level.block.entity.BlockEntity;
+import net.minecraft.world.level.Level;
 import net.minecraftforge.api.distmarker.Dist;
 import net.minecraftforge.api.distmarker.OnlyIn;
-import net.minecraftforge.fml.network.NetworkEvent;
+import net.minecraftforge.fmllegacy.network.NetworkEvent;
 
 import java.util.function.Supplier;
 
@@ -18,19 +18,19 @@ public class OpenMKSpawnerPacket extends SetSpawnListPacket {
         super(entity);
     }
 
-    public OpenMKSpawnerPacket(PacketBuffer buffer){
+    public OpenMKSpawnerPacket(FriendlyByteBuf buffer){
         super(buffer);
     }
 
     @OnlyIn(Dist.CLIENT)
     private void handleInternal(){
         if (Minecraft.getInstance().player != null) {
-            World world = Minecraft.getInstance().player.getEntityWorld();
-            TileEntity tileEntity = world.getTileEntity(tileEntityLoc);
+            Level world = Minecraft.getInstance().player.getCommandSenderWorld();
+            BlockEntity tileEntity = world.getBlockEntity(tileEntityLoc);
             if (tileEntity instanceof MKSpawnerTileEntity){
                 MKSpawnerTileEntity spawner = (MKSpawnerTileEntity) tileEntity;
                 setSpawnerFromPacket(spawner);
-                Minecraft.getInstance().displayGuiScreen(new MKSpawnerScreen(spawner));
+                Minecraft.getInstance().setScreen(new MKSpawnerScreen(spawner));
             }
         }
     }

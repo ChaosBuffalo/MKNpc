@@ -1,16 +1,16 @@
 package com.chaosbuffalo.mknpc.entity;
 
 import com.chaosbuffalo.mknpc.inventories.QuestGiverInventoryContainer;
-import net.minecraft.entity.player.PlayerEntity;
-import net.minecraft.entity.player.PlayerInventory;
-import net.minecraft.inventory.container.Container;
-import net.minecraft.inventory.container.INamedContainerProvider;
-import net.minecraft.util.text.ITextComponent;
-import net.minecraft.util.text.TranslationTextComponent;
+import net.minecraft.world.entity.player.Player;
+import net.minecraft.world.entity.player.Inventory;
+import net.minecraft.world.inventory.AbstractContainerMenu;
+import net.minecraft.world.MenuProvider;
+import net.minecraft.network.chat.Component;
+import net.minecraft.network.chat.TranslatableComponent;
 
 import javax.annotation.Nullable;
 
-public class EntityTradeContainer implements INamedContainerProvider {
+public class EntityTradeContainer implements MenuProvider {
     private final MKEntity entity;
 
     public EntityTradeContainer(MKEntity entity){
@@ -18,13 +18,13 @@ public class EntityTradeContainer implements INamedContainerProvider {
     }
 
     @Override
-    public ITextComponent getDisplayName() {
-        return new TranslationTextComponent("mknpc.quest.trade_container", entity.getName());
+    public Component getDisplayName() {
+        return new TranslatableComponent("mknpc.quest.trade_container", entity.getName());
     }
 
     @Nullable
     @Override
-    public Container createMenu(int menuId, PlayerInventory playerInventory, PlayerEntity player) {
+    public AbstractContainerMenu createMenu(int menuId, Inventory playerInventory, Player player) {
         return QuestGiverInventoryContainer.createGeneric9X1(menuId, playerInventory, entity);
     }
 }

@@ -21,6 +21,7 @@ apply plugin: 'org.spongepowered.mixin'
 // Only edit below this line, the above code adds and enables the necessary things for Forge to be setup.
 apply plugin: 'eclipse'
 apply plugin: 'maven-publish'
+apply from: 'https://raw.githubusercontent.com/SizableShrimp/Forge-Class-Remapper/main/classremapper.gradle'
 
 ext {
     base_version = "default"
@@ -34,7 +35,8 @@ if (System.getenv().RELEASE_MODE == null) {
 group = "${mod_group}" // http://maven.apache.org/guides/mini/guide-naming-conventions.html
 archivesBaseName = "${mod_id}-${mc_version}"
 
-sourceCompatibility = targetCompatibility = compileJava.sourceCompatibility = compileJava.targetCompatibility = '1.8' // Need this here so eclipse task generates correctly.
+java.toolchain.languageVersion = JavaLanguageVersion.of(16)
+//sourceCompatibility = targetCompatibility = compileJava.sourceCompatibility = compileJava.targetCompatibility = '1.8' // Need this here so eclipse task generates correctly.
 
 mixin {
     add sourceSets.main, "mknpc.refmap.json"
@@ -49,6 +51,9 @@ repositories {
     maven {
         url "artifactregistry://us-central1-maven.pkg.dev/secure-garden-352216/chaosbuffalo-maven-repo"
     }
+    maven {
+        url = "https://maven.theillusivec4.top/"
+    }
 }
 
 minecraft {
@@ -57,7 +62,7 @@ minecraft {
     // stable_#            Stables are built at the discretion of the MCP team.
     // Use non-default mappings at your own risk. they may not always work.
     // Simply re-run your setup task after changing the mappings to update your workspace.
-    mappings channel: 'snapshot', version: "${forge_mappings}"
+    mappings channel: "${mappings_channel}", version: "${mappings_version}"
     accessTransformer = file('src/main/resources/META-INF/accesstransformer.cfg')
     // makeObfSourceJar = false // an Srg named sources jar is made by default. uncomment this to disable.
     
@@ -145,6 +150,7 @@ dependencies {
     runtimeOnly fg.deobf("com.chaosbuffalo.mkfaction:mkfaction-${mc_version}:${mk_faction_version}")
     compileOnly fg.deobf("com.chaosbuffalo.mkweapons:mkweapons-${mc_version}:${mk_weapons_version}")
     runtimeOnly fg.deobf("com.chaosbuffalo.mkweapons:mkweapons-${mc_version}:${mk_weapons_version}")
+    runtimeOnly fg.deobf("top.theillusivec4.curios:curios-forge:${mc_version}-${curios_version}")
 
 }
 

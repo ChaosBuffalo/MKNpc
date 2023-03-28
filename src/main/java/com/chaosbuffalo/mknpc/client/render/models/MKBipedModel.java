@@ -4,38 +4,41 @@ import com.chaosbuffalo.mkcore.client.rendering.animations.AdditionalBipedAnimat
 import com.chaosbuffalo.mkcore.client.rendering.animations.BipedCastAnimation;
 import com.chaosbuffalo.mknpc.client.render.animations.MKEntityCompleteCastAnimation;
 import com.chaosbuffalo.mknpc.entity.MKEntity;
+import net.minecraft.client.model.geom.ModelPart;
 import net.minecraft.client.renderer.RenderType;
-import net.minecraft.client.renderer.entity.model.BipedModel;
-import net.minecraft.client.renderer.model.ModelHelper;
-import net.minecraft.item.BowItem;
-import net.minecraft.item.ItemStack;
-import net.minecraft.util.Hand;
-import net.minecraft.util.HandSide;
-import net.minecraft.util.ResourceLocation;
-import net.minecraft.util.math.MathHelper;
+import net.minecraft.client.model.HumanoidModel;
+import net.minecraft.client.model.AnimationUtils;
+import net.minecraft.world.item.BowItem;
+import net.minecraft.world.item.ItemStack;
+import net.minecraft.world.InteractionHand;
+import net.minecraft.world.entity.HumanoidArm;
+import net.minecraft.resources.ResourceLocation;
+import net.minecraft.util.Mth;
 
 import java.util.function.Function;
 
 
-public class MKBipedModel<T extends MKEntity> extends BipedModel<T> {
+import net.minecraft.client.model.HumanoidModel.ArmPose;
+
+public class MKBipedModel<T extends MKEntity> extends HumanoidModel<T> {
     private final BipedCastAnimation<MKEntity> castAnimation = new BipedCastAnimation<>(this);
     private final MKEntityCompleteCastAnimation completeCastAnimation = new MKEntityCompleteCastAnimation(this);
 
 
-    public MKBipedModel(float modelSize, float yOffsetIn, int textureWidthIn, int textureHeightIn) {
-        super(modelSize, yOffsetIn, textureWidthIn, textureHeightIn);
+    public MKBipedModel(ModelPart modelPart) {
+        super(modelPart);
     }
 
-    public MKBipedModel(Function<ResourceLocation, RenderType> renderTypeIn, float modelSizeIn, float yOffsetIn, int textureWidthIn, int textureHeightIn){
-        super(renderTypeIn, modelSizeIn, yOffsetIn, textureWidthIn, textureHeightIn);
+    public MKBipedModel(ModelPart modelPart, Function<ResourceLocation, RenderType> renderSupplier){
+        super(modelPart, renderSupplier);
     }
 
     @Override
-    public void setLivingAnimations(T entityIn, float limbSwing, float limbSwingAmount, float partialTick) {
+    public void prepareMobModel(T entityIn, float limbSwing, float limbSwingAmount, float partialTick) {
         // bow pose stuff from skeleton
-        ItemStack itemstack = entityIn.getHeldItem(Hand.MAIN_HAND);
+        ItemStack itemstack = entityIn.getItemInHand(InteractionHand.MAIN_HAND);
         if (itemstack.getItem() instanceof BowItem && entityIn.isAggressive()) {
-            if (entityIn.getPrimaryHand() == HandSide.RIGHT) {
+            if (entityIn.getMainArm() == HumanoidArm.RIGHT) {
                 this.rightArmPose = ArmPose.BOW_AND_ARROW;
                 this.leftArmPose = ArmPose.EMPTY;
             } else {
@@ -43,27 +46,27 @@ public class MKBipedModel<T extends MKEntity> extends BipedModel<T> {
                 this.rightArmPose = ArmPose.EMPTY;
             }
         }
-        super.setLivingAnimations(entityIn, limbSwing, limbSwingAmount, partialTick);
+        super.prepareMobModel(entityIn, limbSwing, limbSwingAmount, partialTick);
     }
 
     @Override
-    public void setRotationAngles(T entityIn, float limbSwing, float limbSwingAmount,
+    public void setupAnim(T entityIn, float limbSwing, float limbSwingAmount,
                                   float ageInTicks, float netHeadYaw, float headPitch) {
-        super.setRotationAngles(entityIn, limbSwing, limbSwingAmount, ageInTicks, netHeadYaw, headPitch);
+        super.setupAnim(entityIn, limbSwing, limbSwingAmount, ageInTicks, netHeadYaw, headPitch);
         // bow pose stuff from skeleton
-        ItemStack itemstack = entityIn.getHeldItemMainhand();
-        if (entityIn.isAggressive() && (itemstack.isEmpty() || !(itemstack.getItem() instanceof net.minecraft.item.BowItem))) {
-            float f = MathHelper.sin(this.swingProgress * (float)Math.PI);
-            float f1 = MathHelper.sin((1.0F - (1.0F - this.swingProgress) * (1.0F - this.swingProgress)) * (float)Math.PI);
-            this.bipedRightArm.rotateAngleZ = 0.0F;
-            this.bipedLeftArm.rotateAngleZ = 0.0F;
-            this.bipedRightArm.rotateAngleY = -(0.1F - f * 0.6F);
-            this.bipedLeftArm.rotateAngleY = 0.1F - f * 0.6F;
-            this.bipedRightArm.rotateAngleX = (-(float)Math.PI / 2F);
-            this.bipedLeftArm.rotateAngleX = (-(float)Math.PI / 2F);
-            this.bipedRightArm.rotateAngleX -= f * 1.2F - f1 * 0.4F;
-            this.bipedLeftArm.rotateAngleX -= f * 1.2F - f1 * 0.4F;
-            ModelHelper.func_239101_a_(this.bipedRightArm, this.bipedLeftArm, ageInTicks);
+        ItemStack itemstack = entityIn.getMainHandItem();
+        if (entityIn.isAggressive() && (itemstack.isEmpty() || !(itemstack.getItem() instanceof net.minecraft.world.item.BowItem))) {
+            float f = Mth.sin(this.attackTime * (float)Math.PI);
+            float f1 = Mth.sin((1.0F - (1.0F - this.attackTime) * (1.0F - this.attackTime)) * (float)Math.PI);
+            this.rightArm.zRot = 0.0F;
+            this.leftArm.zRot = 0.0F;
+            this.rightArm.yRot = -(0.1F - f * 0.6F);
+            this.leftArm.yRot = 0.1F - f * 0.6F;
+            this.rightArm.xRot = (-(float)Math.PI / 2F);
+            this.leftArm.xRot = (-(float)Math.PI / 2F);
+            this.rightArm.xRot -= f * 1.2F - f1 * 0.4F;
+            this.leftArm.xRot -= f * 1.2F - f1 * 0.4F;
+            AnimationUtils.bobArms(this.rightArm, this.leftArm, ageInTicks);
         }
         AdditionalBipedAnimation<MKEntity> animation = getAdditionalAnimation(entityIn);
         if (animation != null) {
@@ -81,9 +84,5 @@ public class MKBipedModel<T extends MKEntity> extends BipedModel<T> {
             default:
                 return null;
         }
-    }
-
-    public MKBipedModel(float modelSize) {
-        super(modelSize);
     }
 }

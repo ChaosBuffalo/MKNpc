@@ -7,13 +7,12 @@ import com.chaosbuffalo.mkcore.utils.ItemUtils;
 import com.chaosbuffalo.mknpc.entity.MKEntity;
 import com.chaosbuffalo.mknpc.entity.ai.memory.MKMemoryModuleTypes;
 import com.chaosbuffalo.mkweapons.items.MKBow;
-import net.minecraft.entity.LivingEntity;
-import net.minecraft.entity.ai.brain.Brain;
-import net.minecraft.entity.ai.goal.Goal;
-import net.minecraft.entity.ai.goal.RangedBowAttackGoal;
-import net.minecraft.item.BowItem;
-import net.minecraft.item.ItemStack;
-import net.minecraft.util.Hand;
+import net.minecraft.world.entity.LivingEntity;
+import net.minecraft.world.entity.ai.Brain;
+import net.minecraft.world.entity.ai.goal.Goal;
+import net.minecraft.world.item.BowItem;
+import net.minecraft.world.item.ItemStack;
+import net.minecraft.world.InteractionHand;
 
 import java.util.EnumSet;
 import java.util.Optional;
@@ -34,7 +33,7 @@ public class MKBowAttackGoal extends Goal {
         this.entity = mob;
         this.defaultCooldown = attackCooldownIn;
         this.maxAttackDistance = maxAttackDistanceIn * maxAttackDistanceIn;
-        this.setMutexFlags(EnumSet.of(Goal.Flag.MOVE, Goal.Flag.LOOK));
+        this.setFlags(EnumSet.of(Goal.Flag.MOVE, Goal.Flag.LOOK));
     }
 
     public void setDefaultCooldown(int attackCooldownIn) {
@@ -42,20 +41,20 @@ public class MKBowAttackGoal extends Goal {
     }
 
     @Override
-    public boolean isPreemptible() {
+    public boolean isInterruptable() {
         return false;
     }
 
     @Override
-    public boolean shouldExecute() {
-        if (!ItemUtils.isRangedWeapon(entity.getHeldItemMainhand())){
+    public boolean canUse() {
+        if (!ItemUtils.isRangedWeapon(entity.getMainHandItem())){
             return false;
         }
         Brain<?> brain = entity.getBrain();
         Optional<LivingEntity> targetOpt = brain.getMemory(MKMemoryModuleTypes.THREAT_TARGET);
         if (targetOpt.isPresent()) {
             LivingEntity target = targetOpt.get();
-            if (isInReach(target) && entity.getEntitySenses().canSee(target)) {
+            if (isInReach(target) && entity.getSensing().hasLineOfSight(target)) {
                 this.target = target;
                 return true;
             }
@@ -64,24 +63,24 @@ public class MKBowAttackGoal extends Goal {
     }
 
     public boolean isInReach(LivingEntity target) {
-        return entity.getDistanceSq(target) <= maxAttackDistance;
+        return entity.distanceToSqr(target) <= maxAttackDistance;
     }
 
     @Override
-    public boolean shouldContinueExecuting() {
+    public boolean canContinueToUse() {
         Brain<?> brain = entity.getBrain();
         Optional<LivingEntity> targetOpt = brain.getMemory(MKMemoryModuleTypes.THREAT_TARGET);
-        return target != null && seeTime >= -SEE_TIME_TIMEOUT && ItemUtils.isRangedWeapon(entity.getHeldItemMainhand()) && targetOpt.map(
-                (ent) -> ent.isEntityEqual(target) && isInReach(ent)).orElse(false);
+        return target != null && seeTime >= -SEE_TIME_TIMEOUT && ItemUtils.isRangedWeapon(entity.getMainHandItem()) && targetOpt.map(
+                (ent) -> ent.is(target) && isInReach(ent)).orElse(false);
     }
 
-    public void startExecuting() {
-        super.startExecuting();
-        this.entity.setAggroed(true);
+    public void start() {
+        super.start();
+        this.entity.setAggressive(true);
     }
 
     public int getDrawTime(){
-        ItemStack item = entity.getHeldItemMainhand();
+        ItemStack item = entity.getMainHandItem();
         float drawTime;
         if (item.getItem() instanceof MKBow){
             drawTime = ((MKBow) item.getItem()).getDrawTime(item, entity);
@@ -91,17 +90,17 @@ public class MKBowAttackGoal extends Goal {
         return Math.round(drawTime);
     }
 
-    public void resetTask() {
-        super.resetTask();
-        this.entity.setAggroed(false);
+    public void stop() {
+        super.stop();
+        this.entity.setAggressive(false);
         this.seeTime = 0;
         this.attackTime = -1;
         this.target = null;
-        this.entity.resetActiveHand();
+        this.entity.stopUsingItem();
     }
 
     public float getLaunchVelocity(float powerFactor){
-        ItemStack item = entity.getHeldItemMainhand();
+        ItemStack item = entity.getMainHandItem();
         if (item.getItem() instanceof MKBow){
             MKBow mkBow = (MKBow) item.getItem();
             float launchVel = mkBow.getLaunchVelocity(item, entity);
@@ -112,20 +111,20 @@ public class MKBowAttackGoal extends Goal {
     }
 
     public float getLaunchPower(int useTicks){
-        ItemStack item = entity.getHeldItemMainhand();
+        ItemStack item = entity.getMainHandItem();
         if (item.getItem() instanceof MKBow){
             MKBow mkBow = (MKBow) item.getItem();
             return mkBow.getPowerFactor(useTicks, item, entity);
         } else {
-            return BowItem.getArrowVelocity(useTicks);
+            return BowItem.getPowerForTime(useTicks);
         }
     }
 
     public void tick() {
 
         if (target != null) {
-            double d0 = this.entity.getDistanceSq(target.getPosX(), target.getPosY(), target.getPosZ());
-            boolean canSee = this.entity.getEntitySenses().canSee(target);
+            double d0 = this.entity.distanceToSqr(target.getX(), target.getY(), target.getZ());
+            boolean canSee = this.entity.getSensing().hasLineOfSight(target);
             boolean seenIt = this.seeTime > 0;
             if (canSee != seenIt) {
                 this.seeTime = 0;
@@ -138,19 +137,19 @@ public class MKBowAttackGoal extends Goal {
             }
 
             if (!(d0 > (double)this.maxAttackDistance) && this.seeTime >= GameConstants.TICKS_PER_SECOND) {
-                this.entity.getNavigator().clearPath();
+                this.entity.getNavigation().stop();
                 ++this.strafingTime;
             } else {
-                this.entity.getNavigator().tryMoveToEntityLiving(target, entity.getLungeSpeed());
+                this.entity.getNavigation().moveTo(target, entity.getLungeSpeed());
                 this.strafingTime = -1;
             }
 
             if (this.strafingTime >= 20) {
-                if ((double)this.entity.getRNG().nextFloat() < 0.3D) {
+                if ((double)this.entity.getRandom().nextFloat() < 0.3D) {
                     this.strafingClockwise = !this.strafingClockwise;
                 }
 
-                if ((double)this.entity.getRNG().nextFloat() < 0.3D) {
+                if ((double)this.entity.getRandom().nextFloat() < 0.3D) {
                     this.strafingBackwards = !this.strafingBackwards;
                 }
 
@@ -164,21 +163,21 @@ public class MKBowAttackGoal extends Goal {
                     this.strafingBackwards = true;
                 }
 
-                this.entity.getMoveHelper().strafe(this.strafingBackwards ? -0.5F : 0.5F, this.strafingClockwise ? 0.5F : -0.5F);
-                this.entity.faceEntity(target, 30.0F, 30.0F);
+                this.entity.getMoveControl().strafe(this.strafingBackwards ? -0.5F : 0.5F, this.strafingClockwise ? 0.5F : -0.5F);
+                this.entity.lookAt(target, 30.0F, 30.0F);
             } else {
-                this.entity.getLookController().setLookPositionWithEntity(target, 30.0F, 30.0F);
+                this.entity.getLookControl().setLookAt(target, 30.0F, 30.0F);
             }
 
-            if (this.entity.isHandActive()) {
+            if (this.entity.isUsingItem()) {
                 if (!canSee && this.seeTime < -SEE_TIME_TIMEOUT) {
-                    this.entity.resetActiveHand();
+                    this.entity.stopUsingItem();
                 } else if (canSee) {
-                    int useTicks = this.entity.getItemInUseMaxCount();
+                    int useTicks = this.entity.getTicksUsingItem();
                     if (useTicks >= getDrawTime()) {
                         float powerFactor = getLaunchPower(useTicks);
                         this.entity.attackEntityWithRangedAttack(target, powerFactor, getLaunchVelocity(powerFactor));
-                        this.entity.resetActiveHand();
+                        this.entity.stopUsingItem();
                         boolean fullCooldown = MKCore.getEntityData(entity).map(cap -> {
                             CombatExtensionModule combatExtensionModule = cap.getCombatExtension();
                             return combatExtensionModule.getCurrentProjectileHitCount() > 0 &&
@@ -189,7 +188,7 @@ public class MKBowAttackGoal extends Goal {
                     }
                 }
             } else if (--this.attackTime <= 0 && this.seeTime >= -SEE_TIME_TIMEOUT) {
-                this.entity.setActiveHand(Hand.MAIN_HAND);
+                this.entity.startUsingItem(InteractionHand.MAIN_HAND);
             }
 
         }

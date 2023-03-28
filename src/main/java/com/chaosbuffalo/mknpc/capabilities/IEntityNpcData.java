@@ -4,12 +4,12 @@ import com.chaosbuffalo.mknpc.npc.INotifyOnEntityDeath;
 import com.chaosbuffalo.mknpc.npc.NpcDefinition;
 import com.chaosbuffalo.mknpc.npc.entries.LootOptionEntry;
 import com.chaosbuffalo.mknpc.npc.entries.QuestOfferingEntry;
-import net.minecraft.entity.LivingEntity;
-import net.minecraft.entity.item.ItemEntity;
-import net.minecraft.nbt.CompoundNBT;
-import net.minecraft.util.DamageSource;
-import net.minecraft.util.ResourceLocation;
-import net.minecraft.util.math.BlockPos;
+import net.minecraft.world.entity.LivingEntity;
+import net.minecraft.world.entity.item.ItemEntity;
+import net.minecraft.nbt.CompoundTag;
+import net.minecraft.world.damagesource.DamageSource;
+import net.minecraft.resources.ResourceLocation;
+import net.minecraft.core.BlockPos;
 import net.minecraftforge.common.util.INBTSerializable;
 
 import javax.annotation.Nonnull;
@@ -19,7 +19,7 @@ import java.util.Map;
 import java.util.Optional;
 import java.util.UUID;
 
-public interface IEntityNpcData extends INBTSerializable<CompoundNBT> {
+public interface IEntityNpcData extends INBTSerializable<CompoundTag> {
 
     LivingEntity getEntity();
 

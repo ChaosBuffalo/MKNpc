@@ -7,8 +7,8 @@ import com.chaosbuffalo.mknpc.quest.Quest;
 import com.chaosbuffalo.mknpc.quest.QuestChainInstance;
 import com.chaosbuffalo.mknpc.quest.QuestDefinition;
 import com.chaosbuffalo.mknpc.quest.objectives.QuestObjective;
-import net.minecraft.nbt.CompoundNBT;
-import net.minecraft.util.ResourceLocation;
+import net.minecraft.nbt.CompoundTag;
+import net.minecraft.resources.ResourceLocation;
 
 import java.util.HashMap;
 import java.util.List;
@@ -56,16 +56,16 @@ public class QuestChainData implements IQuestInstanceData{
         return questData.get(questName);
     }
 
-    public QuestChainData(QuestDefinition definition, CompoundNBT nbt){
+    public QuestChainData(QuestDefinition definition, CompoundTag nbt){
         questData = new HashMap<>();
         deserializeNBT(nbt, definition);
     }
 
 
     @Override
-    public CompoundNBT serializeNBT() {
-        CompoundNBT nbt = new CompoundNBT();
-        CompoundNBT questNbt = new CompoundNBT();
+    public CompoundTag serializeNBT() {
+        CompoundTag nbt = new CompoundTag();
+        CompoundTag questNbt = new CompoundTag();
         for (Map.Entry<String, QuestData> entry : questData.entrySet()){
             questNbt.put(entry.getKey(), entry.getValue().serializeNBT());
         }
@@ -74,9 +74,9 @@ public class QuestChainData implements IQuestInstanceData{
     }
 
     @Override
-    public void deserializeNBT(CompoundNBT nbt, QuestDefinition definition) {
-        CompoundNBT questNbt = nbt.getCompound("questData");
-        for (String key : questNbt.keySet()){
+    public void deserializeNBT(CompoundTag nbt, QuestDefinition definition) {
+        CompoundTag questNbt = nbt.getCompound("questData");
+        for (String key : questNbt.getAllKeys()){
             Quest source = definition.getQuest(key);
             if (source != null){
                 QuestData data = new QuestData(source.getQuestName());

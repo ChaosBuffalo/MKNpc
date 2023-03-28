@@ -1,14 +1,14 @@
 package com.chaosbuffalo.mknpc.network;
 
 import com.chaosbuffalo.mknpc.tile_entities.MKSpawnerTileEntity;
-import net.minecraft.block.BlockState;
-import net.minecraft.block.Blocks;
-import net.minecraft.entity.player.ServerPlayerEntity;
-import net.minecraft.network.PacketBuffer;
-import net.minecraft.tileentity.StructureBlockTileEntity;
-import net.minecraft.tileentity.TileEntity;
-import net.minecraft.util.math.BlockPos;
-import net.minecraftforge.fml.network.NetworkEvent;
+import net.minecraft.world.level.block.state.BlockState;
+import net.minecraft.world.level.block.Blocks;
+import net.minecraft.server.level.ServerPlayer;
+import net.minecraft.network.FriendlyByteBuf;
+import net.minecraft.world.level.block.entity.StructureBlockEntity;
+import net.minecraft.world.level.block.entity.BlockEntity;
+import net.minecraft.core.BlockPos;
+import net.minecraftforge.fmllegacy.network.NetworkEvent;
 
 import java.util.function.Supplier;
 
@@ -17,14 +17,14 @@ public class FinalizeMKSpawnerPacket {
 
 
     public FinalizeMKSpawnerPacket(MKSpawnerTileEntity entity){
-        tileEntityLoc = entity.getPos();
+        tileEntityLoc = entity.getBlockPos();
     }
 
-    public void toBytes(PacketBuffer buffer){
+    public void toBytes(FriendlyByteBuf buffer){
         buffer.writeBlockPos(tileEntityLoc);
     }
 
-    public FinalizeMKSpawnerPacket(PacketBuffer buffer){
+    public FinalizeMKSpawnerPacket(FriendlyByteBuf buffer){
         tileEntityLoc = buffer.readBlockPos();
     }
 
@@ -32,18 +32,18 @@ public class FinalizeMKSpawnerPacket {
     public void handle(Supplier<NetworkEvent.Context> supplier){
         NetworkEvent.Context ctx = supplier.get();
         ctx.enqueueWork(() -> {
-            ServerPlayerEntity entity = ctx.getSender();
+            ServerPlayer entity = ctx.getSender();
             if (entity == null || !entity.isCreative()) {
                 return;
             }
-            TileEntity tileEntity = entity.getServerWorld().getTileEntity(tileEntityLoc);
+            BlockEntity tileEntity = entity.getLevel().getBlockEntity(tileEntityLoc);
             if (tileEntity instanceof MKSpawnerTileEntity){
                 BlockState dataState = Blocks.STRUCTURE_BLOCK.getStateForPlacement(null);
                 if (dataState != null){
-                    entity.getServerWorld().setBlockState(tileEntityLoc.up(), dataState, 3);
-                    TileEntity other = entity.getServerWorld().getTileEntity(tileEntityLoc.up());
-                    if (other instanceof StructureBlockTileEntity){
-                        ((StructureBlockTileEntity) other).setMetadata("mkspawner");
+                    entity.getLevel().setBlock(tileEntityLoc.above(), dataState, 3);
+                    BlockEntity other = entity.getLevel().getBlockEntity(tileEntityLoc.above());
+                    if (other instanceof StructureBlockEntity){
+                        ((StructureBlockEntity) other).setMetaData("mkspawner");
                     }
                 }
                 ((MKSpawnerTileEntity) tileEntity).clearSpawn();

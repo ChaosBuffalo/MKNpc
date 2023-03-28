@@ -20,9 +20,9 @@ import com.chaosbuffalo.mknpc.quest.dialogue.effects.StartQuestChainEffect;
 import com.chaosbuffalo.mknpc.quest.objectives.TalkToNpcObjective;
 import com.chaosbuffalo.mknpc.quest.requirements.QuestRequirement;
 import com.mojang.serialization.Dynamic;
-import net.minecraft.nbt.CompoundNBT;
-import net.minecraft.nbt.NBTDynamicOps;
-import net.minecraft.util.ResourceLocation;
+import net.minecraft.nbt.CompoundTag;
+import net.minecraft.nbt.NbtOps;
+import net.minecraft.resources.ResourceLocation;
 import net.minecraftforge.common.util.INBTSerializable;
 
 import javax.annotation.Nullable;
@@ -30,7 +30,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.UUID;
 
-public class QuestOfferingEntry implements INBTSerializable<CompoundNBT> {
+public class QuestOfferingEntry implements INBTSerializable<CompoundTag> {
     private ResourceLocation questDef;
     @Nullable
     private UUID questId;
@@ -51,7 +51,7 @@ public class QuestOfferingEntry implements INBTSerializable<CompoundNBT> {
         return questDef;
     }
 
-    public QuestOfferingEntry(CompoundNBT nbt){
+    public QuestOfferingEntry(CompoundTag nbt){
         deserializeNBT(nbt);
     }
 
@@ -119,27 +119,27 @@ public class QuestOfferingEntry implements INBTSerializable<CompoundNBT> {
     }
 
     @Override
-    public CompoundNBT serializeNBT() {
-        CompoundNBT nbt = new CompoundNBT();
+    public CompoundTag serializeNBT() {
+        CompoundTag nbt = new CompoundTag();
         nbt.putString("questDef", questDef.toString());
         if (questId != null){
-            nbt.putUniqueId("questId", questId);
+            nbt.putUUID("questId", questId);
         }
         if (tree != null){
-            nbt.put("dialogue", tree.serialize(NBTDynamicOps.INSTANCE));
+            nbt.put("dialogue", tree.serialize(NbtOps.INSTANCE));
         }
         return nbt;
     }
 
     @Override
-    public void deserializeNBT(CompoundNBT nbt) {
+    public void deserializeNBT(CompoundTag nbt) {
         questDef = new ResourceLocation(nbt.getString("questDef"));
         if (nbt.contains("questId")){
-            questId = nbt.getUniqueId("questId");
+            questId = nbt.getUUID("questId");
         }
         if (nbt.contains("dialogue")){
             tree = new DialogueTree(makeTreeId(questId));
-            tree.deserialize(new Dynamic<>(NBTDynamicOps.INSTANCE, nbt.get("dialogue")));
+            tree.deserialize(new Dynamic<>(NbtOps.INSTANCE, nbt.get("dialogue")));
         }
     }
 }

@@ -15,15 +15,14 @@ import com.chaosbuffalo.mknpc.quest.data.player.PlayerQuestObjectiveData;
 import com.google.common.collect.ImmutableMap;
 import com.mojang.serialization.Dynamic;
 import com.mojang.serialization.DynamicOps;
-import net.minecraft.entity.LivingEntity;
-import net.minecraft.entity.player.PlayerEntity;
-import net.minecraft.item.ItemStack;
-import net.minecraft.util.ResourceLocation;
-import net.minecraft.util.Util;
-import net.minecraft.util.math.BlockPos;
-import net.minecraft.util.text.IFormattableTextComponent;
-import net.minecraft.util.text.TextFormatting;
-import net.minecraft.util.text.TranslationTextComponent;
+import net.minecraft.world.entity.LivingEntity;
+import net.minecraft.world.entity.player.Player;
+import net.minecraft.world.item.ItemStack;
+import net.minecraft.resources.ResourceLocation;
+import net.minecraft.Util;
+import net.minecraft.network.chat.MutableComponent;
+import net.minecraft.ChatFormatting;
+import net.minecraft.network.chat.TranslatableComponent;
 import net.minecraftforge.common.util.RecipeMatcher;
 
 import javax.annotation.Nullable;
@@ -39,7 +38,7 @@ public class TradeItemsObjective extends StructureInstanceObjective<UUIDInstance
     protected ResourceLocationAttribute npcDefinition = new ResourceLocationAttribute("npcDefinition", NpcDefinitionManager.INVALID_NPC_DEF);
     private final List<ItemStack> neededItems = new ArrayList<>();
 
-    public TradeItemsObjective(String name, ResourceLocation structure, int index, ResourceLocation npcDefinition, IFormattableTextComponent... description){
+    public TradeItemsObjective(String name, ResourceLocation structure, int index, ResourceLocation npcDefinition, MutableComponent... description){
         super(NAME, name, structure, index, description);
         addAttribute(this.npcDefinition);
         this.npcDefinition.setValue(npcDefinition);
@@ -52,8 +51,8 @@ public class TradeItemsObjective extends StructureInstanceObjective<UUIDInstance
 
     public void addItemStack(ItemStack stack){
         neededItems.add(stack);
-        setDescription(neededItems.stream().map(x -> new TranslationTextComponent("mknpc.trade.item_needed",
-                x.getCount(), x.getDisplayName())).collect(Collectors.toList()));
+        setDescription(neededItems.stream().map(x -> new TranslatableComponent("mknpc.trade.item_needed",
+                x.getCount(), x.getHoverName())).collect(Collectors.toList()));
     }
 
     @Override
@@ -96,15 +95,15 @@ public class TradeItemsObjective extends StructureInstanceObjective<UUIDInstance
     }
 
     @Override
-    public void onPlayerTradeSuccess(PlayerEntity player, PlayerQuestObjectiveData objectiveData,
+    public void onPlayerTradeSuccess(Player player, PlayerQuestObjectiveData objectiveData,
                                      QuestData questData, PlayerQuestChainInstance playerChain, LivingEntity trader) {
-        player.sendMessage(new TranslationTextComponent("mknpc.quest.trade.accepted",
-                trader.getDisplayName()).mergeStyle(TextFormatting.GOLD), Util.DUMMY_UUID);
+        player.sendMessage(new TranslatableComponent("mknpc.quest.trade.accepted",
+                trader.getDisplayName()).withStyle(ChatFormatting.GOLD), Util.NIL_UUID);
         signalCompleted(objectiveData);
     }
 
     @Override
-    public boolean canTradeWith(LivingEntity trader, PlayerEntity player, PlayerQuestObjectiveData objectiveData,
+    public boolean canTradeWith(LivingEntity trader, Player player, PlayerQuestObjectiveData objectiveData,
                                 QuestData questData, PlayerQuestChainInstance chainInstance) {
         UUIDInstanceData objData = getInstanceData(questData);
         return trader.getCapability(NpcCapabilities.ENTITY_NPC_DATA_CAPABILITY)
@@ -123,6 +122,6 @@ public class TradeItemsObjective extends StructureInstanceObjective<UUIDInstance
     }
 
     public static Predicate<ItemStack> getItemsEqualTester(ItemStack other){
-        return itemStack -> ItemStack.areItemStacksEqual(itemStack, other);
+        return itemStack -> ItemStack.matches(itemStack, other);
     }
 }

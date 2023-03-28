@@ -5,16 +5,16 @@ import com.chaosbuffalo.mknpc.quest.data.player.PlayerQuestChainInstance;
 import com.chaosbuffalo.mkwidgets.client.gui.constraints.CenterYWithOffsetConstraint;
 import com.chaosbuffalo.mkwidgets.client.gui.layouts.MKStackLayoutHorizontal;
 import com.chaosbuffalo.mkwidgets.client.gui.widgets.MKText;
-import com.mojang.blaze3d.matrix.MatrixStack;
+import com.mojang.blaze3d.vertex.PoseStack;
 import net.minecraft.client.Minecraft;
-import net.minecraft.client.gui.FontRenderer;
+import net.minecraft.client.gui.Font;
 
 public class QuestListEntry extends MKStackLayoutHorizontal {
-    private final FontRenderer font;
+    private final Font font;
     private final PlayerQuestChainInstance playerQuestChain;
     private final QuestPage screen;
 
-    public QuestListEntry(int x, int y, int height, FontRenderer font, PlayerQuestChainInstance playerQuestChain,
+    public QuestListEntry(int x, int y, int height, Font font, PlayerQuestChainInstance playerQuestChain,
                           QuestPage screen) {
         super(x, y, height);
         this.font = font;
@@ -35,7 +35,7 @@ public class QuestListEntry extends MKStackLayoutHorizontal {
         return true;
     }
 
-    public void postDraw(MatrixStack matrixStack, Minecraft mc, int x, int y, int width, int height, int mouseX, int mouseY, float partialTicks) {
+    public void postDraw(PoseStack matrixStack, Minecraft mc, int x, int y, int width, int height, int mouseX, int mouseY, float partialTicks) {
         if (this.isHovered()) {
             mkFill(matrixStack, x, y, x + width, y + height, 0x55ffffff);
         }

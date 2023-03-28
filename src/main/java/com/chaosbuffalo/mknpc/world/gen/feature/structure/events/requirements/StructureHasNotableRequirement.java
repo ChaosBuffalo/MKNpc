@@ -5,8 +5,8 @@ import com.chaosbuffalo.mknpc.MKNpc;
 import com.chaosbuffalo.mknpc.capabilities.WorldStructureManager;
 import com.chaosbuffalo.mknpc.npc.MKStructureEntry;
 import com.chaosbuffalo.mknpc.npc.NpcDefinitionManager;
-import net.minecraft.util.ResourceLocation;
-import net.minecraft.world.World;
+import net.minecraft.resources.ResourceLocation;
+import net.minecraft.world.level.Level;
 
 public class StructureHasNotableRequirement extends StructureEventRequirement{
     public final static ResourceLocation TYPE_NAME = new ResourceLocation(MKNpc.MODID,
@@ -27,7 +27,7 @@ public class StructureHasNotableRequirement extends StructureEventRequirement{
 
     @Override
     public boolean meetsRequirements(MKStructureEntry entry,
-                                     WorldStructureManager.ActiveStructure activeStructure, World world) {
+                                     WorldStructureManager.ActiveStructure activeStructure, Level world) {
         return entry.hasNotableOfType(npcDefinition.getValue());
     }
 }

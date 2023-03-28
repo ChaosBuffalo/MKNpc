@@ -1,9 +1,9 @@
 package com.chaosbuffalo.mknpc.npc.option_entries;
 
-import net.minecraft.entity.Entity;
-import net.minecraft.entity.LivingEntity;
-import net.minecraft.nbt.CompoundNBT;
-import net.minecraft.util.text.StringTextComponent;
+import net.minecraft.world.entity.Entity;
+import net.minecraft.world.entity.LivingEntity;
+import net.minecraft.nbt.CompoundTag;
+import net.minecraft.network.chat.TextComponent;
 
 
 public class FactionNameOptionEntry implements INpcOptionEntry, INameEntry{
@@ -25,19 +25,19 @@ public class FactionNameOptionEntry implements INpcOptionEntry, INameEntry{
     }
 
     @Override
-    public CompoundNBT serializeNBT() {
-        CompoundNBT nbt = new CompoundNBT();
+    public CompoundTag serializeNBT() {
+        CompoundTag nbt = new CompoundTag();
         nbt.putString("name", name);
         return nbt;
     }
 
     @Override
-    public void deserializeNBT(CompoundNBT nbt) {
+    public void deserializeNBT(CompoundTag nbt) {
         this.name = nbt.getString("name");
     }
 
     @Override
-    public StringTextComponent getName() {
-        return new StringTextComponent(name);
+    public TextComponent getName() {
+        return new TextComponent(name);
     }
 }

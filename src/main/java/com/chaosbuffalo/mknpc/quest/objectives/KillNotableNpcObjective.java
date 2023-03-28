@@ -12,12 +12,12 @@ import com.chaosbuffalo.mknpc.quest.data.QuestData;
 import com.chaosbuffalo.mknpc.quest.data.objective.UUIDInstanceData;
 import com.chaosbuffalo.mknpc.quest.data.player.PlayerQuestChainInstance;
 import com.chaosbuffalo.mknpc.quest.data.player.PlayerQuestObjectiveData;
-import net.minecraft.entity.player.PlayerEntity;
-import net.minecraft.util.ResourceLocation;
-import net.minecraft.util.Util;
-import net.minecraft.util.text.IFormattableTextComponent;
-import net.minecraft.util.text.TextFormatting;
-import net.minecraft.util.text.TranslationTextComponent;
+import net.minecraft.world.entity.player.Player;
+import net.minecraft.resources.ResourceLocation;
+import net.minecraft.Util;
+import net.minecraft.network.chat.MutableComponent;
+import net.minecraft.ChatFormatting;
+import net.minecraft.network.chat.TranslatableComponent;
 import net.minecraftforge.event.entity.living.LivingDeathEvent;
 
 import java.util.List;
@@ -30,7 +30,7 @@ public class KillNotableNpcObjective extends StructureInstanceObjective<UUIDInst
 
 
     public KillNotableNpcObjective(String name, ResourceLocation structure, int index, ResourceLocation npcDefinition,
-                                   IFormattableTextComponent... description) {
+                                   MutableComponent... description) {
         super(NAME, name,  structure, index, description);
         this.npcDefinition.setValue(npcDefinition);
         addAttributes(this.npcDefinition);
@@ -42,7 +42,7 @@ public class KillNotableNpcObjective extends StructureInstanceObjective<UUIDInst
     }
 
     @Override
-    public boolean onPlayerKillNpcDefEntity(PlayerEntity player, PlayerQuestObjectiveData objectiveData, NpcDefinition def,
+    public boolean onPlayerKillNpcDefEntity(Player player, PlayerQuestObjectiveData objectiveData, NpcDefinition def,
                                          LivingDeathEvent event, QuestData quest, PlayerQuestChainInstance playerChain) {
         if (!isComplete(objectiveData)){
             UUIDInstanceData objData = getInstanceData(quest);
@@ -51,8 +51,8 @@ public class KillNotableNpcObjective extends StructureInstanceObjective<UUIDInst
             if (applies){
                 objectiveData.putBool("hasKilled", true);
                 objectiveData.removeBlockPos("npcPos");
-                player.sendMessage(new TranslationTextComponent("mknpc.objective.kill_notable.complete",
-                        event.getEntityLiving().getDisplayName()).mergeStyle(TextFormatting.GOLD), Util.DUMMY_UUID);
+                player.sendMessage(new TranslatableComponent("mknpc.objective.kill_notable.complete",
+                        event.getEntityLiving().getDisplayName()).withStyle(ChatFormatting.GOLD), Util.NIL_UUID);
                 signalCompleted(objectiveData);
                 playerChain.notifyDirty();
                 return true;
@@ -90,7 +90,7 @@ public class KillNotableNpcObjective extends StructureInstanceObjective<UUIDInst
         PlayerQuestObjectiveData newObj = playerDataFactory();
         NotableNpcEntry notable = worldData.getNotableNpc(objData.getUuid());
         if (notable != null) {
-            newObj.setDescription((new TranslationTextComponent("mknpc.objective.kill_notable.desc", notable.getName())));
+            newObj.setDescription((new TranslatableComponent("mknpc.objective.kill_notable.desc", notable.getName())));
             newObj.putBlockPos("npcPos", notable.getLocation());
         }
         newObj.putBool("hasKilled", false);

@@ -11,10 +11,10 @@ import com.chaosbuffalo.mkcore.utils.TargetUtil;
 import com.chaosbuffalo.mknpc.entity.MKEntity;
 import com.chaosbuffalo.mknpc.entity.ai.memory.MKMemoryModuleTypes;
 import com.google.common.collect.ImmutableSet;
-import net.minecraft.entity.LivingEntity;
-import net.minecraft.entity.ai.brain.memory.MemoryModuleType;
-import net.minecraft.entity.ai.brain.sensor.Sensor;
-import net.minecraft.world.server.ServerWorld;
+import net.minecraft.world.entity.LivingEntity;
+import net.minecraft.world.entity.ai.memory.MemoryModuleType;
+import net.minecraft.world.entity.ai.sensing.Sensor;
+import net.minecraft.server.level.ServerLevel;
 import org.apache.logging.log4j.core.Core;
 
 import javax.annotation.Nonnull;
@@ -29,7 +29,7 @@ public class AbilityUseSensor extends Sensor<MKEntity> {
     }
 
     @Override
-    protected void update(@Nonnull ServerWorld worldIn, MKEntity entityIn) {
+    protected void doTick(@Nonnull ServerLevel worldIn, MKEntity entityIn) {
         Optional<MKAbility> abilityOptional = entityIn.getBrain().getMemory(MKMemoryModuleTypes.CURRENT_ABILITY);
         int timeOut = entityIn.getBrain().getMemory(MKMemoryModuleTypes.ABILITY_TIMEOUT).orElse(0);
         boolean isCasting = MKCore.getEntityData(entityIn).map(data -> data.getAbilityExecutor().isCasting()).orElse(false);
@@ -72,7 +72,7 @@ public class AbilityUseSensor extends Sensor<MKEntity> {
 
     @Nonnull
     @Override
-    public Set<MemoryModuleType<?>> getUsedMemories() {
+    public Set<MemoryModuleType<?>> requires() {
         return ImmutableSet.of(MKMemoryModuleTypes.CURRENT_ABILITY, MKMemoryModuleTypes.THREAT_TARGET,
                 MKAbilityMemories.ABILITY_TARGET, MKMemoryModuleTypes.ALLIES, MKMemoryModuleTypes.ENEMIES,
                 MKMemoryModuleTypes.MOVEMENT_STRATEGY, MKMemoryModuleTypes.ABILITY_TIMEOUT, MKAbilityMemories.ABILITY_POSITION_TARGET);

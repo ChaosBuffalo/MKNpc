@@ -2,14 +2,14 @@ package com.chaosbuffalo.mknpc.event;
 
 import com.chaosbuffalo.mknpc.MKNpc;
 import com.chaosbuffalo.mknpc.capabilities.*;
-import net.minecraft.entity.Entity;
-import net.minecraft.entity.LivingEntity;
-import net.minecraft.entity.player.PlayerEntity;
-import net.minecraft.tileentity.ChestTileEntity;
-import net.minecraft.tileentity.TileEntity;
-import net.minecraft.util.ResourceLocation;
-import net.minecraft.world.World;
-import net.minecraft.world.chunk.Chunk;
+import net.minecraft.world.entity.Entity;
+import net.minecraft.world.entity.LivingEntity;
+import net.minecraft.world.entity.player.Player;
+import net.minecraft.world.level.block.entity.ChestBlockEntity;
+import net.minecraft.world.level.block.entity.BlockEntity;
+import net.minecraft.resources.ResourceLocation;
+import net.minecraft.world.level.Level;
+import net.minecraft.world.level.chunk.LevelChunk;
 import net.minecraftforge.event.AttachCapabilitiesEvent;
 import net.minecraftforge.eventbus.api.SubscribeEvent;
 import net.minecraftforge.fml.common.Mod;
@@ -22,8 +22,8 @@ public class CapabilityHandler {
     @SubscribeEvent
     public static void attachEntityCapability(AttachCapabilitiesEvent<Entity> e) {
         if (e.getObject() instanceof LivingEntity) {
-            if (e.getObject() instanceof PlayerEntity) {
-                PlayerQuestingDataProvider provider = new PlayerQuestingDataProvider((PlayerEntity) e.getObject());
+            if (e.getObject() instanceof Player) {
+                PlayerQuestingDataProvider provider = new PlayerQuestingDataProvider((Player) e.getObject());
                 attachCap(NpcCapabilities.MK_QUEST_CAP_ID, provider, e);
             } else {
                 EntityNpcDataProvider provider = new EntityNpcDataProvider((LivingEntity) e.getObject());
@@ -34,21 +34,21 @@ public class CapabilityHandler {
 
     @SuppressWarnings("unused")
     @SubscribeEvent
-    public static void attachWorldCapability(AttachCapabilitiesEvent<World> e) {
+    public static void attachWorldCapability(AttachCapabilitiesEvent<Level> e) {
         WorldNpcDataProvider provider = new WorldNpcDataProvider(e.getObject());
         attachCap(NpcCapabilities.MK_WORLD_NPC_CAP_ID, provider, e);
     }
 
     @SubscribeEvent
-    public static void attachChunkCapability(AttachCapabilitiesEvent<Chunk> e) {
+    public static void attachChunkCapability(AttachCapabilitiesEvent<LevelChunk> e) {
         ChunkNpcDataProvider provider = new ChunkNpcDataProvider(e.getObject());
         attachCap(NpcCapabilities.MK_CHUNK_NPC_CAP_ID, provider, e);
     }
 
     @SubscribeEvent
-    public static void attachChestCapability(AttachCapabilitiesEvent<TileEntity> e) {
-        if (e.getObject() instanceof ChestTileEntity) {
-            ChestNpcDataProvider provider = new ChestNpcDataProvider((ChestTileEntity) e.getObject());
+    public static void attachChestCapability(AttachCapabilitiesEvent<BlockEntity> e) {
+        if (e.getObject() instanceof ChestBlockEntity) {
+            ChestNpcDataProvider provider = new ChestNpcDataProvider((ChestBlockEntity) e.getObject());
             attachCap(NpcCapabilities.MK_CHEST_CAP_ID, provider, e);
         }
     }

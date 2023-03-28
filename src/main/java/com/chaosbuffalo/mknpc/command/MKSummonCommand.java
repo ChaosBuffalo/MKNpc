@@ -9,23 +9,23 @@ import com.mojang.brigadier.context.CommandContext;
 import com.mojang.brigadier.exceptions.CommandSyntaxException;
 import com.mojang.brigadier.suggestion.Suggestions;
 import com.mojang.brigadier.suggestion.SuggestionsBuilder;
-import net.minecraft.command.CommandSource;
-import net.minecraft.command.Commands;
-import net.minecraft.command.ISuggestionProvider;
-import net.minecraft.entity.Entity;
-import net.minecraft.entity.MobEntity;
-import net.minecraft.entity.SpawnReason;
-import net.minecraft.entity.player.ServerPlayerEntity;
-import net.minecraft.util.ResourceLocation;
-import net.minecraft.util.Util;
-import net.minecraft.util.math.BlockPos;
-import net.minecraft.util.text.StringTextComponent;
+import net.minecraft.commands.CommandSourceStack;
+import net.minecraft.commands.Commands;
+import net.minecraft.commands.SharedSuggestionProvider;
+import net.minecraft.world.entity.Entity;
+import net.minecraft.world.entity.Mob;
+import net.minecraft.world.entity.MobSpawnType;
+import net.minecraft.server.level.ServerPlayer;
+import net.minecraft.resources.ResourceLocation;
+import net.minecraft.Util;
+import net.minecraft.core.BlockPos;
+import net.minecraft.network.chat.TextComponent;
 
 import java.util.concurrent.CompletableFuture;
 
 public class MKSummonCommand {
 
-    public static LiteralArgumentBuilder<CommandSource> register() {
+    public static LiteralArgumentBuilder<CommandSourceStack> register() {
         return Commands.literal("mksummon")
                 .then(Commands.argument("npc_definition", NpcDefinitionIdArgument.definition())
                         .suggests(MKSummonCommand::suggestNpcDefinitions)
@@ -33,31 +33,31 @@ public class MKSummonCommand {
                         .executes(MKSummonCommand::summon)));
     }
 
-    static CompletableFuture<Suggestions> suggestNpcDefinitions(final CommandContext<CommandSource> context,
+    static CompletableFuture<Suggestions> suggestNpcDefinitions(final CommandContext<CommandSourceStack> context,
                                                                 final SuggestionsBuilder builder) throws CommandSyntaxException {
-        return ISuggestionProvider.suggest(NpcDefinitionManager.DEFINITIONS.keySet().stream()
+        return SharedSuggestionProvider.suggest(NpcDefinitionManager.DEFINITIONS.keySet().stream()
                 .map(ResourceLocation::toString), builder);
     }
 
-    static int summon(CommandContext<CommandSource> ctx) throws CommandSyntaxException {
-        ServerPlayerEntity player = ctx.getSource().asPlayer();
+    static int summon(CommandContext<CommandSourceStack> ctx) throws CommandSyntaxException {
+        ServerPlayer player = ctx.getSource().getPlayerOrException();
         ResourceLocation definition_id = ctx.getArgument("npc_definition", ResourceLocation.class);
         double difficulty_value = DoubleArgumentType.getDouble(ctx, "difficulty_value");
         NpcDefinition definition = NpcDefinitionManager.getDefinition(definition_id);
         if (definition != null){
-            Entity entity = definition.createEntity(player.getServerWorld(), player.getPositionVec(), difficulty_value);
+            Entity entity = definition.createEntity(player.getLevel(), player.position(), difficulty_value);
             if (entity != null){
-                player.getServerWorld().addEntity(entity);
-                if (entity instanceof MobEntity){
-                    ((MobEntity) entity).onInitialSpawn(player.getServerWorld(), player.getServerWorld().getDifficultyForLocation(
-                            new BlockPos(entity.getPositionVec())), SpawnReason.COMMAND, null, null);
+                player.getLevel().addFreshEntity(entity);
+                if (entity instanceof Mob){
+                    ((Mob) entity).finalizeSpawn(player.getLevel(), player.getLevel().getCurrentDifficultyAt(
+                            new BlockPos(entity.position())), MobSpawnType.COMMAND, null, null);
                 }
             } else {
-                player.sendMessage(new StringTextComponent(String.format("Failed to summon: %s",
-                        definition_id.toString())), Util.DUMMY_UUID);
+                player.sendMessage(new TextComponent(String.format("Failed to summon: %s",
+                        definition_id.toString())), Util.NIL_UUID);
             }
         } else {
-            player.sendMessage(new StringTextComponent("Definition not found."), Util.DUMMY_UUID);
+            player.sendMessage(new TextComponent("Definition not found."), Util.NIL_UUID);
         }
         return Command.SINGLE_SUCCESS;
     }

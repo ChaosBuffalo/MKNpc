@@ -8,22 +8,21 @@ import com.chaosbuffalo.mknpc.npc.options.*;
 import com.google.gson.Gson;
 import com.google.gson.GsonBuilder;
 import com.google.gson.JsonElement;
-import com.google.gson.JsonObject;
 import com.mojang.serialization.Dynamic;
 import com.mojang.serialization.JsonOps;
-import net.minecraft.client.resources.JsonReloadListener;
-import net.minecraft.entity.player.ServerPlayerEntity;
-import net.minecraft.profiler.IProfiler;
-import net.minecraft.resources.IResourceManager;
+import net.minecraft.server.packs.resources.SimpleJsonResourceReloadListener;
+import net.minecraft.server.level.ServerPlayer;
+import net.minecraft.util.profiling.ProfilerFiller;
+import net.minecraft.server.packs.resources.ResourceManager;
 import net.minecraft.server.MinecraftServer;
-import net.minecraft.util.ResourceLocation;
+import net.minecraft.resources.ResourceLocation;
 import net.minecraftforge.common.MinecraftForge;
 import net.minecraftforge.event.AddReloadListenerEvent;
 import net.minecraftforge.event.entity.player.PlayerEvent;
 import net.minecraftforge.eventbus.api.SubscribeEvent;
-import net.minecraftforge.fml.event.server.FMLServerAboutToStartEvent;
-import net.minecraftforge.fml.event.server.FMLServerStoppingEvent;
-import net.minecraftforge.fml.network.NetworkDirection;
+import net.minecraftforge.fmllegacy.network.NetworkDirection;
+import net.minecraftforge.fmlserverevents.FMLServerAboutToStartEvent;
+import net.minecraftforge.fmlserverevents.FMLServerStoppingEvent;
 
 import javax.annotation.Nullable;
 import java.util.ArrayList;
@@ -32,7 +31,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.function.Supplier;
 
-public class NpcDefinitionManager extends JsonReloadListener {
+public class NpcDefinitionManager extends SimpleJsonResourceReloadListener {
     private MinecraftServer server;
     private boolean serverStarted = false;
 
@@ -123,8 +122,8 @@ public class NpcDefinitionManager extends JsonReloadListener {
     }
 
     @Override
-    protected void apply(Map<ResourceLocation, JsonElement> objectIn, IResourceManager resourceManagerIn,
-                         IProfiler profilerIn) {
+    protected void apply(Map<ResourceLocation, JsonElement> objectIn, ResourceManager resourceManagerIn,
+                         ProfilerFiller profilerIn) {
         DEFINITIONS.clear();
         CLIENT_DEFINITIONS.clear();
         for(Map.Entry<ResourceLocation, JsonElement> entry : objectIn.entrySet()) {
@@ -163,11 +162,11 @@ public class NpcDefinitionManager extends JsonReloadListener {
     @SuppressWarnings("unused")
     @SubscribeEvent
     public void playerLoggedInEvent(PlayerEvent.PlayerLoggedInEvent event){
-        if (event.getPlayer() instanceof ServerPlayerEntity){
+        if (event.getPlayer() instanceof ServerPlayer){
             NpcDefinitionClientUpdatePacket updatePacket = new NpcDefinitionClientUpdatePacket(
                     CLIENT_DEFINITIONS.values());
             MKNpc.LOGGER.info("Sending {} update packet", event.getPlayer());
-            ((ServerPlayerEntity) event.getPlayer()).connection.sendPacket(
+            ((ServerPlayer) event.getPlayer()).connection.send(
                     PacketHandler.getNetworkChannel().toVanillaPacket(
                             updatePacket, NetworkDirection.PLAY_TO_CLIENT));
         }
@@ -176,7 +175,7 @@ public class NpcDefinitionManager extends JsonReloadListener {
     public void syncToPlayers(){
         NpcDefinitionClientUpdatePacket updatePacket = new NpcDefinitionClientUpdatePacket(CLIENT_DEFINITIONS.values());
         if (server != null){
-            server.getPlayerList().sendPacketToAllPlayers(PacketHandler.getNetworkChannel().toVanillaPacket(
+            server.getPlayerList().broadcastAll(PacketHandler.getNetworkChannel().toVanillaPacket(
                     updatePacket, NetworkDirection.PLAY_TO_CLIENT));
         }
     }

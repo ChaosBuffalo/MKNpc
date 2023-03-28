@@ -4,8 +4,8 @@ package com.chaosbuffalo.mknpc.npc;
 import com.google.common.collect.ImmutableMap;
 import com.mojang.serialization.Dynamic;
 import com.mojang.serialization.DynamicOps;
-import net.minecraft.entity.ai.attributes.Attribute;
-import net.minecraft.util.ResourceLocation;
+import net.minecraft.world.entity.ai.attributes.Attribute;
+import net.minecraft.resources.ResourceLocation;
 import net.minecraftforge.registries.ForgeRegistries;
 
 public class NpcAttributeEntry {

@@ -1,16 +1,16 @@
 package com.chaosbuffalo.mknpc.capabilities;
 
-import net.minecraft.entity.player.PlayerEntity;
+import net.minecraft.world.entity.player.Player;
 import net.minecraftforge.common.capabilities.Capability;
 
-public class PlayerQuestingDataProvider extends NpcCapabilities.Provider<PlayerEntity, IPlayerQuestingData> {
+public class PlayerQuestingDataProvider extends NpcCapabilities.Provider<Player, IPlayerQuestingData> {
 
-    public PlayerQuestingDataProvider(PlayerEntity attached) {
+    public PlayerQuestingDataProvider(Player attached) {
         super(attached);
     }
 
     @Override
-    IPlayerQuestingData makeData(PlayerEntity attached) {
+    IPlayerQuestingData makeData(Player attached) {
         return new PlayerQuestingDataHandler(attached);
     }
 

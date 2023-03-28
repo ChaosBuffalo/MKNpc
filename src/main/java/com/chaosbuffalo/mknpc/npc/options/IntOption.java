@@ -3,7 +3,7 @@ package com.chaosbuffalo.mknpc.npc.options;
 import com.google.common.collect.ImmutableMap;
 import com.mojang.serialization.Dynamic;
 import com.mojang.serialization.DynamicOps;
-import net.minecraft.util.ResourceLocation;
+import net.minecraft.resources.ResourceLocation;
 
 
 public abstract class IntOption extends SimpleOption<Integer> {

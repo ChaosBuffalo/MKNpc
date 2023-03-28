@@ -1,17 +1,19 @@
 package com.chaosbuffalo.mknpc.entity.ai.goal;
 
-import net.minecraft.entity.CreatureEntity;
-import net.minecraft.entity.MobEntity;
-import net.minecraft.entity.ai.brain.Brain;
-import net.minecraft.entity.ai.brain.memory.MemoryModuleType;
-import net.minecraft.entity.ai.brain.memory.WalkTarget;
-import net.minecraft.entity.ai.goal.Goal;
-import net.minecraft.pathfinding.Path;
-import net.minecraft.util.math.BlockPos;
+import net.minecraft.world.entity.PathfinderMob;
+import net.minecraft.world.entity.Mob;
+import net.minecraft.world.entity.ai.Brain;
+import net.minecraft.world.entity.ai.memory.MemoryModuleType;
+import net.minecraft.world.entity.ai.memory.WalkTarget;
+import net.minecraft.world.entity.ai.goal.Goal;
+import net.minecraft.world.level.pathfinder.Path;
+import net.minecraft.core.BlockPos;
 
 import javax.annotation.Nullable;
 import java.util.EnumSet;
 import java.util.Optional;
+
+import net.minecraft.world.entity.ai.goal.Goal.Flag;
 
 public class MovementGoal extends Goal {
 
@@ -20,28 +22,28 @@ public class MovementGoal extends Goal {
     @Nullable
     private BlockPos blockPos;
     private float speed;
-    private final MobEntity entity;
+    private final Mob entity;
 
-    public MovementGoal(CreatureEntity creature) {
+    public MovementGoal(PathfinderMob creature) {
         this.entity = creature;
         speed = 1.0f;
-        setMutexFlags(EnumSet.of(Flag.MOVE));
+        setFlags(EnumSet.of(Flag.MOVE));
     }
 
 
     @Override
-    public boolean shouldExecute() {
+    public boolean canUse() {
         Brain<?> brain = entity.getBrain();
         Optional<WalkTarget> targetOpt = brain.getMemory(MemoryModuleType.WALK_TARGET);
         if (targetOpt.isPresent()) {
             WalkTarget walkTarget = targetOpt.get();
             if (!this.hasReachedTarget(walkTarget)) {
-                this.blockPos = walkTarget.getTarget().getBlockPos();
-                Path path = entity.getNavigator().getPathToPos(blockPos, 0);
-                this.speed = walkTarget.getSpeed();
+                this.blockPos = walkTarget.getTarget().currentBlockPosition();
+                Path path = entity.getNavigation().createPath(blockPos, 0);
+                this.speed = walkTarget.getSpeedModifier();
                 if (this.path != path) {
                     this.path = path;
-                    entity.getNavigator().setPath(path, speed);
+                    entity.getNavigation().moveTo(path, speed);
                     brain.setMemory(MemoryModuleType.PATH, path);
                 }
                 return true;
@@ -51,28 +53,28 @@ public class MovementGoal extends Goal {
     }
 
     @Override
-    public boolean shouldContinueExecuting() {
+    public boolean canContinueToUse() {
         Brain<?> brain = entity.getBrain();
         Optional<WalkTarget> targetOpt = brain.getMemory(MemoryModuleType.WALK_TARGET);
         if (targetOpt.isPresent()) {
             WalkTarget walkTarget = targetOpt.get();
-            if (this.entity.getNavigator().noPath()) {
+            if (this.entity.getNavigation().isDone()) {
                 return false;
             }
             if (hasReachedTarget(walkTarget)) {
                 return false;
             }
-            return this.blockPos == null || this.blockPos.equals(walkTarget.getTarget().getBlockPos());
+            return this.blockPos == null || this.blockPos.equals(walkTarget.getTarget().currentBlockPosition());
         }
         return false;
     }
 
     @Override
-    public void resetTask() {
-        super.resetTask();
-        entity.getNavigator().clearPath();
-        entity.getBrain().removeMemory(MemoryModuleType.WALK_TARGET);
-        entity.getBrain().removeMemory(MemoryModuleType.PATH);
+    public void stop() {
+        super.stop();
+        entity.getNavigation().stop();
+        entity.getBrain().eraseMemory(MemoryModuleType.WALK_TARGET);
+        entity.getBrain().eraseMemory(MemoryModuleType.PATH);
         this.path = null;
         this.blockPos = null;
     }
@@ -84,7 +86,7 @@ public class MovementGoal extends Goal {
 
 
     private boolean hasReachedTarget(WalkTarget target) {
-        return target.getTarget().getBlockPos().manhattanDistance(entity.getPosition()) <= target.getDistance();
+        return target.getTarget().currentBlockPosition().distManhattan(entity.blockPosition()) <= target.getCloseEnoughDist();
     }
 
 

@@ -3,9 +3,9 @@ package com.chaosbuffalo.mknpc.entity.ai.sensor;
 import com.chaosbuffalo.mknpc.entity.MKEntity;
 import com.chaosbuffalo.mknpc.entity.ai.memory.MKMemoryModuleTypes;
 import com.google.common.collect.ImmutableSet;
-import net.minecraft.entity.ai.brain.memory.MemoryModuleType;
-import net.minecraft.entity.ai.brain.sensor.Sensor;
-import net.minecraft.world.server.ServerWorld;
+import net.minecraft.world.entity.ai.memory.MemoryModuleType;
+import net.minecraft.world.entity.ai.sensing.Sensor;
+import net.minecraft.server.level.ServerLevel;
 
 import java.util.Set;
 
@@ -13,7 +13,7 @@ public class MovementStrategySensor extends Sensor<MKEntity> {
 
 
     @Override
-    protected void update(ServerWorld worldIn, MKEntity entityIn) {
+    protected void doTick(ServerLevel worldIn, MKEntity entityIn) {
         if ((entityIn.avoidsWater() && entityIn.isInWater()) || entityIn.getBrain().getMemory(MKMemoryModuleTypes.IS_RETURNING).orElse(false)) {
             return;
         }
@@ -27,7 +27,7 @@ public class MovementStrategySensor extends Sensor<MKEntity> {
     }
 
     @Override
-    public Set<MemoryModuleType<?>> getUsedMemories() {
+    public Set<MemoryModuleType<?>> requires() {
         return ImmutableSet.of(MKMemoryModuleTypes.THREAT_TARGET, MKMemoryModuleTypes.VISIBLE_ENEMIES,
                 MemoryModuleType.WALK_TARGET, MKMemoryModuleTypes.MOVEMENT_STRATEGY, MKMemoryModuleTypes.IS_RETURNING);
     }

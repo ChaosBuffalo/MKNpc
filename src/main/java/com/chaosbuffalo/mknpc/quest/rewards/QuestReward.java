@@ -7,11 +7,11 @@ import com.chaosbuffalo.mknpc.MKNpc;
 import com.google.common.collect.ImmutableMap;
 import com.mojang.serialization.Dynamic;
 import com.mojang.serialization.DynamicOps;
-import net.minecraft.entity.player.PlayerEntity;
-import net.minecraft.util.ResourceLocation;
-import net.minecraft.util.text.IFormattableTextComponent;
-import net.minecraft.util.text.ITextComponent;
-import net.minecraft.util.text.StringTextComponent;
+import net.minecraft.world.entity.player.Player;
+import net.minecraft.resources.ResourceLocation;
+import net.minecraft.network.chat.MutableComponent;
+import net.minecraft.network.chat.Component;
+import net.minecraft.network.chat.TextComponent;
 
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -20,17 +20,17 @@ import java.util.List;
 public abstract class QuestReward implements ISerializableAttributeContainer, IDynamicMapTypedSerializer {
     private static final String TYPE_NAME_FIELD = "rewardType";
     public final static ResourceLocation INVALID_OPTION = new ResourceLocation(MKNpc.MODID, "quest_reward.invalid");
-    protected static final IFormattableTextComponent defaultDescription = new StringTextComponent("Placeholder");
-    private IFormattableTextComponent description;
+    protected static final MutableComponent defaultDescription = new TextComponent("Placeholder");
+    private MutableComponent description;
     private final ResourceLocation typeName;
     private final List<ISerializableAttribute<?>> attributes = new ArrayList<>();
 
-    public QuestReward(ResourceLocation typeName, IFormattableTextComponent description) {
+    public QuestReward(ResourceLocation typeName, MutableComponent description) {
         this.description = description;
         this.typeName = typeName;
     }
 
-    public IFormattableTextComponent getDescription() {
+    public MutableComponent getDescription() {
         return description;
     }
 
@@ -70,7 +70,7 @@ public abstract class QuestReward implements ISerializableAttributeContainer, ID
     @Override
     public <D> void writeAdditionalData(DynamicOps<D> ops, ImmutableMap.Builder<D, D> builder) {
         if (hasPersistentDescription()) {
-            builder.put(ops.createString("description"), ops.createString(ITextComponent.Serializer.toJson(description)));
+            builder.put(ops.createString("description"), ops.createString(Component.Serializer.toJson(description)));
         }
         builder.put(ops.createString("attributes"), serializeAttributeMap(ops));
     }
@@ -79,12 +79,12 @@ public abstract class QuestReward implements ISerializableAttributeContainer, ID
         if (hasPersistentDescription()) {
             description = dynamic.get("description").asString()
                     .resultOrPartial(MKNpc.LOGGER::error)
-                    .map(ITextComponent.Serializer::getComponentFromJson)
+                    .map(Component.Serializer::fromJson)
                     .orElse(defaultDescription);
         }
 
         deserializeAttributeMap(dynamic, "attributes");
     }
 
-    public abstract void grantReward(PlayerEntity player);
+    public abstract void grantReward(Player player);
 }

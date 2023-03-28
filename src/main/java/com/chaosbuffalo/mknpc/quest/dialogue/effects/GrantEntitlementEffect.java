@@ -10,12 +10,12 @@ import com.chaosbuffalo.mknpc.MKNpc;
 import com.google.common.collect.ImmutableMap;
 import com.mojang.serialization.Dynamic;
 import com.mojang.serialization.DynamicOps;
-import net.minecraft.entity.LivingEntity;
-import net.minecraft.entity.player.ServerPlayerEntity;
-import net.minecraft.util.ResourceLocation;
-import net.minecraft.util.Util;
-import net.minecraft.util.text.TextFormatting;
-import net.minecraft.util.text.TranslationTextComponent;
+import net.minecraft.world.entity.LivingEntity;
+import net.minecraft.server.level.ServerPlayer;
+import net.minecraft.resources.ResourceLocation;
+import net.minecraft.Util;
+import net.minecraft.ChatFormatting;
+import net.minecraft.network.chat.TranslatableComponent;
 
 import java.util.UUID;
 
@@ -39,12 +39,12 @@ public class GrantEntitlementEffect extends DialogueEffect {
     }
 
     @Override
-    public void applyEffect(ServerPlayerEntity serverPlayerEntity, LivingEntity livingEntity, DialogueNode dialogueNode) {
+    public void applyEffect(ServerPlayer serverPlayerEntity, LivingEntity livingEntity, DialogueNode dialogueNode) {
         if (entitlement != null) {
             MKCore.getPlayer(serverPlayerEntity).ifPresent(x -> x.getEntitlements()
                     .addEntitlement(new EntitlementInstance(entitlement, UUID.randomUUID())));
-            serverPlayerEntity.sendMessage(new TranslationTextComponent("mknpc.grant_entitlement.message",
-                    entitlement.getDescription()).mergeStyle(TextFormatting.GOLD), Util.DUMMY_UUID);
+            serverPlayerEntity.sendMessage(new TranslatableComponent("mknpc.grant_entitlement.message",
+                    entitlement.getDescription()).withStyle(ChatFormatting.GOLD), Util.NIL_UUID);
         }
     }
 

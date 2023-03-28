@@ -1,7 +1,7 @@
 package com.chaosbuffalo.mknpc.client.render.models.styling;
 
 import com.chaosbuffalo.mknpc.MKNpc;
-import net.minecraft.util.ResourceLocation;
+import net.minecraft.resources.ResourceLocation;
 
 import javax.annotation.Nullable;
 import java.util.HashMap;

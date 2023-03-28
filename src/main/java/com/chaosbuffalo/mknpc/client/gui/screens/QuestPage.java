@@ -17,10 +17,10 @@ import com.chaosbuffalo.mkwidgets.client.gui.screens.MKScreen;
 import com.chaosbuffalo.mkwidgets.client.gui.widgets.MKRectangle;
 import com.chaosbuffalo.mkwidgets.client.gui.widgets.MKWidget;
 import com.chaosbuffalo.mkwidgets.utils.TextureRegion;
-import net.minecraft.util.ResourceLocation;
-import net.minecraft.util.text.ITextComponent;
-import net.minecraft.util.text.StringTextComponent;
-import net.minecraft.util.text.TranslationTextComponent;
+import net.minecraft.resources.ResourceLocation;
+import net.minecraft.network.chat.Component;
+import net.minecraft.network.chat.TextComponent;
+import net.minecraft.network.chat.TranslatableComponent;
 import net.minecraftforge.fml.InterModComms;
 
 
@@ -31,7 +31,7 @@ public class QuestPage extends PlayerPageBase {
     private PlayerQuestChainInstance currentQuest;
 
     public QuestPage(MKPlayerData playerData) {
-        super(playerData, new StringTextComponent("Quest Log"));
+        super(playerData, new TextComponent("Quest Log"));
     }
 
     @Override
@@ -117,8 +117,8 @@ public class QuestPage extends PlayerPageBase {
         }
 
         @Override
-        public ITextComponent getDisplayName() {
-            return new TranslationTextComponent("mknpc.gui.page.quests.name");
+        public Component getDisplayName() {
+            return new TranslatableComponent("mknpc.gui.page.quests.name");
         }
 
         @Override

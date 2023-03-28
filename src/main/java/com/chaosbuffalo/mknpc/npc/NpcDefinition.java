@@ -9,18 +9,17 @@ import com.chaosbuffalo.mknpc.npc.options.*;
 import com.google.common.collect.ImmutableMap;
 import com.mojang.serialization.Dynamic;
 import com.mojang.serialization.DynamicOps;
-import net.minecraft.entity.Entity;
-import net.minecraft.entity.EntityType;
-import net.minecraft.entity.LivingEntity;
-import net.minecraft.entity.ai.attributes.AttributeModifier;
-import net.minecraft.entity.ai.attributes.AttributeModifierManager;
-import net.minecraft.entity.ai.attributes.Attributes;
-import net.minecraft.entity.ai.attributes.ModifiableAttributeInstance;
-import net.minecraft.util.ResourceLocation;
-import net.minecraft.util.math.GlobalPos;
-import net.minecraft.util.math.vector.Vector3d;
-import net.minecraft.util.text.StringTextComponent;
-import net.minecraft.world.World;
+import net.minecraft.world.entity.Entity;
+import net.minecraft.world.entity.EntityType;
+import net.minecraft.world.entity.LivingEntity;
+import net.minecraft.world.entity.ai.attributes.AttributeModifier;
+import net.minecraft.world.entity.ai.attributes.AttributeMap;
+import net.minecraft.world.entity.ai.attributes.Attributes;
+import net.minecraft.world.entity.ai.attributes.AttributeInstance;
+import net.minecraft.resources.ResourceLocation;
+import net.minecraft.world.phys.Vec3;
+import net.minecraft.network.chat.TextComponent;
+import net.minecraft.world.level.Level;
 import net.minecraftforge.registries.ForgeRegistries;
 
 import javax.annotation.Nullable;
@@ -158,7 +157,7 @@ public class NpcDefinition {
         return entityType;
     }
 
-    public StringTextComponent getNameForEntity(World world, UUID spawnId){
+    public TextComponent getNameForEntity(Level world, UUID spawnId){
         for (NpcDefinitionOption option : options.values()){
             if (option instanceof INameProvider){
                 return ((INameProvider) option).getEntityName(this, world, spawnId);
@@ -167,7 +166,7 @@ public class NpcDefinition {
         if (hasParent()){
             return getParent().getNameForEntity(world, spawnId);
         } else {
-            return new StringTextComponent("Name Error");
+            return new TextComponent("Name Error");
         }
     }
 
@@ -185,10 +184,10 @@ public class NpcDefinition {
     private void applyDifficultyScaling(Entity entity, double difficultyValue) {
         if (entity instanceof LivingEntity) {
             double diffScale = difficultyValue / GameConstants.SKILL_POINTS_PER_LEVEL;
-            AttributeModifierManager manager =((LivingEntity) entity).getAttributeManager();
-            ModifiableAttributeInstance inst = manager.createInstanceIfAbsent(Attributes.MAX_HEALTH);
+            AttributeMap manager =((LivingEntity) entity).getAttributes();
+            AttributeInstance inst = manager.getInstance(Attributes.MAX_HEALTH);
             if (inst != null) {
-                inst.applyNonPersistentModifier(new AttributeModifier(
+                inst.addTransientModifier(new AttributeModifier(
                         HEALTH_SCALING_UUID, "Health Difficulty Scaling",
                         diffScale, AttributeModifier.Operation.MULTIPLY_TOTAL));
             }
@@ -208,7 +207,7 @@ public class NpcDefinition {
     }
 
     @Nullable
-    public Entity createEntity(World world, Vector3d pos, double difficultyValue){
+    public Entity createEntity(Level world, Vec3 pos, double difficultyValue){
         return createEntity(world, pos, UUID.randomUUID(), difficultyValue);
     }
 
@@ -260,14 +259,14 @@ public class NpcDefinition {
     }
 
     @Nullable
-    public Entity createEntity(World world, Vector3d pos, UUID uuid, double difficultyValue){
+    public Entity createEntity(Level world, Vec3 pos, UUID uuid, double difficultyValue){
         EntityType<?> type = ForgeRegistries.ENTITIES.getValue(getEntityType());
         if (type != null){
             Entity entity = type.create(world);
             if (entity == null){
                 return null;
             }
-            entity.setPosition(pos.getX(), pos.getY(), pos.getZ());
+            entity.setPos(pos.x(), pos.y(), pos.z());
             MKNpc.getNpcData(entity).ifPresent(cap -> {
                 cap.setDefinition(this);
                 cap.setSpawnID(uuid);

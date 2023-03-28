@@ -3,11 +3,11 @@ package com.chaosbuffalo.mknpc.spawn;
 import com.chaosbuffalo.mknpc.npc.NpcDefinitionClient;
 import com.chaosbuffalo.mknpc.npc.NpcDefinitionManager;
 import com.chaosbuffalo.mknpc.npc.NpcDefinition;
-import net.minecraft.nbt.CompoundNBT;
-import net.minecraft.util.ResourceLocation;
+import net.minecraft.nbt.CompoundTag;
+import net.minecraft.resources.ResourceLocation;
 import net.minecraftforge.common.util.INBTSerializable;
 
-public class SpawnOption implements INBTSerializable<CompoundNBT> {
+public class SpawnOption implements INBTSerializable<CompoundTag> {
     private double weight;
     private ResourceLocation definitionName;
 
@@ -41,15 +41,15 @@ public class SpawnOption implements INBTSerializable<CompoundNBT> {
     }
 
     @Override
-    public CompoundNBT serializeNBT() {
-        CompoundNBT tag = new CompoundNBT();
+    public CompoundTag serializeNBT() {
+        CompoundTag tag = new CompoundTag();
         tag.putString("definition", getDefinition().getDefinitionName().toString());
         tag.putDouble("weight", getWeight());
         return tag;
     }
 
     @Override
-    public void deserializeNBT(CompoundNBT nbt) {
+    public void deserializeNBT(CompoundTag nbt) {
         ResourceLocation definitionName = new ResourceLocation(nbt.getString("definition"));
         setDefinition(definitionName);
         setWeight(nbt.getDouble("weight"));

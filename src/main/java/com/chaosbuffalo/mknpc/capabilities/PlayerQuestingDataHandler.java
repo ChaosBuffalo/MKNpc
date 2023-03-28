@@ -13,16 +13,15 @@ import com.chaosbuffalo.mknpc.quest.Quest;
 import com.chaosbuffalo.mknpc.quest.QuestChainInstance;
 import com.chaosbuffalo.mknpc.quest.data.player.PlayerQuestChainInstance;
 import com.chaosbuffalo.mknpc.quest.data.player.PlayerQuestData;
-import net.minecraft.entity.player.PlayerEntity;
-import net.minecraft.nbt.CompoundNBT;
-import net.minecraft.nbt.INBT;
-import net.minecraft.nbt.ListNBT;
-import net.minecraft.util.ResourceLocation;
-import net.minecraft.util.SoundCategory;
-import net.minecraft.util.Util;
-import net.minecraft.util.text.TextFormatting;
-import net.minecraft.util.text.TranslationTextComponent;
-import net.minecraftforge.common.util.Constants;
+import net.minecraft.world.entity.player.Player;
+import net.minecraft.nbt.CompoundTag;
+import net.minecraft.nbt.Tag;
+import net.minecraft.nbt.ListTag;
+import net.minecraft.resources.ResourceLocation;
+import net.minecraft.sounds.SoundSource;
+import net.minecraft.Util;
+import net.minecraft.ChatFormatting;
+import net.minecraft.network.chat.TranslatableComponent;
 import net.minecraftforge.fml.InterModComms;
 
 import java.util.*;
@@ -35,17 +34,17 @@ public class PlayerQuestingDataHandler implements IPlayerQuestingData {
         COMPLETED
     }
 
-    private final PlayerEntity player;
+    private final Player player;
     private MKPlayerData playerData;
 
-    public PlayerQuestingDataHandler(PlayerEntity player) {
+    public PlayerQuestingDataHandler(Player player) {
         // Do not attempt to access any persona-specific data here because at this time
         // it's impossible to get a copy of MKPlayerData
         this.player = player;
     }
 
     @Override
-    public PlayerEntity getPlayer() {
+    public Player getPlayer() {
         return player;
     }
 
@@ -103,15 +102,15 @@ public class PlayerQuestingDataHandler implements IPlayerQuestingData {
     }
 
     @Override
-    public CompoundNBT serializeNBT() {
+    public CompoundTag serializeNBT() {
         // This would be where global data that is shared across personas would be persisted.
         // Currently there is none.
-        CompoundNBT tag = new CompoundNBT();
+        CompoundTag tag = new CompoundTag();
         return tag;
     }
 
     @Override
-    public void deserializeNBT(CompoundNBT nbt) {
+    public void deserializeNBT(CompoundTag nbt) {
     }
 
     public static class PersonaQuestData implements IPersonaExtension {
@@ -161,16 +160,16 @@ public class PlayerQuestingDataHandler implements IPlayerQuestingData {
             return QuestStatus.IN_PROGRESS;
         }
 
-        public void startQuest(PlayerEntity player, IWorldNpcData worldHandler, QuestChainInstance questChain){
+        public void startQuest(Player player, IWorldNpcData worldHandler, QuestChainInstance questChain){
             if (!questChain.getDefinition().isRepeatable() && completedQuests.contains(questChain.getQuestId())){
                 MKNpc.LOGGER.info("Can't start quest with definition {} for {} already completed {}",
                         questChain.getDefinition().getName(), persona.getPlayerData().getEntity(), questChain.getQuestId());
-                player.sendMessage(new TranslationTextComponent("mknpc.quest.cant_start_quest", questChain.getDefinition().getQuestName()).mergeStyle(TextFormatting.DARK_RED), Util.DUMMY_UUID);
+                player.sendMessage(new TranslatableComponent("mknpc.quest.cant_start_quest", questChain.getDefinition().getQuestName()).withStyle(ChatFormatting.DARK_RED), Util.NIL_UUID);
                 return;
             }
             if (!questChain.getDefinition().getRequirements().stream().allMatch(requirement ->
                     requirement.meetsRequirements(player))){
-                player.sendMessage(new TranslationTextComponent("mknpc.quest.cant_start_quest", questChain.getDefinition().getQuestName()).mergeStyle(TextFormatting.DARK_RED), Util.DUMMY_UUID);
+                player.sendMessage(new TranslatableComponent("mknpc.quest.cant_start_quest", questChain.getDefinition().getQuestName()).withStyle(ChatFormatting.DARK_RED), Util.NIL_UUID);
                 return;
             }
             PlayerQuestChainInstance quest = createNewEntry(questChain.getQuestId());
@@ -184,24 +183,24 @@ public class PlayerQuestingDataHandler implements IPlayerQuestingData {
                 questChainUpdater.markDirty(questChain.getQuestId());
             }
 
-            player.sendMessage(new TranslationTextComponent("mknpc.quest.start_quest", questChain.getDefinition().getQuestName()).mergeStyle(TextFormatting.GOLD), Util.DUMMY_UUID);
+            player.sendMessage(new TranslatableComponent("mknpc.quest.start_quest", questChain.getDefinition().getQuestName()).withStyle(ChatFormatting.GOLD), Util.NIL_UUID);
         }
 
         public void questProgression(IWorldNpcData worldHandler, QuestChainInstance questChainInstance){
             questChainUpdater.markDirty(questChainInstance.getQuestId());
         }
 
-        private void completeChain(PlayerQuestChainInstance chain, PlayerEntity player){
+        private void completeChain(PlayerQuestChainInstance chain, Player player){
             chain.setQuestComplete(true);
             completedQuests.add(chain.getQuestId());
-            player.sendMessage(new TranslationTextComponent("mknpc.quest.complete_chain", chain.getQuestName()).mergeStyle(TextFormatting.GOLD), Util.DUMMY_UUID);
+            player.sendMessage(new TranslatableComponent("mknpc.quest.complete_chain", chain.getQuestName()).withStyle(ChatFormatting.GOLD), Util.NIL_UUID);
         }
 
         public void advanceQuestChain(IWorldNpcData worldHandler, QuestChainInstance questChainInstance, Quest currentQuest, IPlayerQuestingData questingData){
             PlayerQuestChainInstance chain = questChains.get(questChainInstance.getQuestId());
             if (chain != null && currentQuest != null) {
                 currentQuest.grantRewards(questingData);
-                SoundUtils.serverPlaySoundAtEntity(questingData.getPlayer(), CoreSounds.quest_complete_sound, SoundCategory.PLAYERS);
+                SoundUtils.serverPlaySoundAtEntity(questingData.getPlayer(), CoreSounds.quest_complete_sound, SoundSource.PLAYERS);
                 switch (questChainInstance.getDefinition().getMode()) {
                     case LINEAR:
                         String currentQuestName = currentQuest.getQuestName();
@@ -263,9 +262,9 @@ public class PlayerQuestingDataHandler implements IPlayerQuestingData {
         }
 
         @Override
-        public CompoundNBT serialize() {
-            CompoundNBT tag = new CompoundNBT();
-            ListNBT chainsNbt = new ListNBT();
+        public CompoundTag serialize() {
+            CompoundTag tag = new CompoundTag();
+            ListTag chainsNbt = new ListTag();
             for (PlayerQuestChainInstance chain : questChains.values()){
                 chainsNbt.add(chain.serialize());
             }
@@ -274,10 +273,10 @@ public class PlayerQuestingDataHandler implements IPlayerQuestingData {
         }
 
         @Override
-        public void deserialize(CompoundNBT nbt) {
-            ListNBT chainsNbt = nbt.getList("chains", Constants.NBT.TAG_COMPOUND);
-            for (INBT chainNbt : chainsNbt){
-                PlayerQuestChainInstance newChain = new PlayerQuestChainInstance((CompoundNBT) chainNbt);
+        public void deserialize(CompoundTag nbt) {
+            ListTag chainsNbt = nbt.getList("chains", Tag.TAG_COMPOUND);
+            for (Tag chainNbt : chainsNbt){
+                PlayerQuestChainInstance newChain = new PlayerQuestChainInstance((CompoundTag) chainNbt);
                 newChain.setDirtyNotifier(this::onDirtyEntry);
                 questChains.put(newChain.getQuestId(), newChain);
                 if (newChain.isQuestComplete()){

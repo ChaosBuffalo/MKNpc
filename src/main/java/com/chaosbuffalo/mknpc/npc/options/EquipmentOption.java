@@ -10,15 +10,15 @@ import com.google.common.collect.ImmutableMap;
 import com.mojang.datafixers.util.Pair;
 import com.mojang.serialization.Dynamic;
 import com.mojang.serialization.DynamicOps;
-import net.minecraft.inventory.EquipmentSlotType;
-import net.minecraft.util.ResourceLocation;
+import net.minecraft.world.entity.EquipmentSlot;
+import net.minecraft.resources.ResourceLocation;
 
 import java.util.*;
 import java.util.stream.Collectors;
 
 public class EquipmentOption extends WorldPermanentOption {
     public static final ResourceLocation NAME = new ResourceLocation(MKNpc.MODID, "equipment");
-    private final Map<EquipmentSlotType, List<NpcItemChoice>> itemChoices;
+    private final Map<EquipmentSlot, List<NpcItemChoice>> itemChoices;
 
     public EquipmentOption() {
         super(NAME);
@@ -28,7 +28,7 @@ public class EquipmentOption extends WorldPermanentOption {
     @Override
     protected INpcOptionEntry makeOptionEntry(NpcDefinition definition, Random random) {
         EquipmentOptionEntry equipmentEntry = new EquipmentOptionEntry();
-        for (Map.Entry<EquipmentSlotType, List<NpcItemChoice>> entry : itemChoices.entrySet()) {
+        for (Map.Entry<EquipmentSlot, List<NpcItemChoice>> entry : itemChoices.entrySet()) {
             RandomCollection<NpcItemChoice> slotChoices = new RandomCollection<>();
             for (NpcItemChoice choice : entry.getValue()) {
                 slotChoices.add(choice.weight, choice);
@@ -38,7 +38,7 @@ public class EquipmentOption extends WorldPermanentOption {
         return equipmentEntry;
     }
 
-    public EquipmentOption addItemChoice(EquipmentSlotType slot, NpcItemChoice choice) {
+    public EquipmentOption addItemChoice(EquipmentSlot slot, NpcItemChoice choice) {
         if (!itemChoices.containsKey(slot)) {
             itemChoices.put(slot, new ArrayList<>());
         }
@@ -48,8 +48,8 @@ public class EquipmentOption extends WorldPermanentOption {
 
     @Override
     public <D> void readAdditionalData(Dynamic<D> dynamic) {
-        Map<EquipmentSlotType, List<NpcItemChoice>> newSlots = dynamic.get("slotOptions")
-                .asMap(keyD -> EquipmentSlotType.fromString(keyD.asString("error")),
+        Map<EquipmentSlot, List<NpcItemChoice>> newSlots = dynamic.get("slotOptions")
+                .asMap(keyD -> EquipmentSlot.byName(keyD.asString("error")),
                         valueD -> valueD.asList(valD -> {
                             NpcItemChoice newChoice = new NpcItemChoice();
                             newChoice.deserialize(valD);

@@ -3,11 +3,11 @@ package com.chaosbuffalo.mknpc.entity.ai.movement_strategy;
 
 import com.chaosbuffalo.mknpc.entity.MKEntity;
 import com.chaosbuffalo.mknpc.entity.ai.memory.MKMemoryModuleTypes;
-import net.minecraft.entity.LivingEntity;
-import net.minecraft.entity.ai.brain.Brain;
-import net.minecraft.entity.ai.brain.memory.MemoryModuleType;
-import net.minecraft.entity.ai.brain.memory.WalkTarget;
-import net.minecraft.world.server.ServerWorld;
+import net.minecraft.world.entity.LivingEntity;
+import net.minecraft.world.entity.ai.Brain;
+import net.minecraft.world.entity.ai.memory.MemoryModuleType;
+import net.minecraft.world.entity.ai.memory.WalkTarget;
+import net.minecraft.server.level.ServerLevel;
 
 import java.util.Optional;
 
@@ -22,16 +22,16 @@ public class FollowMovementStrategy extends MovementStrategy {
     }
 
     @Override
-    public void update(ServerWorld world, MKEntity entity) {
+    public void update(ServerLevel world, MKEntity entity) {
         Brain<?> brain = entity.getBrain();
         Optional<LivingEntity> targetOpt = brain.getMemory(MKMemoryModuleTypes.MOVEMENT_TARGET);
         if (targetOpt.isPresent()) {
             LivingEntity target = targetOpt.get();
-            if (target.isEntityEqual(entity)) {
-                brain.removeMemory(MemoryModuleType.WALK_TARGET);
+            if (target.is(entity)) {
+                brain.eraseMemory(MemoryModuleType.WALK_TARGET);
                 return;
             }
-            brain.setMemory(MemoryModuleType.WALK_TARGET, new WalkTarget(target.getPosition(),
+            brain.setMemory(MemoryModuleType.WALK_TARGET, new WalkTarget(target.blockPosition(),
                     movementScale, dist));
         }
     }

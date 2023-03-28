@@ -6,11 +6,11 @@ import com.chaosbuffalo.mknpc.npc.NpcDefinition;
 import com.google.common.collect.ImmutableMap;
 import com.mojang.serialization.Dynamic;
 import com.mojang.serialization.DynamicOps;
-import net.minecraft.entity.Entity;
-import net.minecraft.entity.LivingEntity;
-import net.minecraft.entity.ai.attributes.AttributeModifierManager;
-import net.minecraft.entity.ai.attributes.ModifiableAttributeInstance;
-import net.minecraft.util.ResourceLocation;
+import net.minecraft.world.entity.Entity;
+import net.minecraft.world.entity.LivingEntity;
+import net.minecraft.world.entity.ai.attributes.AttributeMap;
+import net.minecraft.world.entity.ai.attributes.AttributeInstance;
+import net.minecraft.resources.ResourceLocation;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -54,9 +54,9 @@ public class AttributesOption extends NpcDefinitionOption {
     @Override
     public void applyToEntity(NpcDefinition definition, Entity entity, double difficultyLevel) {
         if (entity instanceof LivingEntity) {
-            AttributeModifierManager manager = ((LivingEntity) entity).getAttributeManager();
+            AttributeMap manager = ((LivingEntity) entity).getAttributes();
             for (NpcAttributeEntry entry : attributes) {
-                ModifiableAttributeInstance instance = manager.createInstanceIfAbsent(entry.getAttribute());
+                AttributeInstance instance = manager.getInstance(entry.getAttribute());
                 if (instance != null) {
                     instance.setBaseValue(entry.getValue());
                 }

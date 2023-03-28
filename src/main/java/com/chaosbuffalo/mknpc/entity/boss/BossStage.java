@@ -11,11 +11,11 @@ import com.chaosbuffalo.mknpc.npc.options.NpcDefinitionOption;
 import com.google.common.collect.ImmutableMap;
 import com.mojang.serialization.Dynamic;
 import com.mojang.serialization.DynamicOps;
-import net.minecraft.nbt.INBT;
-import net.minecraft.nbt.NBTDynamicOps;
-import net.minecraft.util.ResourceLocation;
-import net.minecraft.util.SoundEvent;
-import net.minecraft.util.math.vector.Vector3d;
+import net.minecraft.nbt.Tag;
+import net.minecraft.nbt.NbtOps;
+import net.minecraft.resources.ResourceLocation;
+import net.minecraft.sounds.SoundEvent;
+import net.minecraft.world.phys.Vec3;
 import net.minecraftforge.registries.ForgeRegistries;
 
 import javax.annotation.Nullable;
@@ -85,8 +85,8 @@ public class BossStage {
 
     public BossStage copy(){
         BossStage newStage = new BossStage();
-        INBT nbt = serialize(NBTDynamicOps.INSTANCE);
-        newStage.deserialize(new Dynamic<>(NBTDynamicOps.INSTANCE, nbt));
+        Tag nbt = serialize(NbtOps.INSTANCE);
+        newStage.deserialize(new Dynamic<>(NbtOps.INSTANCE, nbt));
         return newStage;
     }
 
@@ -104,20 +104,20 @@ public class BossStage {
             MKParticleEffectSpawnPacket spawnPacket;
             switch (particleMode){
                 case LINE_HEIGHT:
-                    spawnPacket = new MKParticleEffectSpawnPacket(new Vector3d(0.0, 0.0, 0.0), transitionParticles, entity.getEntityId());
-                    spawnPacket.addLoc(new Vector3d(0.0, entity.getHeight() * 4.0, 0.0));
+                    spawnPacket = new MKParticleEffectSpawnPacket(new Vec3(0.0, 0.0, 0.0), transitionParticles, entity.getId());
+                    spawnPacket.addLoc(new Vec3(0.0, entity.getBbHeight() * 4.0, 0.0));
                     break;
                 case MIDDLE:
                 default:
-                    spawnPacket = new MKParticleEffectSpawnPacket(new Vector3d(0.0, entity.getHeight() * 0.5, 0.0),
-                            transitionParticles, entity.getEntityId());
+                    spawnPacket = new MKParticleEffectSpawnPacket(new Vec3(0.0, entity.getBbHeight() * 0.5, 0.0),
+                            transitionParticles, entity.getId());
                     break;
             }
             PacketHandler.sendToTrackingAndSelf(spawnPacket, entity);
             if (transitionSound != null){
                 SoundEvent event = ForgeRegistries.SOUND_EVENTS.getValue(transitionSound);
                 if (event != null){
-                    SoundUtils.serverPlaySoundAtEntity(entity, event, entity.getSoundCategory());
+                    SoundUtils.serverPlaySoundAtEntity(entity, event, entity.getSoundSource());
                 }
             }
         }

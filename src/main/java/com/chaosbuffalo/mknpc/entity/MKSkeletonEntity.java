@@ -1,61 +1,58 @@
 package com.chaosbuffalo.mknpc.entity;
 
 import com.chaosbuffalo.mkcore.core.MKAttributes;
-import com.chaosbuffalo.mknpc.entity.attributes.NpcAttributes;
-import net.minecraft.entity.CreatureAttribute;
-import net.minecraft.entity.EntityType;
-import net.minecraft.entity.ai.attributes.AttributeModifierMap;
-import net.minecraft.entity.ai.attributes.Attributes;
-import net.minecraft.entity.monster.MonsterEntity;
-import net.minecraft.util.DamageSource;
-import net.minecraft.util.SoundEvent;
-import net.minecraft.util.SoundEvents;
-import net.minecraft.world.World;
+import net.minecraft.world.entity.MobType;
+import net.minecraft.world.entity.EntityType;
+import net.minecraft.world.entity.ai.attributes.AttributeSupplier;
+import net.minecraft.world.damagesource.DamageSource;
+import net.minecraft.sounds.SoundEvent;
+import net.minecraft.sounds.SoundEvents;
+import net.minecraft.world.level.Level;
 
 public class MKSkeletonEntity extends MKEntity  {
     public static final String DEFAULT = "default";
 
-    public MKSkeletonEntity(EntityType<? extends MKSkeletonEntity> type, World worldIn) {
+    public MKSkeletonEntity(EntityType<? extends MKSkeletonEntity> type, Level worldIn) {
         super(type, worldIn);
         setCurrentModelLook(DEFAULT);
     }
 
-    public static AttributeModifierMap.MutableAttribute registerAttributes(double attackDamage, double movementSpeed) {
+    public static AttributeSupplier.Builder registerAttributes(double attackDamage, double movementSpeed) {
         return MKEntity.registerAttributes(attackDamage, movementSpeed)
-                .createMutableAttribute(MKAttributes.SHADOW_RESISTANCE, 0.25)
-                .createMutableAttribute(MKAttributes.HOLY_RESISTANCE, -0.25);
+                .add(MKAttributes.SHADOW_RESISTANCE, 0.25)
+                .add(MKAttributes.HOLY_RESISTANCE, -0.25);
     }
 
 
     @Override
     protected SoundEvent getAmbientSound() {
-        return SoundEvents.ENTITY_SKELETON_AMBIENT;
+        return SoundEvents.SKELETON_AMBIENT;
     }
 
     @Override
     protected SoundEvent getHurtSound(DamageSource damageSourceIn) {
-        return SoundEvents.ENTITY_SKELETON_HURT;
+        return SoundEvents.SKELETON_HURT;
     }
 
     @Override
     protected SoundEvent getDeathSound() {
-        return SoundEvents.ENTITY_SKELETON_DEATH;
+        return SoundEvents.SKELETON_DEATH;
     }
 
 
     @Override
     protected SoundEvent getStepSound() {
-        return SoundEvents.ENTITY_SKELETON_STEP;
+        return SoundEvents.SKELETON_STEP;
     }
 
     @Override
     protected SoundEvent getShootSound() {
-        return SoundEvents.ENTITY_SKELETON_SHOOT;
+        return SoundEvents.SKELETON_SHOOT;
     }
 
     @Override
-    public CreatureAttribute getCreatureAttribute() {
-        return CreatureAttribute.UNDEAD;
+    public MobType getMobType() {
+        return MobType.UNDEAD;
     }
 
 }

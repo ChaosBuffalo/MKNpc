@@ -11,9 +11,9 @@ import com.chaosbuffalo.mkwidgets.client.gui.layouts.MKLayout;
 import com.chaosbuffalo.mkwidgets.client.gui.layouts.MKStackLayoutVertical;
 import com.chaosbuffalo.mkwidgets.client.gui.widgets.MKRectangle;
 import com.chaosbuffalo.mkwidgets.client.gui.widgets.MKText;
-import net.minecraft.client.gui.FontRenderer;
-import net.minecraft.util.text.TextFormatting;
-import net.minecraft.util.text.TranslationTextComponent;
+import net.minecraft.client.gui.Font;
+import net.minecraft.ChatFormatting;
+import net.minecraft.network.chat.TranslatableComponent;
 
 import java.util.ArrayList;
 import java.util.Collections;
@@ -24,12 +24,12 @@ import java.util.Map;
 public class QuestPanel extends MKLayout {
     private final IPlayerQuestingData playerData;
     private PlayerQuestChainInstance currentChain;
-    private final FontRenderer fontRenderer;
+    private final Font fontRenderer;
     private final int originalWidth;
     private final int oringalHeight;
 
     public QuestPanel(int x, int y, int width, int height,
-                      IPlayerQuestingData data, FontRenderer fontRenderer) {
+                      IPlayerQuestingData data, Font fontRenderer) {
         super(x, y, width, height);
         this.playerData = data;
         this.currentChain = null;
@@ -47,7 +47,7 @@ public class QuestPanel extends MKLayout {
     public void setup() {
         if (currentChain == null) {
             MKText noSelectPrompt = new MKText(fontRenderer,
-                    new TranslationTextComponent("mknpc.gui.select_quest"));
+                    new TranslatableComponent("mknpc.gui.select_quest"));
             addConstraintToWidget(MarginConstraint.TOP, noSelectPrompt);
             addConstraintToWidget(MarginConstraint.LEFT, noSelectPrompt);
             noSelectPrompt.setColor(0xffffffff);
@@ -75,13 +75,13 @@ public class QuestPanel extends MKLayout {
                 quest_desc.setMultiline(true);
                 quest_desc.setWidth(getWidth() - 10);
                 questLayout.addWidget(quest_desc);
-                MKText objectiveName = new MKText(fontRenderer, new TranslationTextComponent("mknpc.gui.objectives.name").mergeStyle(TextFormatting.BOLD));
+                MKText objectiveName = new MKText(fontRenderer, new TranslatableComponent("mknpc.gui.objectives.name").withStyle(ChatFormatting.BOLD));
                 objectiveName.setColor(!current.isComplete() ? 0xffffffff : 0x99ffffff);
                 questLayout.addWidget(objectiveName);
                 for (PlayerQuestObjectiveData obj : current.getObjectives()){
                     obj.getDescription().forEach(desc -> {
                         MKText obj_desc = new MKText(fontRenderer, obj.isComplete() ?
-                                desc.deepCopy().mergeStyle(TextFormatting.STRIKETHROUGH) : desc);
+                                desc.copy().withStyle(ChatFormatting.STRIKETHROUGH) : desc);
                         obj_desc.setMultiline(true);
                         obj_desc.setColor(isComplete ? 0x99ffffff : 0xffffffff);
                         obj_desc.setWidth(getWidth() - 30);
@@ -92,12 +92,12 @@ public class QuestPanel extends MKLayout {
                 }
                 List<PlayerQuestReward> rewards = current.getQuestRewards();
                 if (rewards.size() >0 ){
-                    MKText rewardName = new MKText(fontRenderer, new TranslationTextComponent("mknpc.gui.rewards.name").mergeStyle(TextFormatting.BOLD));
+                    MKText rewardName = new MKText(fontRenderer, new TranslatableComponent("mknpc.gui.rewards.name").withStyle(ChatFormatting.BOLD));
                     rewardName.setColor(!isComplete ? 0xffffffff : 0x99ffffff);
                     questLayout.addWidget(rewardName);
                     for (PlayerQuestReward reward : rewards){
                         MKText reward_desc = new MKText(fontRenderer, !isComplete ? reward.getDescription() :
-                                reward.getDescription().deepCopy().mergeStyle(TextFormatting.STRIKETHROUGH));
+                                reward.getDescription().copy().withStyle(ChatFormatting.STRIKETHROUGH));
                         reward_desc.setMultiline(true);
                         reward_desc.setColor(!isComplete ? 0xffffffff : 0x99ffffff);
                         reward_desc.setWidth(getWidth() - 30);

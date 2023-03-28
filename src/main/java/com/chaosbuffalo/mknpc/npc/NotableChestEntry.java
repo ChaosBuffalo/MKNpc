@@ -2,18 +2,17 @@ package com.chaosbuffalo.mknpc.npc;
 
 import com.chaosbuffalo.mknpc.MKNpc;
 import com.chaosbuffalo.mknpc.capabilities.IChestNpcData;
-import net.minecraft.nbt.CompoundNBT;
-import net.minecraft.nbt.NBTDynamicOps;
-import net.minecraft.nbt.NBTUtil;
-import net.minecraft.util.math.BlockPos;
-import net.minecraft.util.math.GlobalPos;
-import net.minecraft.world.World;
+import net.minecraft.nbt.CompoundTag;
+import net.minecraft.nbt.NbtOps;
+import net.minecraft.nbt.NbtUtils;
+import net.minecraft.core.GlobalPos;
+import net.minecraft.world.level.Level;
 import net.minecraftforge.common.util.INBTSerializable;
 
 import javax.annotation.Nullable;
 import java.util.UUID;
 
-public class NotableChestEntry implements INBTSerializable<CompoundNBT> {
+public class NotableChestEntry implements INBTSerializable<CompoundTag> {
 
     private GlobalPos location;
     @Nullable
@@ -22,7 +21,7 @@ public class NotableChestEntry implements INBTSerializable<CompoundNBT> {
     private UUID chestId;
 
     public NotableChestEntry(IChestNpcData data) {
-        this.location = data.getBlockPos();
+        this.location = data.getGlobalBlockPos();
         this.label = data.getChestLabel();
         this.structureId = data.getStructureId();
         this.chestId = data.getChestId();
@@ -46,12 +45,12 @@ public class NotableChestEntry implements INBTSerializable<CompoundNBT> {
     }
 
     @Override
-    public CompoundNBT serializeNBT() {
-        CompoundNBT tag = new CompoundNBT();
-        tag.put("location", GlobalPos.CODEC.encodeStart(NBTDynamicOps.INSTANCE, getLocation())
+    public CompoundTag serializeNBT() {
+        CompoundTag tag = new CompoundTag();
+        tag.put("location", GlobalPos.CODEC.encodeStart(NbtOps.INSTANCE, getLocation())
                 .getOrThrow(false, MKNpc.LOGGER::error));
-        tag.putUniqueId("chestId", chestId);
-        tag.putUniqueId("structureId", structureId);
+        tag.putUUID("chestId", chestId);
+        tag.putUUID("structureId", structureId);
         if (label != null) {
             tag.putString("label", label);
         }
@@ -59,11 +58,11 @@ public class NotableChestEntry implements INBTSerializable<CompoundNBT> {
     }
 
     @Override
-    public void deserializeNBT(CompoundNBT nbt) {
-        location = GlobalPos.CODEC.parse(NBTDynamicOps.INSTANCE, nbt.getCompound("location"))
-                .result().orElse(GlobalPos.getPosition(World.OVERWORLD, NBTUtil.readBlockPos(nbt.getCompound("location"))));
-        chestId = nbt.getUniqueId("chestId");
-        structureId = nbt.getUniqueId("structureId");
+    public void deserializeNBT(CompoundTag nbt) {
+        location = GlobalPos.CODEC.parse(NbtOps.INSTANCE, nbt.getCompound("location"))
+                .result().orElse(GlobalPos.of(Level.OVERWORLD, NbtUtils.readBlockPos(nbt.getCompound("location"))));
+        chestId = nbt.getUUID("chestId");
+        structureId = nbt.getUUID("structureId");
         if (nbt.contains("label")){
             label = nbt.getString("label");
         }

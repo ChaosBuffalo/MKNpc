@@ -11,9 +11,9 @@ import com.chaosbuffalo.mknpc.npc.option_entries.INpcOptionEntry;
 import com.google.common.collect.ImmutableMap;
 import com.mojang.serialization.Dynamic;
 import com.mojang.serialization.DynamicOps;
-import net.minecraft.util.ResourceLocation;
-import net.minecraft.util.text.StringTextComponent;
-import net.minecraft.world.World;
+import net.minecraft.resources.ResourceLocation;
+import net.minecraft.network.chat.TextComponent;
+import net.minecraft.world.level.Level;
 
 import javax.annotation.Nullable;
 import java.util.*;
@@ -43,7 +43,7 @@ public class FactionNameOption extends WorldPermanentOption implements INameProv
 
     @Override
     @Nullable
-    public StringTextComponent getEntityName(NpcDefinition definition, World world, UUID spawnId) {
+    public TextComponent getEntityName(NpcDefinition definition, Level world, UUID spawnId) {
         return world.getCapability(NpcCapabilities.WORLD_NPC_DATA_CAPABILITY).map(
                 cap -> {
                     if (!cap.hasEntityOptionEntry(definition, this, spawnId)) {
@@ -53,9 +53,9 @@ public class FactionNameOption extends WorldPermanentOption implements INameProv
                     if (entry instanceof INameEntry) {
                         return ((INameEntry) entry).getName();
                     } else {
-                        return new StringTextComponent("Name Error");
+                        return new TextComponent("Name Error");
                     }
-                }).orElse(new StringTextComponent("Name Error"));
+                }).orElse(new TextComponent("Name Error"));
     }
 
     @Nullable

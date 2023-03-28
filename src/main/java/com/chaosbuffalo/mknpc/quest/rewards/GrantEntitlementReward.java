@@ -7,12 +7,12 @@ import com.chaosbuffalo.mkcore.core.entitlements.MKEntitlement;
 import com.chaosbuffalo.mkcore.serialization.attributes.RegistryEntryAttribute;
 import com.chaosbuffalo.mknpc.MKNpc;
 import com.mojang.serialization.Dynamic;
-import net.minecraft.entity.player.PlayerEntity;
-import net.minecraft.util.ResourceLocation;
-import net.minecraft.util.Util;
-import net.minecraft.util.text.IFormattableTextComponent;
-import net.minecraft.util.text.TextFormatting;
-import net.minecraft.util.text.TranslationTextComponent;
+import net.minecraft.world.entity.player.Player;
+import net.minecraft.resources.ResourceLocation;
+import net.minecraft.Util;
+import net.minecraft.network.chat.MutableComponent;
+import net.minecraft.ChatFormatting;
+import net.minecraft.network.chat.TranslatableComponent;
 
 import java.util.Locale;
 import java.util.NoSuchElementException;
@@ -36,8 +36,8 @@ public class GrantEntitlementReward extends QuestReward {
     }
 
     @Override
-    public IFormattableTextComponent getDescription() {
-        return new TranslationTextComponent("mknpc.quest_reward.entitlement.message", entitlement.getDescription());
+    public MutableComponent getDescription() {
+        return new TranslatableComponent("mknpc.quest_reward.entitlement.message", entitlement.getDescription());
     }
 
     @Override
@@ -54,12 +54,12 @@ public class GrantEntitlementReward extends QuestReward {
     }
 
     @Override
-    public void grantReward(PlayerEntity player) {
+    public void grantReward(Player player) {
         if (entitlement != null) {
             MKCore.getPlayer(player).ifPresent(x -> x.getEntitlements()
                     .addEntitlement(new EntitlementInstance(entitlement, UUID.randomUUID())));
-            player.sendMessage(new TranslationTextComponent("mknpc.grant_entitlement.message",
-                    entitlement.getDescription()).mergeStyle(TextFormatting.GOLD), Util.DUMMY_UUID);
+            player.sendMessage(new TranslatableComponent("mknpc.grant_entitlement.message",
+                    entitlement.getDescription()).withStyle(ChatFormatting.GOLD), Util.NIL_UUID);
         }
     }
 }

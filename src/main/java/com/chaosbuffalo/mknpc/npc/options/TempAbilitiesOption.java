@@ -11,9 +11,9 @@ import com.chaosbuffalo.mknpc.npc.NpcDefinition;
 import com.google.common.collect.ImmutableMap;
 import com.mojang.serialization.Dynamic;
 import com.mojang.serialization.DynamicOps;
-import net.minecraft.entity.Entity;
-import net.minecraft.entity.LivingEntity;
-import net.minecraft.util.ResourceLocation;
+import net.minecraft.world.entity.Entity;
+import net.minecraft.world.entity.LivingEntity;
+import net.minecraft.resources.ResourceLocation;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -55,7 +55,7 @@ public class TempAbilitiesOption extends NpcDefinitionOption {
                 }
                 for (NpcAbilityEntry entry : abilities) {
                     MKAbility ability = MKCoreRegistry.getAbility(entry.getAbilityName());
-                    if (ability != null && ((LivingEntity) entity).getRNG().nextDouble() <= entry.getChance()) {
+                    if (ability != null && ((LivingEntity) entity).getRandom().nextDouble() <= entry.getChance()) {
                         cap.getKnowledge().learnAbility(ability, entry.getPriority());
                     }
                 }

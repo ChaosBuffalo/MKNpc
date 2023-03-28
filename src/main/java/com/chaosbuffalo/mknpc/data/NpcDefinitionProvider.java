@@ -16,19 +16,19 @@ import com.google.gson.GsonBuilder;
 import com.google.gson.JsonElement;
 import com.mojang.serialization.JsonOps;
 import net.minecraft.data.DataGenerator;
-import net.minecraft.data.DirectoryCache;
-import net.minecraft.data.IDataProvider;
-import net.minecraft.entity.ai.attributes.Attributes;
-import net.minecraft.inventory.EquipmentSlotType;
-import net.minecraft.item.ItemStack;
-import net.minecraft.util.ResourceLocation;
+import net.minecraft.data.HashCache;
+import net.minecraft.data.DataProvider;
+import net.minecraft.world.entity.ai.attributes.Attributes;
+import net.minecraft.world.entity.EquipmentSlot;
+import net.minecraft.world.item.ItemStack;
+import net.minecraft.resources.ResourceLocation;
 import net.minecraftforge.registries.ForgeRegistries;
 
 import javax.annotation.Nonnull;
 import java.io.IOException;
 import java.nio.file.Path;
 
-public class NpcDefinitionProvider implements IDataProvider {
+public class NpcDefinitionProvider implements DataProvider {
     private static final Gson GSON = new GsonBuilder().setPrettyPrinting().disableHtmlEscaping().create();
     private final DataGenerator generator;
 
@@ -37,7 +37,7 @@ public class NpcDefinitionProvider implements IDataProvider {
     }
 
     @Override
-    public void act(@Nonnull DirectoryCache cache) {
+    public void run(@Nonnull HashCache cache) {
 //        writeDefinition(generateTestLady(), cache);
 //        writeDefinition(generateTestLady2(), cache);
         writeDefinition(generateTestSkeleton(), cache);
@@ -61,9 +61,9 @@ public class NpcDefinitionProvider implements IDataProvider {
         def.addOption(new FactionOption().setValue(Factions.VILLAGER_FACTION_NAME));
         def.addOption(new DialogueOption().setValue(new ResourceLocation(MKChat.MODID, "test")));
         def.addOption(new EquipmentOption()
-                .addItemChoice(EquipmentSlotType.MAINHAND, new NpcItemChoice(new ItemStack(ForgeRegistries.ITEMS.getValue(
+                .addItemChoice(EquipmentSlot.MAINHAND, new NpcItemChoice(new ItemStack(ForgeRegistries.ITEMS.getValue(
                         new ResourceLocation(MKWeapons.MODID, "katana_iron"))), 5, 1.1f)
-                ).addItemChoice(EquipmentSlotType.MAINHAND, new NpcItemChoice(new ItemStack(ForgeRegistries.ITEMS.getValue(
+                ).addItemChoice(EquipmentSlot.MAINHAND, new NpcItemChoice(new ItemStack(ForgeRegistries.ITEMS.getValue(
                         new ResourceLocation(MKWeapons.MODID, "dagger_iron"))), 10, 1.1f))
         );
         return def;
@@ -78,13 +78,13 @@ public class NpcDefinitionProvider implements IDataProvider {
         return def;
     }
 
-    public void writeDefinition(NpcDefinition definition, @Nonnull DirectoryCache cache){
+    public void writeDefinition(NpcDefinition definition, @Nonnull HashCache cache){
         Path outputFolder = this.generator.getOutputFolder();
         ResourceLocation key = definition.getDefinitionName();
         Path path = outputFolder.resolve("data/" + key.getNamespace() + "/mknpcs/" + key.getPath() + ".json");
         try {
             JsonElement element = definition.serialize(JsonOps.INSTANCE);
-            IDataProvider.save(GSON, cache, element, path);
+            DataProvider.save(GSON, cache, element, path);
         } catch (IOException e){
             MKNpc.LOGGER.error("Couldn't write npc definition {}", path, e);
         }

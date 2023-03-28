@@ -16,15 +16,15 @@ import com.chaosbuffalo.mknpc.world.gen.feature.structure.events.requirements.St
 import com.google.common.collect.ImmutableMap;
 import com.mojang.serialization.Dynamic;
 import com.mojang.serialization.DynamicOps;
-import net.minecraft.command.arguments.EntityAnchorArgument;
-import net.minecraft.entity.Entity;
-import net.minecraft.entity.MobEntity;
-import net.minecraft.entity.SpawnReason;
-import net.minecraft.util.ResourceLocation;
-import net.minecraft.util.math.BlockPos;
-import net.minecraft.util.math.vector.Vector3d;
-import net.minecraft.world.IServerWorld;
-import net.minecraft.world.World;
+import net.minecraft.commands.arguments.EntityAnchorArgument;
+import net.minecraft.world.entity.Entity;
+import net.minecraft.world.entity.Mob;
+import net.minecraft.world.entity.MobSpawnType;
+import net.minecraft.resources.ResourceLocation;
+import net.minecraft.core.BlockPos;
+import net.minecraft.world.phys.Vec3;
+import net.minecraft.world.level.ServerLevelAccessor;
+import net.minecraft.world.level.Level;
 
 import java.util.UUID;
 
@@ -73,23 +73,23 @@ public class SpawnNpcDefinitionEvent extends StructureEvent {
     }
 
     @Override
-    public void execute(MKStructureEntry entry, WorldStructureManager.ActiveStructure activeStructure, World world) {
+    public void execute(MKStructureEntry entry, WorldStructureManager.ActiveStructure activeStructure, Level world) {
         NpcDefinition def = NpcDefinitionManager.getDefinition(npcDefinition.getValue());
         if (def != null) {
             entry.getFirstPoiWithTag(poiTag.getValue()).ifPresent(x -> {
                 UUID npcId = entry.getCustomData().computeUUID(getEventName());
-                Vector3d pos = Vector3d.copyCenteredHorizontally(x.getLocation().getPos());
+                Vec3 pos = Vec3.atBottomCenterOf(x.getLocation().pos());
                 double difficultyValue = WorldUtils.getDifficultyForGlobalPos(x.getLocation());
                 Entity entity = def.createEntity(world, pos, npcId, difficultyValue);
                 if (entity != null){
                     entry.getFirstPoiWithTag(faceTag.getValue()).ifPresent( face -> {
-                        entity.lookAt(EntityAnchorArgument.Type.EYES, Vector3d.copyCentered(face.getLocation().getPos()));
+                        entity.lookAt(EntityAnchorArgument.Anchor.EYES, Vec3.atCenterOf(face.getLocation().pos()));
                     });
-                    world.addEntity(entity);
+                    world.addFreshEntity(entity);
                     final double finDiff = difficultyValue;
                     MKNpc.getNpcData(entity).ifPresent((cap) -> {
                         cap.setMKSpawned(true);
-                        cap.setSpawnPos(new BlockPos(pos).up());
+                        cap.setSpawnPos(new BlockPos(pos).above());
                         cap.setNotableUUID(npcId);
                         cap.setStructureId(entry.getStructureId());
                         cap.setDifficultyValue(finDiff);
@@ -97,9 +97,9 @@ public class SpawnNpcDefinitionEvent extends StructureEvent {
                     if (entity instanceof MKEntity){
                         ((MKEntity) entity).setNonCombatMoveType(moveType);
                     }
-                    if (entity instanceof MobEntity && world instanceof IServerWorld){
-                        ((MobEntity) entity).onInitialSpawn((IServerWorld) world, world.getDifficultyForLocation(
-                                entity.getPosition()), SpawnReason.SPAWNER, null, null);
+                    if (entity instanceof Mob && world instanceof ServerLevelAccessor){
+                        ((Mob) entity).finalizeSpawn((ServerLevelAccessor) world, world.getCurrentDifficultyAt(
+                                entity.blockPosition()), MobSpawnType.SPAWNER, null, null);
                     }
 
                 }

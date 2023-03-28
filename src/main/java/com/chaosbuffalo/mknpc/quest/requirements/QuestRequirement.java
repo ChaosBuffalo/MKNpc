@@ -8,8 +8,8 @@ import com.chaosbuffalo.mknpc.MKNpc;
 import com.google.common.collect.ImmutableMap;
 import com.mojang.serialization.Dynamic;
 import com.mojang.serialization.DynamicOps;
-import net.minecraft.entity.player.PlayerEntity;
-import net.minecraft.util.ResourceLocation;
+import net.minecraft.world.entity.player.Player;
+import net.minecraft.resources.ResourceLocation;
 
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -64,7 +64,7 @@ public abstract class QuestRequirement implements ISerializableAttributeContaine
         return TYPE_ENTRY_NAME;
     }
 
-    public abstract boolean meetsRequirements(PlayerEntity player);
+    public abstract boolean meetsRequirements(Player player);
 
     public abstract DialogueCondition getDialogueCondition();
 

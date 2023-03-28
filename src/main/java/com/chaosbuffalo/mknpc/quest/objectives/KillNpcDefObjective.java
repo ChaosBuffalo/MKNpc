@@ -11,12 +11,12 @@ import com.chaosbuffalo.mknpc.quest.data.QuestData;
 import com.chaosbuffalo.mknpc.quest.data.objective.EmptyInstanceData;
 import com.chaosbuffalo.mknpc.quest.data.player.PlayerQuestChainInstance;
 import com.chaosbuffalo.mknpc.quest.data.player.PlayerQuestObjectiveData;
-import net.minecraft.entity.player.PlayerEntity;
-import net.minecraft.util.ResourceLocation;
-import net.minecraft.util.Util;
-import net.minecraft.util.text.IFormattableTextComponent;
-import net.minecraft.util.text.TextFormatting;
-import net.minecraft.util.text.TranslationTextComponent;
+import net.minecraft.world.entity.player.Player;
+import net.minecraft.resources.ResourceLocation;
+import net.minecraft.Util;
+import net.minecraft.network.chat.MutableComponent;
+import net.minecraft.ChatFormatting;
+import net.minecraft.network.chat.TranslatableComponent;
 import net.minecraftforge.event.entity.living.LivingDeathEvent;
 
 import java.util.*;
@@ -54,13 +54,13 @@ public class KillNpcDefObjective extends QuestObjective<EmptyInstanceData> imple
     }
 
     @Override
-    public List<IFormattableTextComponent> getDescription() {
+    public List<MutableComponent> getDescription() {
         return Collections.singletonList(getDescriptionWithKillCount(0));
     }
 
-    private IFormattableTextComponent getDescriptionWithKillCount(int count){
+    private MutableComponent getDescriptionWithKillCount(int count){
         NpcDefinition def = NpcDefinitionManager.getDefinition(npcDefinition.getValue());
-        return new TranslationTextComponent("mknpc.objective.kill_npc_def.desc", def.getDisplayName(),
+        return new TranslatableComponent("mknpc.objective.kill_npc_def.desc", def.getDisplayName(),
                 count, this.count.value());
     }
 
@@ -72,14 +72,14 @@ public class KillNpcDefObjective extends QuestObjective<EmptyInstanceData> imple
     }
 
     @Override
-    public boolean onPlayerKillNpcDefEntity(PlayerEntity player, PlayerQuestObjectiveData objectiveData, NpcDefinition def,
+    public boolean onPlayerKillNpcDefEntity(Player player, PlayerQuestObjectiveData objectiveData, NpcDefinition def,
                                          LivingDeathEvent event, QuestData questData, PlayerQuestChainInstance playerChain) {
         if (def.getDefinitionName().equals(npcDefinition.getValue()) && !isComplete(objectiveData)){
             int currentCount = objectiveData.getInt("killCount");
             currentCount++;
             objectiveData.putInt("killCount", currentCount);
             objectiveData.setDescription(getDescriptionWithKillCount(currentCount));
-            player.sendMessage(getDescriptionWithKillCount(currentCount).mergeStyle(TextFormatting.GOLD), Util.DUMMY_UUID);
+            player.sendMessage(getDescriptionWithKillCount(currentCount).withStyle(ChatFormatting.GOLD), Util.NIL_UUID);
             if (currentCount == count.value()){
                 signalCompleted(objectiveData);
             }

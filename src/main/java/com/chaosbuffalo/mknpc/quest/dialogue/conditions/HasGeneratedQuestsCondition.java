@@ -4,9 +4,9 @@ import com.chaosbuffalo.mkchat.dialogue.conditions.DialogueCondition;
 import com.chaosbuffalo.mknpc.MKNpc;
 import com.chaosbuffalo.mknpc.capabilities.IEntityNpcData;
 import com.chaosbuffalo.mknpc.capabilities.NpcCapabilities;
-import net.minecraft.entity.LivingEntity;
-import net.minecraft.entity.player.ServerPlayerEntity;
-import net.minecraft.util.ResourceLocation;
+import net.minecraft.world.entity.LivingEntity;
+import net.minecraft.server.level.ServerPlayer;
+import net.minecraft.resources.ResourceLocation;
 
 public class HasGeneratedQuestsCondition extends DialogueCondition {
 
@@ -18,7 +18,7 @@ public class HasGeneratedQuestsCondition extends DialogueCondition {
 
 
     @Override
-    public boolean meetsCondition(ServerPlayerEntity player, LivingEntity source) {
+    public boolean meetsCondition(ServerPlayer player, LivingEntity source) {
         return source.getCapability(NpcCapabilities.ENTITY_NPC_DATA_CAPABILITY).map(
                 IEntityNpcData::hasGeneratedQuest).orElse(false);
     }

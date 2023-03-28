@@ -16,10 +16,10 @@ import com.chaosbuffalo.mknpc.quest.QuestDefinitionManager;
 import com.chaosbuffalo.mknpc.quest.dialogue.NpcDialogueUtils;
 import com.chaosbuffalo.mknpc.world.gen.feature.structure.TestJigsawStructurePools;
 import com.chaosbuffalo.mknpc.world.gen.feature.structure.events.StructureEventManager;
-import net.minecraft.entity.Entity;
-import net.minecraft.entity.LivingEntity;
-import net.minecraft.entity.player.PlayerEntity;
-import net.minecraft.world.World;
+import net.minecraft.world.entity.Entity;
+import net.minecraft.world.entity.LivingEntity;
+import net.minecraft.world.entity.player.Player;
+import net.minecraft.world.level.Level;
 import net.minecraftforge.api.distmarker.Dist;
 import net.minecraftforge.common.MinecraftForge;
 import net.minecraftforge.common.util.LazyOptional;
@@ -74,10 +74,10 @@ public class MKNpc {
         LOGGER.info("MKNpc.processIMC");
         internalIMCSetup();
         event.getIMCStream().forEach(m -> {
-            if (m.getMethod().equals(REGISTER_NPC_OPTIONS_EXTENSION)) {
-                LOGGER.info("IMC register npc option extension from mod {} {}", m.getSenderModId(),
-                        m.getMethod());
-                IMKNpcExtension ext = (IMKNpcExtension) m.getMessageSupplier().get();
+            if (m.method().equals(REGISTER_NPC_OPTIONS_EXTENSION)) {
+                LOGGER.info("IMC register npc option extension from mod {} {}", m.senderModId(),
+                        m.method());
+                IMKNpcExtension ext = (IMKNpcExtension) m.messageSupplier().get();
                 ext.registerNpcExtension();
             }
         });
@@ -96,7 +96,6 @@ public class MKNpc {
 
 
     private void setup(final FMLCommonSetupEvent event) {
-        NpcCapabilities.registerCapabilities();
         PacketHandler.setupHandler();
         NpcCommands.registerArguments();
     }
@@ -104,7 +103,7 @@ public class MKNpc {
 
 
     public static double getDifficultyScale(LivingEntity entity) {
-        switch (entity.getEntityWorld().getDifficulty()) {
+        switch (entity.getCommandSenderWorld().getDifficulty()) {
             case EASY:
                 return 0.5;
             case NORMAL:
@@ -125,11 +124,11 @@ public class MKNpc {
         return entity.getCapability(NpcCapabilities.ENTITY_NPC_DATA_CAPABILITY);
     }
 
-    public static LazyOptional<? extends IPlayerQuestingData> getPlayerQuestData(PlayerEntity entity){
+    public static LazyOptional<? extends IPlayerQuestingData> getPlayerQuestData(Player entity){
         return entity.getCapability(NpcCapabilities.PLAYER_QUEST_DATA_CAPABILITY);
     }
 
-    public static LazyOptional<? extends IWorldNpcData> getWorldNpcData(World world){
+    public static LazyOptional<? extends IWorldNpcData> getWorldNpcData(Level world){
         return world.getCapability(NpcCapabilities.WORLD_NPC_DATA_CAPABILITY);
     }
 }

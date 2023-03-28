@@ -3,7 +3,7 @@ package com.chaosbuffalo.mknpc.quest.data;
 import com.chaosbuffalo.mknpc.quest.Quest;
 import com.chaosbuffalo.mknpc.quest.data.objective.ObjectiveInstanceData;
 import com.chaosbuffalo.mknpc.quest.objectives.QuestObjective;
-import net.minecraft.nbt.CompoundNBT;
+import net.minecraft.nbt.CompoundTag;
 
 import java.util.HashMap;
 import java.util.Map;
@@ -29,9 +29,9 @@ public class QuestData{
         return questName;
     }
 
-    public CompoundNBT serializeNBT() {
-        CompoundNBT nbt = new CompoundNBT();
-        CompoundNBT objectiveNbt = new CompoundNBT();
+    public CompoundTag serializeNBT() {
+        CompoundTag nbt = new CompoundTag();
+        CompoundTag objectiveNbt = new CompoundTag();
         for (Map.Entry<String, ObjectiveInstanceData> entry : objectives.entrySet()){
             objectiveNbt.put(entry.getKey(), entry.getValue().serializeNBT());
         }
@@ -39,9 +39,9 @@ public class QuestData{
         return nbt;
     }
 
-    public void deserializeNBT(CompoundNBT nbt, Quest quest) {
-        CompoundNBT objectiveNbt = nbt.getCompound("objectives");
-        for (String key : objectiveNbt.keySet()){
+    public void deserializeNBT(CompoundTag nbt, Quest quest) {
+        CompoundTag objectiveNbt = nbt.getCompound("objectives");
+        for (String key : objectiveNbt.getAllKeys()){
             QuestObjective<?> obj = quest.getObjective(key);
             if (obj != null){
                 putObjective(obj.getObjectiveName(), obj.loadInstanceData(objectiveNbt.getCompound(key)));

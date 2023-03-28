@@ -4,11 +4,11 @@ import com.chaosbuffalo.mknpc.entity.MKEntity;
 import com.chaosbuffalo.mknpc.entity.ai.memory.MKMemoryModuleTypes;
 import com.chaosbuffalo.targeting_api.Targeting;
 import com.google.common.collect.ImmutableSet;
-import net.minecraft.entity.LivingEntity;
-import net.minecraft.entity.ai.brain.Brain;
-import net.minecraft.entity.ai.brain.memory.MemoryModuleType;
-import net.minecraft.entity.ai.brain.sensor.Sensor;
-import net.minecraft.world.server.ServerWorld;
+import net.minecraft.world.entity.LivingEntity;
+import net.minecraft.world.entity.ai.Brain;
+import net.minecraft.world.entity.ai.memory.MemoryModuleType;
+import net.minecraft.world.entity.ai.sensing.Sensor;
+import net.minecraft.server.level.ServerLevel;
 
 import java.util.*;
 import java.util.stream.Collectors;
@@ -19,11 +19,11 @@ public class LivingEntitiesSensor extends Sensor<MKEntity> {
         super(10);
     }
 
-    protected void update(ServerWorld worldIn, MKEntity entityIn) {
-        List<LivingEntity> entities = worldIn.getLoadedEntitiesWithinAABB(LivingEntity.class,
-                entityIn.getBoundingBox().grow(16.0D, 16.0D, 16.0D),
+    protected void doTick(ServerLevel worldIn, MKEntity entityIn) {
+        List<LivingEntity> entities = worldIn.getEntitiesOfClass(LivingEntity.class,
+                entityIn.getBoundingBox().inflate(16.0D, 16.0D, 16.0D),
                 (entity) -> entity != entityIn && entity.isAlive());
-        entities.sort(Comparator.comparingDouble(entityIn::getDistanceSq));
+        entities.sort(Comparator.comparingDouble(entityIn::distanceToSqr));
         Brain<?> brain = entityIn.getBrain();
 
         Map<Targeting.TargetRelation, List<LivingEntity>> groups = entities.stream()
@@ -36,7 +36,7 @@ public class LivingEntitiesSensor extends Sensor<MKEntity> {
                 .collect(Collectors.toList());
         brain.setMemory(MKMemoryModuleTypes.ENEMIES, enemies);
         brain.setMemory(MKMemoryModuleTypes.ALLIES, friends);
-        brain.setMemory(MKMemoryModuleTypes.VISIBLE_ENEMIES, enemies.stream().filter(x -> entityIn.getEntitySenses().canSee(x))
+        brain.setMemory(MKMemoryModuleTypes.VISIBLE_ENEMIES, enemies.stream().filter(x -> entityIn.getSensing().hasLineOfSight(x))
                 .collect(Collectors.toList()));
     }
 
@@ -44,7 +44,7 @@ public class LivingEntitiesSensor extends Sensor<MKEntity> {
         return Float.compare(friend.getHealth() / friend.getMaxHealth(), other.getHealth() / other.getMaxHealth());
     }
 
-    public Set<MemoryModuleType<?>> getUsedMemories() {
+    public Set<MemoryModuleType<?>> requires() {
         return ImmutableSet.of(MKMemoryModuleTypes.ENEMIES, MKMemoryModuleTypes.ALLIES,
                 MKMemoryModuleTypes.VISIBLE_ENEMIES);
     }

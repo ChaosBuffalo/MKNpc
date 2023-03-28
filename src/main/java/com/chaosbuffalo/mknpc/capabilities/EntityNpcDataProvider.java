@@ -1,6 +1,6 @@
 package com.chaosbuffalo.mknpc.capabilities;
 
-import net.minecraft.entity.LivingEntity;
+import net.minecraft.world.entity.LivingEntity;
 import net.minecraftforge.common.capabilities.Capability;
 
 public class EntityNpcDataProvider extends NpcCapabilities.Provider<LivingEntity, IEntityNpcData> {

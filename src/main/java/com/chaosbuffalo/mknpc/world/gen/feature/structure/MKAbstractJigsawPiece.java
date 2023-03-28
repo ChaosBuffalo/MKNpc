@@ -1,64 +1,63 @@
 package com.chaosbuffalo.mknpc.world.gen.feature.structure;
 
 import com.chaosbuffalo.mknpc.init.MKNpcWorldGen;
-import net.minecraft.nbt.CompoundNBT;
-import net.minecraft.util.ResourceLocation;
-import net.minecraft.util.Rotation;
-import net.minecraft.util.math.BlockPos;
-import net.minecraft.util.math.MutableBoundingBox;
-import net.minecraft.world.ISeedReader;
-import net.minecraft.world.gen.ChunkGenerator;
-import net.minecraft.world.gen.feature.jigsaw.JigsawPiece;
-import net.minecraft.world.gen.feature.structure.AbstractVillagePiece;
-import net.minecraft.world.gen.feature.structure.StructureManager;
-import net.minecraft.world.gen.feature.template.TemplateManager;
+import net.minecraft.nbt.CompoundTag;
+import net.minecraft.resources.ResourceLocation;
+import net.minecraft.server.level.ServerLevel;
+import net.minecraft.world.level.block.Rotation;
+import net.minecraft.core.BlockPos;
+import net.minecraft.world.level.levelgen.structure.BoundingBox;
+import net.minecraft.world.level.WorldGenLevel;
+import net.minecraft.world.level.chunk.ChunkGenerator;
+import net.minecraft.world.level.levelgen.feature.structures.StructurePoolElement;
+import net.minecraft.world.level.levelgen.structure.PoolElementStructurePiece;
+import net.minecraft.world.level.StructureFeatureManager;
+import net.minecraft.world.level.levelgen.structure.templatesystem.StructureManager;
 
 import java.util.Random;
 import java.util.UUID;
 
-public class MKAbstractJigsawPiece extends AbstractVillagePiece implements IMKStructurePiece {
+public class MKAbstractJigsawPiece extends PoolElementStructurePiece implements IMKStructurePiece {
     private final ResourceLocation structureName;
     private final UUID instanceId;
-    protected final TemplateManager manager;
 
-    public MKAbstractJigsawPiece(TemplateManager templateManager, JigsawPiece jigsawPiece, BlockPos blockPos,
-                                 int groundLevelDelta, Rotation rotation, MutableBoundingBox boundingBox,
+    public MKAbstractJigsawPiece(StructureManager templateManager, StructurePoolElement jigsawPiece, BlockPos blockPos,
+                                 int groundLevelDelta, Rotation rotation, BoundingBox boundingBox,
                                  ResourceLocation structureName, UUID instanceId) {
         super(templateManager, jigsawPiece, blockPos, groundLevelDelta, rotation, boundingBox);
-        this.structurePieceType = MKNpcWorldGen.MK_JIGSAW_PIECE_TYPE;
+        this.type = MKNpcWorldGen.MK_JIGSAW_PIECE_TYPE;
         this.structureName = structureName;
         this.instanceId = instanceId;
-        this.manager = templateManager;
 
     }
 
-    public MKAbstractJigsawPiece(TemplateManager templateManager, CompoundNBT compoundNBT) {
-        super(templateManager, compoundNBT);
-        this.structurePieceType = MKNpcWorldGen.MK_JIGSAW_PIECE_TYPE;
-        this.manager = templateManager;
+    public MKAbstractJigsawPiece(ServerLevel serverLevel, CompoundTag compoundNBT) {
+        super(serverLevel, compoundNBT);
+        this.type = MKNpcWorldGen.MK_JIGSAW_PIECE_TYPE;
         structureName = new ResourceLocation(compoundNBT.getString("structureName"));
-        instanceId = compoundNBT.getUniqueId("instanceId");
+        instanceId = compoundNBT.getUUID("instanceId");
 
     }
 
     @Override
-    protected void readAdditional(CompoundNBT tagCompound) {
-        super.readAdditional(tagCompound);
-        tagCompound.putUniqueId("instanceId", instanceId);
+    protected void addAdditionalSaveData(ServerLevel p_163121_, CompoundTag tagCompound) {
+        super.addAdditionalSaveData(p_163121_, tagCompound);
+        tagCompound.putUUID("instanceId", instanceId);
         tagCompound.putString("structureName", structureName.toString());
     }
 
-    @Override
-    public boolean func_237001_a_(ISeedReader seedReader, StructureManager structureManager,
-                                  ChunkGenerator chunkGenerator, Random random, MutableBoundingBox boundingBox,
-                                  BlockPos blockPos, boolean bool) {
 
-        if (jigsawPiece instanceof IMKJigsawPiece){
-            return ((IMKJigsawPiece) jigsawPiece).mkPlace(manager, seedReader, structureManager, chunkGenerator,
-                    this.pos, blockPos, this.rotation, boundingBox, random, bool, this);
+    @Override
+    public boolean place(WorldGenLevel seedReader, StructureFeatureManager structureManager,
+                         ChunkGenerator chunkGenerator, Random random, BoundingBox boundingBox,
+                         BlockPos blockPos, boolean bool) {
+
+        if (element instanceof IMKJigsawPiece){
+            return ((IMKJigsawPiece) element).mkPlace(this.structureManager, seedReader, structureManager, chunkGenerator,
+                    this.position, blockPos, this.rotation, boundingBox, random, bool, this);
         } else {
-            return this.jigsawPiece.func_230378_a_(manager, seedReader, structureManager, chunkGenerator,
-                    this.pos, blockPos, this.rotation, boundingBox, random, bool);
+            return this.element.place(this.structureManager, seedReader, structureManager, chunkGenerator,
+                    this.position, blockPos, this.rotation, boundingBox, random, bool);
         }
     }
 

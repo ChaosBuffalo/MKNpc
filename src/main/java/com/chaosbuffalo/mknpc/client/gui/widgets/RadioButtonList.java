@@ -3,7 +3,7 @@ package com.chaosbuffalo.mknpc.client.gui.widgets;
 import com.chaosbuffalo.mkwidgets.client.gui.layouts.MKStackLayoutVertical;
 import com.chaosbuffalo.mkwidgets.client.gui.widgets.MKRectangle;
 import com.chaosbuffalo.mkwidgets.client.gui.widgets.MKText;
-import net.minecraft.client.gui.FontRenderer;
+import net.minecraft.client.gui.Font;
 
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -13,7 +13,7 @@ import java.util.function.Consumer;
 
 
 public class RadioButtonList<T> extends MKStackLayoutVertical {
-    private final FontRenderer fontRenderer;
+    private final Font fontRenderer;
     private final List<RadioButton<T>> buttons;
     private final Map<T, RadioButton<T>> buttonIndex;
     private final Consumer<T> selectCallback;
@@ -36,7 +36,7 @@ public class RadioButtonList<T> extends MKStackLayoutVertical {
         }
     }
 
-    public RadioButtonList(int x, int y, int width, FontRenderer fontRenderer, String name,
+    public RadioButtonList(int x, int y, int width, Font fontRenderer, String name,
                            List<RadioValue<T>> values, Consumer<T> selectCallback) {
         super(x, y, width);
         this.fontRenderer = fontRenderer;

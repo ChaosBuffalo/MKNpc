@@ -3,15 +3,15 @@ package com.chaosbuffalo.mknpc.client.gui.widgets;
 import com.chaosbuffalo.mknpc.spawn.SpawnList;
 import com.chaosbuffalo.mknpc.spawn.SpawnOption;
 import com.chaosbuffalo.mkwidgets.client.gui.layouts.MKStackLayoutVertical;
-import com.mojang.blaze3d.matrix.MatrixStack;
+import com.mojang.blaze3d.vertex.PoseStack;
 import net.minecraft.client.Minecraft;
-import net.minecraft.client.gui.FontRenderer;
+import net.minecraft.client.gui.Font;
 
 public class SpawnOptionList extends ScrollingList {
-    private final FontRenderer font;
+    private final Font font;
     private final SpawnList spawnList;
 
-    public SpawnOptionList(int x, int y, int width, int height, FontRenderer font,
+    public SpawnOptionList(int x, int y, int width, int height, Font font,
                            SpawnList spawnList) {
         super(x, y, width, height);
         this.font = font;
@@ -22,7 +22,7 @@ public class SpawnOptionList extends ScrollingList {
     }
 
     @Override
-    public void preDraw(MatrixStack stack, Minecraft mc, int x, int y, int width, int height, int mouseX, int mouseY, float partialTicks) {
+    public void preDraw(PoseStack stack, Minecraft mc, int x, int y, int width, int height, int mouseX, int mouseY, float partialTicks) {
         mkFill(stack, x, y, x + width, y + height, 0x55aaaaaa);
     }
 

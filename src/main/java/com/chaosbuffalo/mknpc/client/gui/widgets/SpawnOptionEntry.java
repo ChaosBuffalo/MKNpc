@@ -7,9 +7,9 @@ import com.chaosbuffalo.mkwidgets.client.gui.widgets.MKButton;
 import com.chaosbuffalo.mkwidgets.client.gui.widgets.MKImage;
 import com.chaosbuffalo.mkwidgets.client.gui.widgets.MKModal;
 import com.chaosbuffalo.mkwidgets.client.gui.widgets.MKText;
-import net.minecraft.client.gui.FontRenderer;
-import net.minecraft.client.gui.screen.Screen;
-import net.minecraft.util.text.StringTextComponent;
+import net.minecraft.client.gui.Font;
+import net.minecraft.client.gui.screens.Screen;
+import net.minecraft.network.chat.TextComponent;
 
 import java.util.function.Consumer;
 
@@ -22,17 +22,17 @@ public class SpawnOptionEntry extends CenteringHorizontalLayout {
 
 
     public SpawnOptionEntry(int x, int y, int height, SpawnOption option,
-                            FontRenderer fontRenderer, Consumer<SpawnOption> removeCallback) {
+                            Font fontRenderer, Consumer<SpawnOption> removeCallback) {
         super(x, y, height, fontRenderer);
         this.option = option;
         String name = option.getDefinitionClient().getName() != null ? option.getDefinitionClient().getName() :
                 option.getDefinitionClient().getDefinitionName().toString();
-        button = new MKButton(Math.max(fontRenderer.getStringWidth(name), 100), name);
+        button = new MKButton(Math.max(fontRenderer.width(name), 100), name);
         button.setPressedCallback(this::handleOpenNpcDefinitionList);
         addWidget(button);
         String weightText = String.format("Weight: %.2f", option.getWeight());
         text = new MKText(fontRenderer, weightText);
-        text.setWidth(fontRenderer.getStringWidth(weightText));
+        text.setWidth(fontRenderer.width(weightText));
         setPaddingLeft(2);
         setPaddingRight(2);
         addWidget(text);
@@ -95,8 +95,8 @@ public class SpawnOptionEntry extends CenteringHorizontalLayout {
     }
 
     public void updateButtonText(String newText){
-        button.setWidth(Math.max(fontRenderer.getStringWidth(newText), 100));
-        button.buttonText = new StringTextComponent(newText);
+        button.setWidth(Math.max(fontRenderer.width(newText), 100));
+        button.buttonText = new TextComponent(newText);
     }
 
     public MKButton getButton() {

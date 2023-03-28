@@ -1,87 +1,87 @@
 package com.chaosbuffalo.mknpc.entity;
 
 import com.chaosbuffalo.mkcore.core.MKAttributes;
-import net.minecraft.entity.CreatureAttribute;
-import net.minecraft.entity.EntityType;
-import net.minecraft.entity.ai.attributes.AttributeModifierMap;
-import net.minecraft.entity.monster.piglin.PiglinAction;
-import net.minecraft.item.Items;
-import net.minecraft.network.datasync.DataParameter;
-import net.minecraft.network.datasync.DataSerializers;
-import net.minecraft.network.datasync.EntityDataManager;
-import net.minecraft.util.DamageSource;
-import net.minecraft.util.SoundEvent;
-import net.minecraft.util.SoundEvents;
-import net.minecraft.world.World;
+import net.minecraft.world.entity.MobType;
+import net.minecraft.world.entity.EntityType;
+import net.minecraft.world.entity.ai.attributes.AttributeSupplier;
+import net.minecraft.world.entity.monster.piglin.PiglinArmPose;
+import net.minecraft.world.item.Items;
+import net.minecraft.network.syncher.EntityDataAccessor;
+import net.minecraft.network.syncher.EntityDataSerializers;
+import net.minecraft.network.syncher.SynchedEntityData;
+import net.minecraft.world.damagesource.DamageSource;
+import net.minecraft.sounds.SoundEvent;
+import net.minecraft.sounds.SoundEvents;
+import net.minecraft.world.level.Level;
 
 public class MKZombifiedPiglinEntity extends MKAbstractPiglinEntity{
-    private static final DataParameter<Boolean> CHARGING_CROSSBOW = EntityDataManager.createKey(MKZombifiedPiglinEntity.class, DataSerializers.BOOLEAN);
-    private static final DataParameter<Boolean> DANCING = EntityDataManager.createKey(MKZombifiedPiglinEntity.class, DataSerializers.BOOLEAN);
+    private static final EntityDataAccessor<Boolean> CHARGING_CROSSBOW = SynchedEntityData.defineId(MKZombifiedPiglinEntity.class, EntityDataSerializers.BOOLEAN);
+    private static final EntityDataAccessor<Boolean> DANCING = SynchedEntityData.defineId(MKZombifiedPiglinEntity.class, EntityDataSerializers.BOOLEAN);
 
-    public MKZombifiedPiglinEntity(EntityType<? extends MKZombifiedPiglinEntity> type, World worldIn) {
+    public MKZombifiedPiglinEntity(EntityType<? extends MKZombifiedPiglinEntity> type, Level worldIn) {
         super(type, worldIn);
     }
 
     @Override
-    public PiglinAction getPiglinAction() {
+    public PiglinArmPose getPiglinAction() {
         if (isDancing()) {
-            return PiglinAction.DANCING;
+            return PiglinArmPose.DANCING;
         } else if (isAggressive() && isHoldingMeleeWeapon()) {
-            return PiglinAction.ATTACKING_WITH_MELEE_WEAPON;
+            return PiglinArmPose.ATTACKING_WITH_MELEE_WEAPON;
         } else if (isChargingCrossbow()) {
-            return PiglinAction.CROSSBOW_CHARGE;
+            return PiglinArmPose.CROSSBOW_CHARGE;
         } else {
-            return isAggressive() && canEquip(Items.CROSSBOW) ? PiglinAction.CROSSBOW_HOLD : PiglinAction.DEFAULT;
+            return isAggressive() && isHolding(Items.CROSSBOW) ? PiglinArmPose.CROSSBOW_HOLD : PiglinArmPose.DEFAULT;
         }
     }
 
     public void setDancing(boolean isDancing) {
-        this.dataManager.set(DANCING, isDancing);
+        this.entityData.set(DANCING, isDancing);
     }
 
     public boolean isDancing(){
-        return this.dataManager.get(DANCING);
+        return this.entityData.get(DANCING);
     }
 
     @Override
-    protected void registerData() {
-        super.registerData();
-        this.dataManager.register(CHARGING_CROSSBOW, false);
-        this.dataManager.register(DANCING, false);
+    protected void defineSynchedData() {
+        super.defineSynchedData();
+        this.entityData.define(CHARGING_CROSSBOW, false);
+        this.entityData.define(DANCING, false);
     }
 
     public void setChargingCrossbow(boolean isCharging){
-        this.dataManager.set(CHARGING_CROSSBOW, isCharging);
+        this.entityData.set(CHARGING_CROSSBOW, isCharging);
     }
 
     public boolean isChargingCrossbow() {
-        return this.dataManager.get(CHARGING_CROSSBOW);
+        return this.entityData.get(CHARGING_CROSSBOW);
     }
 
     @Override
     protected SoundEvent getAmbientSound() {
-        return this.hasThreatTarget() ? SoundEvents.ENTITY_ZOMBIFIED_PIGLIN_ANGRY : SoundEvents.ENTITY_ZOMBIFIED_PIGLIN_AMBIENT;
+        return this.hasThreatTarget() ? SoundEvents.ZOMBIFIED_PIGLIN_ANGRY : SoundEvents.ZOMBIFIED_PIGLIN_AMBIENT;
     }
 
     @Override
     protected SoundEvent getHurtSound(DamageSource damageSourceIn) {
-        return SoundEvents.ENTITY_ZOMBIFIED_PIGLIN_HURT;
+        return SoundEvents.ZOMBIFIED_PIGLIN_HURT;
     }
 
     @Override
     protected SoundEvent getDeathSound() {
-        return SoundEvents.ENTITY_ZOMBIFIED_PIGLIN_DEATH;
+        return SoundEvents.ZOMBIFIED_PIGLIN_DEATH;
     }
 
     @Override
-    public CreatureAttribute getCreatureAttribute() {
-        return CreatureAttribute.UNDEAD;
+    public MobType getMobType() {
+        return MobType.UNDEAD;
     }
 
-    public static AttributeModifierMap.MutableAttribute registerAttributes(double attackDamage, double movementSpeed) {
+    public static AttributeSupplier.Builder registerAttributes(double attackDamage, double movementSpeed) {
         return MKEntity.registerAttributes(attackDamage, movementSpeed)
-                .createMutableAttribute(MKAttributes.SHADOW_RESISTANCE, 0.25)
-                .createMutableAttribute(MKAttributes.FIRE_RESISTANCE, 0.25)
-                .createMutableAttribute(MKAttributes.HOLY_RESISTANCE, -0.25);
+                .add(MKAttributes.SHADOW_RESISTANCE, 0.25)
+                .add(MKAttributes.FIRE_RESISTANCE, 0.25)
+                .add(MKAttributes.HOLY_RESISTANCE, -0.25);
     }
 }

@@ -6,9 +6,9 @@ import com.chaosbuffalo.mknpc.MKNpc;
 import com.google.common.collect.ImmutableMap;
 import com.mojang.serialization.Dynamic;
 import com.mojang.serialization.DynamicOps;
-import net.minecraft.entity.LivingEntity;
-import net.minecraft.entity.player.ServerPlayerEntity;
-import net.minecraft.util.ResourceLocation;
+import net.minecraft.world.entity.LivingEntity;
+import net.minecraft.server.level.ServerPlayer;
+import net.minecraft.resources.ResourceLocation;
 
 
 public class HasSpentTalentPointsCondition extends DialogueCondition {
@@ -26,7 +26,7 @@ public class HasSpentTalentPointsCondition extends DialogueCondition {
     }
 
     @Override
-    public boolean meetsCondition(ServerPlayerEntity player, LivingEntity source) {
+    public boolean meetsCondition(ServerPlayer player, LivingEntity source) {
         return MKCore.getPlayer(player).map(x -> {
             int unspent = x.getKnowledge().getTalentKnowledge().getUnspentTalentPoints();
             int total = x.getKnowledge().getTalentKnowledge().getTotalTalentPoints();

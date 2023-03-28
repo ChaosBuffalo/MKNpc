@@ -1,28 +1,27 @@
 package com.chaosbuffalo.mknpc.capabilities.structure_tracking;
 
-import net.minecraft.nbt.CompoundNBT;
-import net.minecraft.nbt.INBT;
-import net.minecraft.nbt.ListNBT;
-import net.minecraft.util.RegistryKey;
-import net.minecraft.util.ResourceLocation;
-import net.minecraft.util.math.MutableBoundingBox;
-import net.minecraft.util.registry.Registry;
-import net.minecraft.world.World;
-import net.minecraftforge.common.util.Constants;
+import net.minecraft.nbt.CompoundTag;
+import net.minecraft.nbt.Tag;
+import net.minecraft.nbt.ListTag;
+import net.minecraft.resources.ResourceKey;
+import net.minecraft.resources.ResourceLocation;
+import net.minecraft.world.level.levelgen.structure.BoundingBox;
+import net.minecraft.core.Registry;
+import net.minecraft.world.level.Level;
 import net.minecraftforge.common.util.INBTSerializable;
 
 import java.util.ArrayList;
 import java.util.List;
 
-public class StructureData implements INBTSerializable<CompoundNBT> {
+public class StructureData implements INBTSerializable<CompoundTag> {
 
     private int chunkX;
     private int chunkZ;
-    private MutableBoundingBox boundingBox;
+    private BoundingBox boundingBox;
     private final List<StructureComponentData> components;
-    private RegistryKey<World> worldKey;
+    private ResourceKey<Level> worldKey;
 
-    public StructureData(RegistryKey<World> worldKey, int chunkX, int chunkZ, MutableBoundingBox bounds, List<StructureComponentData> data){
+    public StructureData(ResourceKey<Level> worldKey, int chunkX, int chunkZ, BoundingBox bounds, List<StructureComponentData> data){
         this.chunkX = chunkX;
         this.chunkZ = chunkZ;
         this.boundingBox = bounds;
@@ -43,38 +42,38 @@ public class StructureData implements INBTSerializable<CompoundNBT> {
         return chunkZ;
     }
 
-    public MutableBoundingBox getBoundingBox() {
+    public BoundingBox getBoundingBox() {
         return boundingBox;
     }
 
     @Override
-    public CompoundNBT serializeNBT() {
-        CompoundNBT tag = new CompoundNBT();
+    public CompoundTag serializeNBT() {
+        CompoundTag tag = new CompoundTag();
         tag.putInt("chunkX", chunkX);
         tag.putInt("chunkY", chunkZ);
-        int[] boundsArr = {boundingBox.minX, boundingBox.minY, boundingBox.minZ, boundingBox.maxX, boundingBox.maxY, boundingBox.maxZ};
+        int[] boundsArr = {boundingBox.minX(), boundingBox.minY(), boundingBox.minZ(), boundingBox.maxX(), boundingBox.maxY(), boundingBox.maxZ()};
         tag.putIntArray("bounds", boundsArr);
-        ListNBT comps = new ListNBT();
+        ListTag comps = new ListTag();
         for (StructureComponentData dat : components){
             comps.add(dat.serializeNBT());
         }
         tag.put("components", comps);
-        tag.putString("world", worldKey.getLocation().toString());
+        tag.putString("world", worldKey.location().toString());
         return tag;
     }
 
     @Override
-    public void deserializeNBT(CompoundNBT nbt) {
+    public void deserializeNBT(CompoundTag nbt) {
         chunkX = nbt.getInt("chunkX");
         chunkZ = nbt.getInt("chunkY");
-        worldKey = RegistryKey.getOrCreateKey(Registry.WORLD_KEY, new ResourceLocation(nbt.getString("world")));
+        worldKey = ResourceKey.create(Registry.DIMENSION_REGISTRY, new ResourceLocation(nbt.getString("world")));
         int[] boundsArr = nbt.getIntArray("bounds");
-        boundingBox = new MutableBoundingBox(boundsArr);
-        ListNBT comps = nbt.getList("components", Constants.NBT.TAG_COMPOUND);
+        boundingBox = new BoundingBox(boundsArr[0], boundsArr[1], boundsArr[2], boundsArr[3], boundsArr[4], boundsArr[5]);
+        ListTag comps = nbt.getList("components", Tag.TAG_COMPOUND);
         List<StructureComponentData> newComps = new ArrayList<>();
-        for (INBT comp : comps){
+        for (Tag comp : comps){
             StructureComponentData data = new StructureComponentData();
-            data.deserializeNBT((CompoundNBT) comp);
+            data.deserializeNBT((CompoundTag) comp);
             newComps.add(data);
         }
         components.clear();

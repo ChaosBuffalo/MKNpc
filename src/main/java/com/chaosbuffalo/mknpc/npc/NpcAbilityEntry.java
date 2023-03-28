@@ -1,16 +1,14 @@
 package com.chaosbuffalo.mknpc.npc;
 
 import com.chaosbuffalo.mkcore.MKCoreRegistry;
-import com.chaosbuffalo.mkcore.utils.SerializationUtils;
 import com.google.common.collect.ImmutableMap;
 import com.mojang.serialization.Dynamic;
 import com.mojang.serialization.DynamicOps;
-import net.minecraft.item.ItemStack;
-import net.minecraft.nbt.CompoundNBT;
-import net.minecraft.util.ResourceLocation;
+import net.minecraft.nbt.CompoundTag;
+import net.minecraft.resources.ResourceLocation;
 import net.minecraftforge.common.util.INBTSerializable;
 
-public class NpcAbilityEntry implements INBTSerializable<CompoundNBT> {
+public class NpcAbilityEntry implements INBTSerializable<CompoundTag> {
     private ResourceLocation abilityName;
     private int priority;
     private double chance;
@@ -63,8 +61,8 @@ public class NpcAbilityEntry implements INBTSerializable<CompoundNBT> {
     }
 
     @Override
-    public CompoundNBT serializeNBT() {
-        CompoundNBT tag = new CompoundNBT();
+    public CompoundTag serializeNBT() {
+        CompoundTag tag = new CompoundTag();
         tag.putString("abilityName", getAbilityName().toString());
         tag.putInt("priority", getPriority());
         tag.putDouble("chance", getChance());
@@ -72,7 +70,7 @@ public class NpcAbilityEntry implements INBTSerializable<CompoundNBT> {
     }
 
     @Override
-    public void deserializeNBT(CompoundNBT nbt) {
+    public void deserializeNBT(CompoundTag nbt) {
         abilityName = new ResourceLocation(nbt.getString("abilityName"));
         priority = nbt.getInt("priority");
         chance = nbt.getDouble("chance");

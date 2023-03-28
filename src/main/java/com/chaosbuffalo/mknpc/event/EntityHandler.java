@@ -22,22 +22,22 @@ import com.chaosbuffalo.mknpc.quest.objectives.QuestObjective;
 import com.chaosbuffalo.mknpc.utils.NpcConstants;
 import com.chaosbuffalo.mknpc.world.gen.feature.structure.IControlNaturalSpawns;
 import com.chaosbuffalo.targeting_api.TargetingContexts;
-import net.minecraft.block.ChestBlock;
-import net.minecraft.entity.EntityClassification;
-import net.minecraft.entity.LivingEntity;
-import net.minecraft.entity.SpawnReason;
-import net.minecraft.entity.player.PlayerEntity;
-import net.minecraft.entity.player.ServerPlayerEntity;
-import net.minecraft.scoreboard.Team;
+import net.minecraft.world.level.block.ChestBlock;
+import net.minecraft.world.entity.MobCategory;
+import net.minecraft.world.entity.LivingEntity;
+import net.minecraft.world.entity.MobSpawnType;
+import net.minecraft.world.entity.player.Player;
+import net.minecraft.server.level.ServerPlayer;
+import net.minecraft.world.scores.Team;
 import net.minecraft.server.MinecraftServer;
-import net.minecraft.tileentity.TileEntity;
-import net.minecraft.util.math.BlockPos;
-import net.minecraft.util.math.vector.Vector3d;
-import net.minecraft.world.World;
-import net.minecraft.world.gen.feature.structure.Structure;
-import net.minecraft.world.gen.feature.structure.StructureManager;
-import net.minecraft.world.gen.feature.structure.StructureStart;
-import net.minecraft.world.server.ServerWorld;
+import net.minecraft.world.level.block.entity.BlockEntity;
+import net.minecraft.core.BlockPos;
+import net.minecraft.world.phys.Vec3;
+import net.minecraft.world.level.Level;
+import net.minecraft.world.level.levelgen.feature.StructureFeature;
+import net.minecraft.world.level.StructureFeatureManager;
+import net.minecraft.world.level.levelgen.structure.StructureStart;
+import net.minecraft.server.level.ServerLevel;
 import net.minecraftforge.event.TickEvent;
 import net.minecraftforge.event.entity.EntityJoinWorldEvent;
 import net.minecraftforge.event.entity.living.*;
@@ -70,8 +70,8 @@ public class EntityHandler {
     @SubscribeEvent(priority = EventPriority.LOWEST)
     public static void onEntityDamage(LivingDamageEvent event) {
         if (event.getSource() instanceof MKDamageSource) {
-            if (event.getEntityLiving() instanceof PlayerEntity) {
-                if (!(event.getSource().getTrueSource() instanceof PlayerEntity)) {
+            if (event.getEntityLiving() instanceof Player) {
+                if (!(event.getSource().getEntity() instanceof Player)) {
                     event.setAmount((float) (event.getAmount() * MKNpc.getDifficultyScale(event.getEntityLiving())));
                 }
                 //add threat to pets here
@@ -83,8 +83,12 @@ public class EntityHandler {
     @SubscribeEvent
     public static void onWorldTick(TickEvent.WorldTickEvent event){
         if (event.side == LogicalSide.SERVER && event.phase == TickEvent.Phase.END){
-            event.world.tickableTileEntities.forEach(
-                    x -> x.getCapability(NpcCapabilities.CHEST_NPC_DATA_CAPABILITY).ifPresent(IChestNpcData::tick));
+            event.world.blockEntityTickers.forEach(ticker -> {
+                BlockEntity entity = event.world.getBlockEntity(ticker.getPos());
+                if (entity != null) {
+                    entity.getCapability(NpcCapabilities.CHEST_NPC_DATA_CAPABILITY).ifPresent(IChestNpcData::tick);
+                }
+            });
         }
     }
 
@@ -93,28 +97,28 @@ public class EntityHandler {
         if (event.isCanceled()){
             return;
         }
-        if (event.getPlayer().world.isRemote) {
+        if (event.getPlayer().level.isClientSide) {
             return;
         }
         MinecraftServer server = event.getPlayer().getServer();
         if (server == null) {
             return;
         }
-        World world = event.getWorld();
-        BlockPos pos = event.getHitVec().getPos();
+        Level world = event.getWorld();
+        BlockPos pos = event.getHitVec().getBlockPos();
         if (world.getBlockState(pos).getBlock() instanceof ChestBlock){
-            TileEntity te = world.getTileEntity(pos);
+            BlockEntity te = world.getBlockEntity(pos);
             if (te == null){
                 return;
             }
-            World overWorld = server.getWorld(World.OVERWORLD);
+            Level overWorld = server.getLevel(Level.OVERWORLD);
             if (overWorld != null) {
                 te.getCapability(NpcCapabilities.CHEST_NPC_DATA_CAPABILITY).ifPresent(
                         chestCap -> {
                             overWorld.getCapability(NpcCapabilities.WORLD_NPC_DATA_CAPABILITY).ifPresent(
                                     worldData -> processLootChestEvents(event.getPlayer(), chestCap, worldData));
-                            if (chestCap.hasQuestInventoryForPlayer(event.getPlayer()) && !event.getPlayer().isSneaking()){
-                                event.getPlayer().openContainer(chestCap);
+                            if (chestCap.hasQuestInventoryForPlayer(event.getPlayer()) && !event.getPlayer().isShiftKeyDown()){
+                                event.getPlayer().openMenu(chestCap);
                                 event.setCanceled(true);
                             }
                         });
@@ -128,7 +132,7 @@ public class EntityHandler {
         event.setDroppedExperience(event.getDroppedExperience() + bonusXp);
     }
 
-    private static void processLootChestEvents(PlayerEntity player, IChestNpcData chestCap, IWorldNpcData worldData) {
+    private static void processLootChestEvents(Player player, IChestNpcData chestCap, IWorldNpcData worldData) {
         MKNpc.getPlayerQuestData(player).ifPresent(x -> x.getQuestChains().forEach(
                 pQuestChain -> {
                     QuestChainInstance questChain = worldData.getQuest(pQuestChain.getQuestId());
@@ -157,14 +161,14 @@ public class EntityHandler {
 
     @SubscribeEvent
     public static void onSetupDialogue(PlayerNpcDialogueTreeGatherEvent event){
-        if (event.getPlayer().world.isRemote) {
+        if (event.getPlayer().level.isClientSide) {
             return;
         }
         MinecraftServer server = event.getPlayer().getServer();
         if (server == null) {
             return;
         }
-        World overWorld = server.getWorld(World.OVERWORLD);
+        Level overWorld = server.getLevel(Level.OVERWORLD);
         MKNpc.LOGGER.debug("Setting up dialogue between {} and {}", event.getSpeaker(), event.getPlayer());
         if (overWorld != null) {
            overWorld.getCapability(NpcCapabilities.WORLD_NPC_DATA_CAPABILITY).ifPresent(
@@ -180,7 +184,7 @@ public class EntityHandler {
 
     }
 
-    private static void handleKillEntityForPlayer(PlayerEntity player, LivingDeathEvent event, IWorldNpcData worldData){
+    private static void handleKillEntityForPlayer(Player player, LivingDeathEvent event, IWorldNpcData worldData){
         MKNpc.getNpcData(event.getEntityLiving()).ifPresent(x -> {
             if (x.getStructureId().isPresent()) {
                 worldData.getStructureManager().onNpcDeath(x);
@@ -215,18 +219,18 @@ public class EntityHandler {
 
     @SubscribeEvent(priority = EventPriority.LOWEST)
     public static void onLivingDeathEvent(LivingDeathEvent event){
-        if (event.isCanceled() || event.getEntityLiving().world.isRemote){
+        if (event.isCanceled() || event.getEntityLiving().level.isClientSide){
             return;
         }
         MKNpc.getNpcData(event.getEntityLiving()).ifPresent(npcData ->
                 npcData.getDeathReceiver().ifPresent(receiver -> receiver.onEntityDeath(npcData, event)));
-        if (event.getSource().getTrueSource() instanceof PlayerEntity){
-            PlayerEntity player = (PlayerEntity) event.getSource().getTrueSource();
+        if (event.getSource().getEntity() instanceof Player){
+            Player player = (Player) event.getSource().getEntity();
             MinecraftServer server = player.getServer();
             if (server == null){
                 return;
             }
-            World overWorld = server.getWorld(World.OVERWORLD);
+            Level overWorld = server.getLevel(Level.OVERWORLD);
             if (overWorld == null){
                 return;
             }
@@ -234,8 +238,8 @@ public class EntityHandler {
                 handleKillEntityForPlayer(player, event, worldNpcData);
                 Team team = player.getTeam();
                 if (team != null) {
-                    for (String s : team.getMembershipCollection()) {
-                        ServerPlayerEntity serverplayerentity = server.getPlayerList().getPlayerByUsername(s);
+                    for (String s : team.getPlayers()) {
+                        ServerPlayer serverplayerentity = server.getPlayerList().getPlayerByName(s);
                         if (serverplayerentity != null && !serverplayerentity.equals(player)){
                             handleKillEntityForPlayer(serverplayerentity, event, worldNpcData);
                         }
@@ -262,15 +266,15 @@ public class EntityHandler {
 
     @SubscribeEvent
     public static void onLivingSpawn(LivingSpawnEvent.CheckSpawn event) {
-        if (event.getSpawnReason() == SpawnReason.NATURAL && stopSpawningForClassification(event.getEntityLiving())) {
+        if (event.getSpawnReason() == MobSpawnType.NATURAL && stopSpawningForClassification(event.getEntityLiving())) {
             BlockPos spawnPos = new BlockPos(event.getX(), event.getY(), event.getZ());
-            if (event.getWorld() instanceof ServerWorld){
-                StructureManager manager = ((ServerWorld) event.getWorld()).getStructureManager();
-                for (Structure<?> structure : ForgeRegistries.STRUCTURE_FEATURES){
+            if (event.getWorld() instanceof ServerLevel){
+                StructureFeatureManager manager = ((ServerLevel) event.getWorld()).structureFeatureManager();
+                for (StructureFeature<?> structure : ForgeRegistries.STRUCTURE_FEATURES){
                     if (structure instanceof IControlNaturalSpawns){
                         if (!((IControlNaturalSpawns) structure).doesAllowSpawns()){
-                            StructureStart<?> start = manager.getStructureStart(spawnPos, false, structure);
-                            if (start != StructureStart.DUMMY){
+                            StructureStart<?> start = manager.getStructureAt(spawnPos, false, structure);
+                            if (start != StructureStart.INVALID_START){
                                 event.setResult(Event.Result.DENY);
                             }
                         }
@@ -282,15 +286,15 @@ public class EntityHandler {
     }
 
     private static boolean stopSpawningForClassification(LivingEntity entity){
-        return (entity.getClassification(false) == EntityClassification.MONSTER);
+        return (entity.getClassification(false) == MobCategory.MONSTER);
     }
 
     @SubscribeEvent
     public static void onHealEvent(MKAbilityHealEvent event) {
         LivingEntity healed = event.getEntityLiving();
         LivingEntity source = event.getHealSource().getSourceEntity();
-        if (source != null && !(source instanceof PlayerEntity && ((PlayerEntity) source).isCreative())) {
-            EntityEffectBuilder.PointEffectBuilder.createPointEffectOnEntity(source, healed, Vector3d.ZERO)
+        if (source != null && !(source instanceof Player && ((Player) source).isCreative())) {
+            EntityEffectBuilder.PointEffectBuilder.createPointEffectOnEntity(source, healed, Vec3.ZERO)
                     .radius(10.0f)
                     .effect(HealingThreatEffect.from(source, healed, event.getAmount() * NpcConstants.HEALING_THREAT_MULTIPLIER),
                             TargetingContexts.ENEMY)

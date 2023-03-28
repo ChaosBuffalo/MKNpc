@@ -1,21 +1,21 @@
 package com.chaosbuffalo.mknpc.capabilities;
 
 import com.chaosbuffalo.mknpc.world.gen.IStructurePlaced;
-import net.minecraft.entity.player.PlayerEntity;
-import net.minecraft.inventory.Inventory;
-import net.minecraft.inventory.container.INamedContainerProvider;
-import net.minecraft.nbt.CompoundNBT;
-import net.minecraft.tileentity.ChestTileEntity;
+import net.minecraft.world.entity.player.Player;
+import net.minecraft.world.SimpleContainer;
+import net.minecraft.world.MenuProvider;
+import net.minecraft.nbt.CompoundTag;
+import net.minecraft.world.level.block.entity.ChestBlockEntity;
 import net.minecraftforge.common.util.INBTSerializable;
 
 import javax.annotation.Nullable;
 import java.util.UUID;
 
-public interface IChestNpcData extends INBTSerializable<CompoundNBT>, IStructurePlaced, INamedContainerProvider {
+public interface IChestNpcData extends INBTSerializable<CompoundTag>, IStructurePlaced, MenuProvider {
 
-    Inventory getQuestInventoryForPlayer(PlayerEntity player);
+    SimpleContainer getQuestInventoryForPlayer(Player player);
 
-    boolean hasQuestInventoryForPlayer(PlayerEntity player);
+    boolean hasQuestInventoryForPlayer(Player player);
 
     @Nullable
     UUID getChestId();
@@ -23,7 +23,7 @@ public interface IChestNpcData extends INBTSerializable<CompoundNBT>, IStructure
     @Nullable
     String getChestLabel();
 
-    ChestTileEntity getTileEntity();
+    ChestBlockEntity getTileEntity();
 
     void generateChestId(String chestLabel);
 

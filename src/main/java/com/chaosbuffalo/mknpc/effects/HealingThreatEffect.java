@@ -7,9 +7,9 @@ import com.chaosbuffalo.mkcore.effects.MKEffectBuilder;
 import com.chaosbuffalo.mkcore.effects.MKEffectState;
 import com.chaosbuffalo.mknpc.MKNpc;
 import com.chaosbuffalo.mknpc.entity.MKEntity;
-import net.minecraft.entity.LivingEntity;
-import net.minecraft.nbt.CompoundNBT;
-import net.minecraft.potion.EffectType;
+import net.minecraft.world.entity.LivingEntity;
+import net.minecraft.nbt.CompoundTag;
+import net.minecraft.world.effect.MobEffectCategory;
 import net.minecraftforge.event.RegistryEvent;
 import net.minecraftforge.eventbus.api.SubscribeEvent;
 import net.minecraftforge.fml.common.Mod;
@@ -21,7 +21,7 @@ public class HealingThreatEffect extends MKEffect {
     public static final HealingThreatEffect INSTANCE = new HealingThreatEffect();
 
     private HealingThreatEffect() {
-        super(EffectType.NEUTRAL);
+        super(MobEffectCategory.NEUTRAL);
         setRegistryName(MKNpc.MODID, "effect.threat");
     }
 
@@ -85,13 +85,13 @@ public class HealingThreatEffect extends MKEffect {
         }
 
         @Override
-        public void serializeStorage(CompoundNBT stateTag) {
+        public void serializeStorage(CompoundTag stateTag) {
             super.serializeStorage(stateTag);
             stateTag.putFloat("threat", threatValue);
         }
 
         @Override
-        public void deserializeStorage(CompoundNBT tag) {
+        public void deserializeStorage(CompoundTag tag) {
             super.deserializeStorage(tag);
             threatValue = tag.getFloat("threat");
         }

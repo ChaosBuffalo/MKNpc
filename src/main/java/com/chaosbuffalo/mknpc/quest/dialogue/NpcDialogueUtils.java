@@ -3,7 +3,7 @@ package com.chaosbuffalo.mknpc.quest.dialogue;
 import com.chaosbuffalo.mknpc.npc.MKStructureEntry;
 import com.chaosbuffalo.mknpc.npc.NotableNpcEntry;
 import com.chaosbuffalo.mknpc.quest.QuestChainInstance;
-import net.minecraft.util.ResourceLocation;
+import net.minecraft.resources.ResourceLocation;
 
 import java.util.HashMap;
 import java.util.List;

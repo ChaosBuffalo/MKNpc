@@ -14,25 +14,23 @@ import com.chaosbuffalo.mknpc.spawn.SpawnList;
 import com.chaosbuffalo.mknpc.spawn.SpawnOption;
 import com.chaosbuffalo.mknpc.utils.RandomCollection;
 import com.chaosbuffalo.mknpc.world.gen.IStructurePlaced;
-import net.minecraft.block.BlockState;
-import net.minecraft.block.Blocks;
-import net.minecraft.entity.Entity;
-import net.minecraft.entity.LivingEntity;
-import net.minecraft.entity.MobEntity;
-import net.minecraft.entity.SpawnReason;
-import net.minecraft.entity.player.PlayerEntity;
-import net.minecraft.nbt.CompoundNBT;
+import net.minecraft.core.BlockPos;
+import net.minecraft.server.level.ServerLevel;
+import net.minecraft.world.entity.Mob;
+import net.minecraft.world.entity.MobSpawnType;
+import net.minecraft.world.entity.player.Player;
+import net.minecraft.world.level.block.Blocks;
+import net.minecraft.world.level.block.state.BlockState;
+import net.minecraft.world.entity.Entity;
+import net.minecraft.world.entity.LivingEntity;
+import net.minecraft.nbt.CompoundTag;
 import net.minecraft.server.MinecraftServer;
-import net.minecraft.tileentity.ITickableTileEntity;
-import net.minecraft.tileentity.TileEntity;
-import net.minecraft.tileentity.TileEntityType;
-import net.minecraft.util.Direction;
-import net.minecraft.util.ResourceLocation;
-import net.minecraft.util.math.BlockPos;
-import net.minecraft.util.math.GlobalPos;
-import net.minecraft.util.math.vector.Vector3d;
-import net.minecraft.world.IServerWorld;
-import net.minecraft.world.World;
+import net.minecraft.world.level.block.entity.BlockEntity;
+import net.minecraft.core.Direction;
+import net.minecraft.resources.ResourceLocation;
+import net.minecraft.core.GlobalPos;
+import net.minecraft.world.phys.Vec3;
+import net.minecraft.world.level.Level;
 import net.minecraftforge.common.capabilities.Capability;
 import net.minecraftforge.common.util.LazyOptional;
 import net.minecraftforge.event.entity.living.LivingDeathEvent;
@@ -43,7 +41,7 @@ import java.util.HashMap;
 import java.util.Map;
 import java.util.UUID;
 
-public class MKSpawnerTileEntity extends TileEntity implements ITickableTileEntity, IStructurePlaced, INotifyOnEntityDeath {
+public class MKSpawnerTileEntity extends BlockEntity implements IStructurePlaced, INotifyOnEntityDeath {
     private final SpawnList spawnList;
     private UUID spawnUUID;
     private Entity entity;
@@ -61,12 +59,9 @@ public class MKSpawnerTileEntity extends TileEntity implements ITickableTileEnti
     private boolean placedByStructure;
     private final Map<ResourceLocation, UUID> notableIds = new HashMap<>();
 
-    public MKSpawnerTileEntity(){
-        this(MKNpcTileEntityTypes.MK_SPAWNER_TILE_ENTITY_TYPE.get());
-    }
 
-    public MKSpawnerTileEntity(TileEntityType<?> tileEntityTypeIn) {
-        super(tileEntityTypeIn);
+    public MKSpawnerTileEntity(BlockPos blockPos, BlockState blockState) {
+        super(MKNpcTileEntityTypes.MK_SPAWNER_TILE_ENTITY_TYPE.get(), blockPos, blockState);
         this.spawnList = new SpawnList();
         this.spawnUUID = UUID.randomUUID();
         this.structureName = null;
@@ -125,14 +120,14 @@ public class MKSpawnerTileEntity extends TileEntity implements ITickableTileEnti
     }
 
     @Override
-    public GlobalPos getBlockPos() {
-        return GlobalPos.getPosition(getWorld().getDimensionKey(), getPos());
+    public GlobalPos getGlobalBlockPos() {
+        return GlobalPos.of(getLevel().dimension(), getBlockPos());
     }
 
     @Override
     @Nullable
-    public World getStructureWorld() {
-        return getWorld();
+    public Level getStructureWorld() {
+        return getLevel();
     }
 
     public void setMoveType(MKEntity.NonCombatMoveType moveType) {
@@ -161,9 +156,9 @@ public class MKSpawnerTileEntity extends TileEntity implements ITickableTileEnti
     }
 
     @Override
-    public CompoundNBT write(CompoundNBT compound) {
+    public CompoundTag save(CompoundTag compound) {
         compound.put("spawnList", spawnList.serializeNBT());
-        compound.putUniqueId("spawnId", spawnUUID);
+        compound.putUUID("spawnId", spawnUUID);
         compound.putInt("ticksSinceDeath", ticksSinceDeath);
         compound.putInt("moveType", moveType.ordinal());
         compound.putBoolean("hasUploadedToWorld", needsUploadToWorld);
@@ -171,14 +166,14 @@ public class MKSpawnerTileEntity extends TileEntity implements ITickableTileEnti
         compound.putInt("respawnTime", respawnTime);
         if (isInsideStructure()){
             compound.putString("structureName", structureName.toString());
-            compound.putUniqueId("structureId", structureId);
+            compound.putUUID("structureId", structureId);
         }
-        CompoundNBT notableTag = new CompoundNBT();
+        CompoundTag notableTag = new CompoundTag();
         for (Map.Entry<ResourceLocation, UUID> entry : notableIds.entrySet()){
-            notableTag.putUniqueId(entry.getKey().toString(), entry.getValue());
+            notableTag.putUUID(entry.getKey().toString(), entry.getValue());
         }
         compound.put("notableIds", notableTag);
-        return super.write(compound);
+        return super.save(compound);
     }
 
     public UUID getSpawnUUID() {
@@ -217,9 +212,10 @@ public class MKSpawnerTileEntity extends TileEntity implements ITickableTileEnti
         }
     }
 
+
     @Override
-    public void read(BlockState state, CompoundNBT compound) {
-        super.read(state, compound);
+    public void load(CompoundTag compound) {
+        super.load(compound);
         if (compound.contains("spawnList")){
             spawnList.deserializeNBT(compound.getCompound("spawnList"));
             populateRandomSpawns();
@@ -231,7 +227,7 @@ public class MKSpawnerTileEntity extends TileEntity implements ITickableTileEnti
             setStructureName(new ResourceLocation(compound.getString("structureName")));
         }
         if (compound.contains("structureId")){
-            setStructureId(compound.getUniqueId("structureId"));
+            setStructureId(compound.getUUID("structureId"));
         }
         if (compound.contains("hasUploadedToWorld")){
             needsUploadToWorld = compound.getBoolean("hasUploadedToWorld");
@@ -241,7 +237,7 @@ public class MKSpawnerTileEntity extends TileEntity implements ITickableTileEnti
         }
         ticksSinceDeath = compound.getInt("ticksSinceDeath");
         if (compound.contains("spawnId")){
-            spawnUUID = compound.getUniqueId("spawnId");
+            spawnUUID = compound.getUUID("spawnId");
         } else {
             spawnUUID = UUID.randomUUID();
         }
@@ -249,22 +245,22 @@ public class MKSpawnerTileEntity extends TileEntity implements ITickableTileEnti
             setRespawnTime(compound.getInt("respawnTime"));
         }
         if (compound.contains("notableIds")){
-            CompoundNBT notableTag = compound.getCompound("notableIds");
-            for (String key : notableTag.keySet()){
-                UUID notId = notableTag.getUniqueId(key);
+            CompoundTag notableTag = compound.getCompound("notableIds");
+            for (String key : notableTag.getAllKeys()){
+                UUID notId = notableTag.getUUID(key);
                 notableIds.put(new ResourceLocation(key), notId);
             }
         }
-
     }
 
+
     public void spawnEntity(){
-        if (getWorld() != null){
+        if (getLevel() != null){
             NpcDefinition definition = randomSpawns.next();
-            Vector3d spawnPos = Vector3d.copy(getPos()).add(0.5, 0.125, 0.5);
+            Vec3 spawnPos = Vec3.atLowerCornerOf(getBlockPos()).add(0.5, 0.125, 0.5);
             double difficultyValue = WorldUtils.getDifficultyForGlobalPos(
-                    GlobalPos.getPosition(getWorld().getDimensionKey(), getPos()));
-            switch (getWorld().getDifficulty()) {
+                    GlobalPos.of(getLevel().dimension(), getBlockPos()));
+            switch (getLevel().getDifficulty()) {
                 case EASY:
                     difficultyValue *= .5;
                     break;
@@ -277,22 +273,22 @@ public class MKSpawnerTileEntity extends TileEntity implements ITickableTileEnti
                 default:
                     break;
             }
-            Entity entity = definition.createEntity(getWorld(), spawnPos, spawnUUID, difficultyValue);
+            Entity entity = definition.createEntity(getLevel(), spawnPos, spawnUUID, difficultyValue);
             this.entity = entity;
             if (entity != null){
-                float rot = getBlockState().get(MKSpawnerBlock.ORIENTATION).getAngleInDegrees();
-                entity.setPositionAndRotation(
-                    entity.getPosX(),
-                    entity.getPosY(),
-                    entity.getPosZ(),
+                float rot = getBlockState().getValue(MKSpawnerBlock.ORIENTATION).getAngleInDegrees();
+                entity.absMoveTo(
+                    entity.getX(),
+                    entity.getY(),
+                    entity.getZ(),
                     rot,
                     0.0f);
-                entity.setRotationYawHead(rot);
-                getWorld().addEntity(entity);
+                entity.setYHeadRot(rot);
+                getLevel().addFreshEntity(entity);
                 final double finDiff = difficultyValue;
                 MKNpc.getNpcData(entity).ifPresent((cap) -> {
                     cap.setMKSpawned(true);
-                    cap.setSpawnPos(new BlockPos(spawnPos).up());
+                    cap.setSpawnPos(new BlockPos(spawnPos).above());
                     if (notableIds.containsKey(definition.getDefinitionName())){
                         cap.setNotableUUID(notableIds.get(definition.getDefinitionName()));
                     }
@@ -303,9 +299,9 @@ public class MKSpawnerTileEntity extends TileEntity implements ITickableTileEnti
                 if (entity instanceof MKEntity){
                     ((MKEntity) entity).setNonCombatMoveType(getMoveType());
                 }
-                if (entity instanceof MobEntity && getWorld() instanceof IServerWorld){
-                    ((MobEntity) entity).onInitialSpawn((IServerWorld) getWorld(), getWorld().getDifficultyForLocation(
-                            entity.getPosition()), SpawnReason.SPAWNER, null, null);
+                if (entity instanceof Mob && getLevel() instanceof ServerLevel){
+                    ((Mob) entity).finalizeSpawn((ServerLevel) getLevel(), getLevel().getCurrentDifficultyAt(
+                            entity.blockPosition()), MobSpawnType.SPAWNER, null, null);
                 }
 
             }
@@ -313,12 +309,12 @@ public class MKSpawnerTileEntity extends TileEntity implements ITickableTileEnti
     }
 
     private boolean isPlayerInRange(){
-        if (getWorld() == null){
+        if (getLevel() == null){
             return false;
         }
-        Vector3d loc = Vector3d.copy(getPos());
-        for (PlayerEntity player : getWorld().getPlayers()){
-            if (player.getDistanceSq(loc) < getSpawnRange() * getSpawnRange()){
+        Vec3 loc = Vec3.atLowerCornerOf(getBlockPos());
+        for (Player player : getLevel().players()){
+            if (player.distanceToSqr(loc) < getSpawnRange() * getSpawnRange()){
                 return true;
             }
         }
@@ -326,12 +322,12 @@ public class MKSpawnerTileEntity extends TileEntity implements ITickableTileEnti
     }
 
     private boolean isPlayerInDespawnRange(){
-        if (getWorld() == null){
+        if (getLevel() == null){
             return false;
         }
-        Vector3d loc = Vector3d.copy(getPos());
-        for (PlayerEntity player : getWorld().getPlayers()){
-            if (player.getDistanceSq(loc) < getDespawnRange() * getDespawnRange()){
+        Vec3 loc = Vec3.atLowerCornerOf(getBlockPos());
+        for (Player player : getLevel().players()){
+            if (player.distanceToSqr(loc) < getDespawnRange() * getDespawnRange()){
                 return true;
             }
         }
@@ -344,39 +340,43 @@ public class MKSpawnerTileEntity extends TileEntity implements ITickableTileEnti
 
     public void clearSpawn(){
         if (entity != null){
-            entity.remove();
+            entity.remove(Entity.RemovalReason.DISCARDED);
             entity = null;
         }
         ticksSinceDeath = 0;
     }
 
-    private boolean isAir(World world, BlockPos pos){
+    private boolean isAir(Level world, BlockPos pos){
         BlockState blockState = world.getBlockState(pos);
-        return blockState.getBlock().isAir(blockState, world, pos);
+        return blockState.isAir();
     }
 
-    @Override
-    public void tick() {
-        World world = getWorld();
-        if (world != null && !world.isRemote() && randomSpawns.size() >0){
+
+    public static void spawnerTick(Level world, BlockPos blockPos, BlockState blockState, MKSpawnerTileEntity tileEntity) {
+        tileEntity.tick(world);
+    }
+
+
+    public void tick(Level level) {
+        if (level != null && randomSpawns.size() >0){
             if (needsUploadToWorld){
-                MinecraftServer server = world.getServer();
+                MinecraftServer server = level.getServer();
                 if (server != null){
-                    World overworld = server.getWorld(World.OVERWORLD);
+                    Level overworld = server.getLevel(Level.OVERWORLD);
                     if (overworld != null){
                         overworld.getCapability(NpcCapabilities.WORLD_NPC_DATA_CAPABILITY)
                                 .ifPresent(cap -> cap.addSpawner(this));
                     }
-                    if (!isAir(world, getPos().up())){
-                        world.setBlockState(getPos().up(), Blocks.AIR.getDefaultState(), 3);
+                    if (!isAir(level, getBlockPos().above())){
+                        level.setBlock(getBlockPos().above(), Blocks.AIR.defaultBlockState(), 3);
                     }
                     needsUploadToWorld = false;
 
                 }
             }
-            if (!isAir(world, getPos().up())){
+            if (!isAir(level, getBlockPos().above())){
                 if (placedByStructure){
-                    world.setBlockState(getPos().up(), Blocks.AIR.getDefaultState(), 3);
+                    level.setBlock(getBlockPos().above(), Blocks.AIR.defaultBlockState(), 3);
                 } else {
                     return;
                 }
@@ -397,7 +397,7 @@ public class MKSpawnerTileEntity extends TileEntity implements ITickableTileEnti
                 if (isAlive){
                     ticksSincePlayer++;
                     if (ticksSincePlayer > IDLE_TIME){
-                        entity.remove();
+                        entity.remove(Entity.RemovalReason.DISCARDED);
                         this.entity = null;
                         ticksSinceDeath = 0;
                         ticksSincePlayer = 0;

@@ -1,8 +1,8 @@
 package com.chaosbuffalo.mknpc.world.gen.feature.structure;
 
-import net.minecraft.nbt.CompoundNBT;
+import net.minecraft.nbt.CompoundTag;
 
 public interface IAdditionalStartData {
 
-    void readAdditional(CompoundNBT tag);
+    void readAdditional(CompoundTag tag);
 }

@@ -4,14 +4,16 @@ import com.chaosbuffalo.mkcore.GameConstants;
 import com.chaosbuffalo.mkcore.MKCore;
 import com.chaosbuffalo.mknpc.entity.MKEntity;
 import com.chaosbuffalo.mknpc.entity.ai.memory.MKMemoryModuleTypes;
-import net.minecraft.entity.LivingEntity;
-import net.minecraft.entity.ai.brain.memory.MemoryModuleType;
-import net.minecraft.entity.ai.goal.Goal;
-import net.minecraft.pathfinding.Path;
-import net.minecraft.util.math.BlockPos;
+import net.minecraft.world.entity.LivingEntity;
+import net.minecraft.world.entity.ai.memory.MemoryModuleType;
+import net.minecraft.world.entity.ai.goal.Goal;
+import net.minecraft.world.level.pathfinder.Path;
+import net.minecraft.core.BlockPos;
 
 import java.util.EnumSet;
 import java.util.Optional;
+
+import net.minecraft.world.entity.ai.goal.Goal.Flag;
 
 public class ReturnToSpawnGoal extends Goal {
     private final MKEntity entity;
@@ -22,7 +24,7 @@ public class ReturnToSpawnGoal extends Goal {
 
     public ReturnToSpawnGoal(MKEntity entity) {
         this.entity = entity;
-        this.setMutexFlags(EnumSet.of(Flag.MOVE, Flag.LOOK));
+        this.setFlags(EnumSet.of(Flag.MOVE, Flag.LOOK));
         this.ticksReturning = 0;
     }
 
@@ -32,15 +34,15 @@ public class ReturnToSpawnGoal extends Goal {
         ticksReturning++;
         if (ticksReturning > TICKS_TO_TELEPORT){
             Optional<BlockPos> blockPosOpt = entity.getBrain().getMemory(MKMemoryModuleTypes.SPAWN_POINT);
-            blockPosOpt.ifPresent(blockPos -> entity.setPositionAndUpdate(blockPos.getX() + 0.5,
+            blockPosOpt.ifPresent(blockPos -> entity.teleportTo(blockPos.getX() + 0.5,
                     blockPos.getY(), blockPos.getZ() + 0.5));
         }
-        if (this.entity.getNavigator().noPath()){
+        if (this.entity.getNavigation().isDone()){
             Optional<BlockPos> blockPosOpt = entity.getBrain().getMemory(MKMemoryModuleTypes.SPAWN_POINT);
             if (blockPosOpt.isPresent()) {
                 BlockPos spawn = blockPosOpt.get();
-                Path path = entity.getNavigator().getPathToPos(spawn, 1);
-                entity.getNavigator().setPath(path, 1.0);
+                Path path = entity.getNavigation().createPath(spawn, 1);
+                entity.getNavigation().moveTo(path, 1.0);
                 entity.getBrain().setMemory(MemoryModuleType.PATH, path);
             }
         }
@@ -48,22 +50,22 @@ public class ReturnToSpawnGoal extends Goal {
     }
 
     @Override
-    public boolean isPreemptible() {
+    public boolean isInterruptable() {
         return false;
     }
 
     @Override
-    public void resetTask() {
-        super.resetTask();
-        entity.getNavigator().clearPath();
-        entity.getBrain().removeMemory(MemoryModuleType.PATH);
-        entity.getBrain().removeMemory(MKMemoryModuleTypes.IS_RETURNING);
+    public void stop() {
+        super.stop();
+        entity.getNavigation().stop();
+        entity.getBrain().eraseMemory(MemoryModuleType.PATH);
+        entity.getBrain().eraseMemory(MKMemoryModuleTypes.IS_RETURNING);
         entity.enterNonCombatMovementState();
     }
 
     private boolean needsToReturnHome(BlockPos spawn){
         Optional<LivingEntity> targetOpt = entity.getBrain().getMemory(MKMemoryModuleTypes.THREAT_TARGET);
-        int distFromSpawn = spawn.manhattanDistance(entity.getPosition());
+        int distFromSpawn = spawn.distManhattan(entity.blockPosition());
         if (distFromSpawn <= MIN_RANGE * 2){
             return false;
         }
@@ -77,13 +79,13 @@ public class ReturnToSpawnGoal extends Goal {
         }
     }
 
-    public boolean shouldExecute() {
+    public boolean canUse() {
         Optional<BlockPos> blockPosOpt = entity.getBrain().getMemory(MKMemoryModuleTypes.SPAWN_POINT);
         if (blockPosOpt.isPresent()){
             BlockPos spawn = blockPosOpt.get();
             if (needsToReturnHome(spawn)){
-                Path path = entity.getNavigator().getPathToPos(spawn, 1);
-                entity.getNavigator().setPath(path, 1.0);
+                Path path = entity.getNavigation().createPath(spawn, 1);
+                entity.getNavigation().moveTo(path, 1.0);
                 entity.getBrain().setMemory(MemoryModuleType.PATH, path);
                 return true;
             }
@@ -91,16 +93,16 @@ public class ReturnToSpawnGoal extends Goal {
         return false;
     }
 
-    public boolean shouldContinueExecuting() {
+    public boolean canContinueToUse() {
         Optional<BlockPos> blockPosOpt = entity.getBrain().getMemory(MKMemoryModuleTypes.SPAWN_POINT);
-        return blockPosOpt.map((pos) -> pos.manhattanDistance(entity.getPosition()) > MIN_RANGE).orElse(false);
+        return blockPosOpt.map((pos) -> pos.distManhattan(entity.blockPosition()) > MIN_RANGE).orElse(false);
     }
 
-    public void startExecuting() {
+    public void start() {
         ticksReturning = 0;
-        entity.setAttackTarget(null);
-        entity.setRevengeTarget(null);
-        entity.getBrain().removeMemory(MKMemoryModuleTypes.THREAT_TARGET);
+        entity.setTarget(null);
+        entity.setLastHurtByMob(null);
+        entity.getBrain().eraseMemory(MKMemoryModuleTypes.THREAT_TARGET);
         entity.getBrain().setMemory(MKMemoryModuleTypes.IS_RETURNING, true);
     }
 

@@ -3,7 +3,7 @@
   "options": [
     {
       "optionType": "mknpc:render_group",
-      "value": "wither_king"
+      "value": "wither_stray"
     },
     {
       "optionType": "mknpc:attributes",

@@ -1,17 +1,17 @@
 package com.chaosbuffalo.mknpc.capabilities;
 
-import net.minecraft.world.World;
+import net.minecraft.world.level.Level;
 import net.minecraftforge.common.capabilities.Capability;
 
-public class WorldNpcDataProvider extends NpcCapabilities.Provider<World, IWorldNpcData> {
+public class WorldNpcDataProvider extends NpcCapabilities.Provider<Level, IWorldNpcData> {
 
 
-    public WorldNpcDataProvider(World world) {
+    public WorldNpcDataProvider(Level world) {
         super(world);
     }
 
     @Override
-    IWorldNpcData makeData(World attached) {
+    IWorldNpcData makeData(Level attached) {
         return new WorldNpcDataHandler(attached);
     }
 

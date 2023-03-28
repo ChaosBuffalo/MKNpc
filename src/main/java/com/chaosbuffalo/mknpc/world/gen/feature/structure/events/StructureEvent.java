@@ -13,8 +13,8 @@ import com.chaosbuffalo.mknpc.world.gen.feature.structure.events.requirements.St
 import com.google.common.collect.ImmutableMap;
 import com.mojang.serialization.Dynamic;
 import com.mojang.serialization.DynamicOps;
-import net.minecraft.util.ResourceLocation;
-import net.minecraft.world.World;
+import net.minecraft.resources.ResourceLocation;
+import net.minecraft.world.level.Level;
 
 import java.util.*;
 import java.util.function.Supplier;
@@ -151,11 +151,11 @@ public abstract class StructureEvent implements ISerializableAttributeContainer,
     }
 
     public boolean meetsRequirements(MKStructureEntry entry,
-                                     WorldStructureManager.ActiveStructure activeStructure, World world) {
+                                     WorldStructureManager.ActiveStructure activeStructure, Level world) {
         return requirements.stream().allMatch(x -> x.meetsRequirements(entry, activeStructure, world));
     }
 
-    public boolean meetsConditions(MKStructureEntry entry, WorldStructureManager.ActiveStructure activeStructure, World world) {
+    public boolean meetsConditions(MKStructureEntry entry, WorldStructureManager.ActiveStructure activeStructure, Level world) {
         return conditions.stream().allMatch(x -> x.meetsCondition(entry, activeStructure, world));
     }
 
@@ -163,6 +163,6 @@ public abstract class StructureEvent implements ISerializableAttributeContainer,
         return IDynamicMapTypedSerializer.getType(dynamic, TYPE_ENTRY_NAME).orElse(INVALID_OPTION);
     }
 
-    public abstract void execute(MKStructureEntry entry, WorldStructureManager.ActiveStructure activeStructure, World world);
+    public abstract void execute(MKStructureEntry entry, WorldStructureManager.ActiveStructure activeStructure, Level world);
 
 }

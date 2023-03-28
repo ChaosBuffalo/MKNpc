@@ -9,11 +9,13 @@ import com.chaosbuffalo.mkcore.abilities.ai.BrainAbilityContext;
 import com.chaosbuffalo.mknpc.MKNpc;
 import com.chaosbuffalo.mknpc.entity.MKEntity;
 import com.chaosbuffalo.mknpc.entity.ai.memory.MKMemoryModuleTypes;
-import net.minecraft.entity.LivingEntity;
-import net.minecraft.entity.ai.goal.Goal;
+import net.minecraft.world.entity.LivingEntity;
+import net.minecraft.world.entity.ai.goal.Goal;
 
 import java.util.EnumSet;
 import java.util.Optional;
+
+import net.minecraft.world.entity.ai.goal.Goal.Flag;
 
 public class UseAbilityGoal extends Goal {
     public static final int CAN_SEE_TIMEOUT = 30;
@@ -24,17 +26,17 @@ public class UseAbilityGoal extends Goal {
 
     public UseAbilityGoal(MKEntity entity) {
         this.entity = entity;
-        this.setMutexFlags(EnumSet.of(Flag.MOVE, Flag.LOOK));
+        this.setFlags(EnumSet.of(Flag.MOVE, Flag.LOOK));
         ticksSinceSeenTarget = 0;
     }
 
     @Override
-    public boolean isPreemptible() {
+    public boolean isInterruptable() {
         return false;
     }
 
     @Override
-    public boolean shouldExecute() {
+    public boolean canUse() {
         Optional<MKAbility> abilityOptional = entity.getBrain().getMemory(MKMemoryModuleTypes.CURRENT_ABILITY);
         Optional<LivingEntity> target = entity.getBrain().getMemory(MKAbilityMemories.ABILITY_TARGET);
         if (abilityOptional.isPresent() && target.isPresent()) {
@@ -47,7 +49,7 @@ public class UseAbilityGoal extends Goal {
             if (entity != targetEntity) {
                 if (!isInRange(currentAbility, targetEntity))
                     return false;
-                if (!entity.getEntitySenses().canSee(targetEntity))
+                if (!entity.getSensing().hasLineOfSight(targetEntity))
                     return false;
             }
 
@@ -61,7 +63,7 @@ public class UseAbilityGoal extends Goal {
 
     protected boolean isInRange(MKAbility ability, LivingEntity target) {
         float range = ability.getDistance(entity);
-        return target.getDistanceSq(entity) <= range * range;
+        return target.distanceToSqr(entity) <= range * range;
     }
 
     public boolean canActivate() {
@@ -70,19 +72,19 @@ public class UseAbilityGoal extends Goal {
                 .orElse(false);
     }
 
-    public boolean shouldContinueExecuting() {
+    public boolean canContinueToUse() {
         return ticksSinceSeenTarget < CAN_SEE_TIMEOUT && entity.getCapability(CoreCapabilities.ENTITY_CAPABILITY).map(
                 (entityData) -> entityData.getAbilityExecutor().isCasting()).orElse(false) && entity.getBrain()
                 .getMemory(MKAbilityMemories.ABILITY_TARGET).map(tar -> tar.isAlive()
-                        && tar.isEntityEqual(target)).orElse(false) && entity.getBrain().getMemory(MKMemoryModuleTypes.CURRENT_ABILITY)
+                        && tar.is(target)).orElse(false) && entity.getBrain().getMemory(MKMemoryModuleTypes.CURRENT_ABILITY)
                 .map(mkAbility -> mkAbility.equals(currentAbility)).orElse(false);
     }
 
     @Override
-    public void startExecuting() {
-        if (!target.isEntityEqual(entity)) {
-            entity.faceEntity(target, 360.0f, 360.0f);
-            entity.getLookController().setLookPositionWithEntity(target, 50.0f, 50.0f);
+    public void start() {
+        if (!target.is(entity)) {
+            entity.lookAt(target, 360.0f, 360.0f);
+            entity.getLookControl().setLookAt(target, 50.0f, 50.0f);
         }
         AbilityContext context = new BrainAbilityContext(entity);
         MKNpc.LOGGER.debug("ai {} casting {} on {}", entity, currentAbility.getAbilityId(), target);
@@ -92,10 +94,10 @@ public class UseAbilityGoal extends Goal {
 
     @Override
     public void tick() {
-        if (!target.isEntityEqual(entity)){
-            entity.faceEntity(target, 50.0f, 50.0f);
-            entity.getLookController().setLookPositionWithEntity(target, 50.0f, 50.0f);
-            if (entity.getEntitySenses().canSee(target)){
+        if (!target.is(entity)){
+            entity.lookAt(target, 50.0f, 50.0f);
+            entity.getLookControl().setLookAt(target, 50.0f, 50.0f);
+            if (entity.getSensing().hasLineOfSight(target)){
                 ticksSinceSeenTarget = 0;
             } else {
                 ticksSinceSeenTarget++;
@@ -104,13 +106,13 @@ public class UseAbilityGoal extends Goal {
     }
 
     @Override
-    public void resetTask() {
-        super.resetTask();
+    public void stop() {
+        super.stop();
         currentAbility = null;
         target = null;
-        entity.getBrain().removeMemory(MKMemoryModuleTypes.CURRENT_ABILITY);
-        entity.getBrain().removeMemory(MKAbilityMemories.ABILITY_TARGET);
-        entity.getBrain().removeMemory(MKAbilityMemories.ABILITY_POSITION_TARGET);
+        entity.getBrain().eraseMemory(MKMemoryModuleTypes.CURRENT_ABILITY);
+        entity.getBrain().eraseMemory(MKAbilityMemories.ABILITY_TARGET);
+        entity.getBrain().eraseMemory(MKAbilityMemories.ABILITY_POSITION_TARGET);
         entity.returnToDefaultMovementState();
         ticksSinceSeenTarget = 0;
 

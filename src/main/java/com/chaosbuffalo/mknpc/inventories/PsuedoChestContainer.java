@@ -1,25 +1,25 @@
 package com.chaosbuffalo.mknpc.inventories;
 
-import net.minecraft.entity.player.PlayerInventory;
-import net.minecraft.inventory.IInventory;
-import net.minecraft.inventory.container.ChestContainer;
-import net.minecraft.inventory.container.ContainerType;
+import net.minecraft.world.entity.player.Inventory;
+import net.minecraft.world.Container;
+import net.minecraft.world.inventory.ChestMenu;
+import net.minecraft.world.inventory.MenuType;
 
-public class PsuedoChestContainer extends ChestContainer {
-    private final IInventory psuedoChest;
+public class PsuedoChestContainer extends ChestMenu {
+    private final Container psuedoChest;
 
-    public static PsuedoChestContainer createGeneric9X3(int id, PlayerInventory player, IInventory inventory, IInventory realblockEntity) {
-        return new PsuedoChestContainer(ContainerType.GENERIC_9X3, id, player, inventory, 3, realblockEntity);
+    public static PsuedoChestContainer createGeneric9X3(int id, Inventory player, Container inventory, Container realblockEntity) {
+        return new PsuedoChestContainer(MenuType.GENERIC_9x3, id, player, inventory, 3, realblockEntity);
     }
 
-    public PsuedoChestContainer(ContainerType<?> type, int id, PlayerInventory playerInventoryIn,
-                                IInventory p_i50092_4_, int rows, IInventory otherChest) {
+    public PsuedoChestContainer(MenuType<?> type, int id, Inventory playerInventoryIn,
+                                Container p_i50092_4_, int rows, Container otherChest) {
         super(type, id, playerInventoryIn, p_i50092_4_, rows);
         psuedoChest = otherChest;
     }
 
     @Override
-    public IInventory getLowerChestInventory() {
+    public Container getContainer() {
         return psuedoChest;
     }
 }

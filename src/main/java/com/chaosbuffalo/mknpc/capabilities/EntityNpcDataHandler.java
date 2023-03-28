@@ -17,16 +17,16 @@ import com.chaosbuffalo.mkweapons.items.randomization.LootTier;
 import com.chaosbuffalo.mkweapons.items.randomization.LootTierManager;
 import com.chaosbuffalo.mkweapons.items.randomization.slots.LootSlot;
 import com.chaosbuffalo.mkweapons.items.randomization.slots.LootSlotManager;
-import net.minecraft.entity.LivingEntity;
-import net.minecraft.entity.item.ItemEntity;
-import net.minecraft.item.ItemStack;
-import net.minecraft.nbt.CompoundNBT;
+import net.minecraft.world.entity.LivingEntity;
+import net.minecraft.world.entity.item.ItemEntity;
+import net.minecraft.world.item.ItemStack;
+import net.minecraft.nbt.CompoundTag;
 import net.minecraft.server.MinecraftServer;
-import net.minecraft.util.DamageSource;
-import net.minecraft.util.ResourceLocation;
-import net.minecraft.util.Util;
-import net.minecraft.util.math.BlockPos;
-import net.minecraft.world.World;
+import net.minecraft.world.damagesource.DamageSource;
+import net.minecraft.resources.ResourceLocation;
+import net.minecraft.Util;
+import net.minecraft.core.BlockPos;
+import net.minecraft.world.level.Level;
 
 import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
@@ -63,7 +63,7 @@ public class EntityNpcDataHandler implements IEntityNpcData {
         bonusXp = 0;
         notable = false;
         spawnID = UUID.randomUUID();
-        notableId = Util.DUMMY_UUID;
+        notableId = Util.NIL_UUID;
         structureId = null;
         needsDefinitionApplied = false;
         noLootChance = 0;
@@ -116,7 +116,7 @@ public class EntityNpcDataHandler implements IEntityNpcData {
         LivingEntity entity = getEntity();
         double noLoot = getNoLootChance();
         for (int i = 0; i < dropChances + lootingLevel; i++){
-            if (entity.getRNG().nextDouble() >= noLoot){
+            if (entity.getRandom().nextDouble() >= noLoot){
                 RandomCollection<LootOptionEntry> rolls = new RandomCollection<>();
                 for (LootOptionEntry option : options){
                     if (option.isValidConfiguration()){
@@ -128,11 +128,11 @@ public class EntityNpcDataHandler implements IEntityNpcData {
                     LootSlot lootSlot = LootSlotManager.getSlotFromName(selected.lootSlotName);
                     LootTier lootTier = LootTierManager.getTierFromName(selected.lootTierName);
                     if (lootSlot != null && lootTier != null){
-                        LootConstructor constructor = lootTier.generateConstructorForSlot(entity.getRNG(), lootSlot);
+                        LootConstructor constructor = lootTier.generateConstructorForSlot(entity.getRandom(), lootSlot);
                         if (constructor != null){
-                            ItemStack item = constructor.constructItem(entity.getRNG(), getDifficultyValue());
+                            ItemStack item = constructor.constructItem(entity.getRandom(), getDifficultyValue());
                             if (!item.isEmpty()){
-                                drops.add(entity.entityDropItem(item));
+                                drops.add(entity.spawnAtLocation(item));
                             }
                         }
                     }
@@ -155,7 +155,7 @@ public class EntityNpcDataHandler implements IEntityNpcData {
             return;
         }
         if (server != null && entry.getQuestId() == null){
-            World overworld = server.getWorld(World.OVERWORLD);
+            Level overworld = server.getLevel(Level.OVERWORLD);
             if (overworld != null){
                 Optional<QuestChainInstance.QuestChainBuildResult> quest = overworld.getCapability(NpcCapabilities.WORLD_NPC_DATA_CAPABILITY)
                         .map(x -> x.buildQuest(npcDef, getSpawnPos())).orElse(Optional.empty());
@@ -192,7 +192,7 @@ public class EntityNpcDataHandler implements IEntityNpcData {
         if (questGenCd <= 0){
             if (questRequests.size() > 0){
                 handleQuestRequests();
-                questGenCd = entity.getRNG().nextInt(GameConstants.TICKS_PER_SECOND * 5);
+                questGenCd = entity.getRandom().nextInt(GameConstants.TICKS_PER_SECOND * 5);
             }
         } else {
             questGenCd--;
@@ -337,24 +337,24 @@ public class EntityNpcDataHandler implements IEntityNpcData {
     }
 
     @Override
-    public CompoundNBT serializeNBT() {
-        CompoundNBT tag = new CompoundNBT();
+    public CompoundTag serializeNBT() {
+        CompoundTag tag = new CompoundTag();
         if (definition != null){
             tag.putString("npc_definition", definition.getDefinitionName().toString());
         }
-        tag.putUniqueId("spawn_id", spawnID);
+        tag.putUUID("spawn_id", spawnID);
         tag.putBoolean("mk_spawned", mkSpawned);
         tag.putDouble("difficulty_value", difficultyValue);
         return tag;
     }
 
     @Override
-    public void deserializeNBT(CompoundNBT nbt) {
+    public void deserializeNBT(CompoundTag nbt) {
         if (nbt.contains("mk_spawned")){
             mkSpawned = nbt.getBoolean("mk_spawned");
         }
         if (nbt.contains("spawn_id")){
-            spawnID = nbt.getUniqueId("spawn_id");
+            spawnID = nbt.getUUID("spawn_id");
         }
         if (nbt.contains("npc_definition")){
             ResourceLocation defName = new ResourceLocation(nbt.getString("npc_definition"));

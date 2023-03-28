@@ -7,10 +7,10 @@ import com.chaosbuffalo.mkwidgets.client.gui.constraints.MarginConstraint;
 import com.chaosbuffalo.mkwidgets.client.gui.layouts.MKLayout;
 import com.chaosbuffalo.mkwidgets.client.gui.widgets.MKRectangle;
 import com.chaosbuffalo.mkwidgets.client.gui.widgets.MKText;
-import com.mojang.blaze3d.matrix.MatrixStack;
+import com.mojang.blaze3d.vertex.PoseStack;
 import net.minecraft.client.Minecraft;
-import net.minecraft.client.gui.FontRenderer;
-import net.minecraft.client.resources.I18n;
+import net.minecraft.client.gui.Font;
+import net.minecraft.client.resources.language.I18n;
 
 import java.util.function.Consumer;
 
@@ -18,7 +18,7 @@ public class NpcDefinitionEntry extends MKLayout {
     private final NpcDefinitionClient npcDefinitionClient;
     private final Consumer<NpcDefinitionClient> callback;
 
-    public NpcDefinitionEntry(NpcDefinitionClient definition, int width, FontRenderer font,
+    public NpcDefinitionEntry(NpcDefinitionClient definition, int width, Font font,
                               Consumer<NpcDefinitionClient> callback) {
         super(0, 0, width, 18);
         this.npcDefinitionClient = definition;
@@ -27,7 +27,7 @@ public class NpcDefinitionEntry extends MKLayout {
         String text;
         if (faction != null){
             text = String.format("%s (%s) %s", definition.getName(),
-                    faction.getTranslationKey() != null ? I18n.format(faction.getTranslationKey()) :
+                    faction.getTranslationKey() != null ? I18n.get(faction.getTranslationKey()) :
                             definition.getFaction().toString(), definition.getDefinitionName().toString());
         } else {
             text = definition.getName();
@@ -64,7 +64,7 @@ public class NpcDefinitionEntry extends MKLayout {
     }
 
     @Override
-    public void postDraw(MatrixStack stack, Minecraft mc, int x, int y, int width, int height, int mouseX, int mouseY, float partialTicks) {
+    public void postDraw(PoseStack stack, Minecraft mc, int x, int y, int width, int height, int mouseX, int mouseY, float partialTicks) {
         if (isHovered()) {
             mkFill(stack, x, y, x + width, y + height, 0x55ffffff);
         }

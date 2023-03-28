@@ -1,6 +1,6 @@
 package com.chaosbuffalo.mknpc.client.gui.widgets;
 
-import net.minecraft.client.gui.FontRenderer;
+import net.minecraft.client.gui.Font;
 
 public class RadioButton<T> extends CenteringHorizontalLayout {
     private final HoverTextButton hoverTextButton;
@@ -10,7 +10,7 @@ public class RadioButton<T> extends CenteringHorizontalLayout {
     private static final int UNSELECTED_COLOR = 0xffffffff;
     private final RadioButtonList.RadioValue<T> value;
 
-    public RadioButton(int x, int y, int height, FontRenderer fontRenderer, RadioButtonList.RadioValue<T> value,
+    public RadioButton(int x, int y, int height, Font fontRenderer, RadioButtonList.RadioValue<T> value,
                        RadioButtonList<T> radioList) {
         super(x, y, height, fontRenderer);
         this.value = value;
@@ -20,7 +20,7 @@ public class RadioButton<T> extends CenteringHorizontalLayout {
         addWidget(nestedRect);
         hoverTextButton = new HoverTextButton(fontRenderer, value.getName(), this::onSelected);
         hoverTextButton.setIsCentered(false);
-        hoverTextButton.setWidth(Math.max(fontRenderer.getStringWidth(value.getName()), 80));
+        hoverTextButton.setWidth(Math.max(fontRenderer.width(value.getName()), 80));
         addWidget(hoverTextButton);
 
     }

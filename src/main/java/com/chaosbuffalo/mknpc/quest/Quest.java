@@ -19,10 +19,10 @@ import com.google.common.collect.ImmutableMap;
 import com.mojang.datafixers.util.Pair;
 import com.mojang.serialization.Dynamic;
 import com.mojang.serialization.DynamicOps;
-import net.minecraft.util.ResourceLocation;
-import net.minecraft.util.text.IFormattableTextComponent;
-import net.minecraft.util.text.ITextComponent;
-import net.minecraft.util.text.StringTextComponent;
+import net.minecraft.resources.ResourceLocation;
+import net.minecraft.network.chat.MutableComponent;
+import net.minecraft.network.chat.Component;
+import net.minecraft.network.chat.TextComponent;
 
 import java.util.*;
 import java.util.function.Supplier;
@@ -36,10 +36,10 @@ public class Quest {
     private final List<QuestReward> rewards;
     private final List<QuestRequirement> requirements;
     private String questName;
-    private IFormattableTextComponent description;
-    public static final IFormattableTextComponent defaultDescription = new StringTextComponent("Placeholder Quest Description");
+    private MutableComponent description;
+    public static final MutableComponent defaultDescription = new TextComponent("Placeholder Quest Description");
 
-    public Quest(String questName, IFormattableTextComponent description){
+    public Quest(String questName, MutableComponent description){
         this.questName = questName;
         this.objectives = new ArrayList<>();
         this.objectiveIndex = new HashMap<>();
@@ -98,7 +98,7 @@ public class Quest {
         return objectiveIndex.get(name);
     }
 
-    public IFormattableTextComponent getDescription() {
+    public MutableComponent getDescription() {
         return description;
     }
 
@@ -106,7 +106,7 @@ public class Quest {
         ImmutableMap.Builder<D, D> builder = ImmutableMap.builder();
         builder.put(ops.createString("questName"), ops.createString(questName));
         builder.put(ops.createString("objectives"), ops.createList(objectives.stream().map(x -> x.serialize(ops))));
-        builder.put(ops.createString("description"), ops.createString(ITextComponent.Serializer.toJson(description)));
+        builder.put(ops.createString("description"), ops.createString(Component.Serializer.toJson(description)));
         builder.put(ops.createString("autoComplete"), ops.createBoolean(autoComplete));
         builder.put(ops.createString("rewards"), ops.createList(rewards.stream().map(x -> x.serialize(ops))));
         return ops.createMap(builder.build());
@@ -115,8 +115,8 @@ public class Quest {
     public <D> void deserialize(Dynamic<D> dynamic){
         questName = dynamic.get("questName").asString("default");
         autoComplete = dynamic.get("autoComplete").asBoolean(false);
-        description = ITextComponent.Serializer.getComponentFromJson(
-                dynamic.get("description").asString(ITextComponent.Serializer.toJson(defaultDescription)));
+        description = Component.Serializer.fromJson(
+                dynamic.get("description").asString(Component.Serializer.toJson(defaultDescription)));
         List<Optional<QuestObjective<?>>> objectives = dynamic.get("objectives").asList(x -> {
             ResourceLocation type = QuestObjective.getType(x);
             Supplier<QuestObjective<?>> sup = QuestDefinitionManager.getObjectiveDeserializer(type);

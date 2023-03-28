@@ -2,30 +2,30 @@ package com.chaosbuffalo.mknpc.npc;
 
 import com.chaosbuffalo.mknpc.MKNpc;
 import com.chaosbuffalo.mknpc.tile_entities.MKSpawnerTileEntity;
-import net.minecraft.nbt.CompoundNBT;
-import net.minecraft.nbt.NBTDynamicOps;
-import net.minecraft.nbt.NBTUtil;
-import net.minecraft.util.ResourceLocation;
-import net.minecraft.util.math.GlobalPos;
-import net.minecraft.util.text.StringTextComponent;
-import net.minecraft.world.World;
+import net.minecraft.nbt.CompoundTag;
+import net.minecraft.nbt.NbtOps;
+import net.minecraft.nbt.NbtUtils;
+import net.minecraft.resources.ResourceLocation;
+import net.minecraft.core.GlobalPos;
+import net.minecraft.network.chat.TextComponent;
+import net.minecraft.world.level.Level;
 import net.minecraftforge.common.util.INBTSerializable;
 
 import javax.annotation.Nullable;
 import java.util.UUID;
 
-public class NotableNpcEntry implements INBTSerializable<CompoundNBT> {
+public class NotableNpcEntry implements INBTSerializable<CompoundTag> {
 
     private GlobalPos location;
-    private StringTextComponent name;
+    private TextComponent name;
     private ResourceLocation definition;
     private UUID structureId;
     private UUID spawnerId;
     private UUID notableId;
 
     public NotableNpcEntry(NpcDefinition definition, MKSpawnerTileEntity spawner){
-        this.location = GlobalPos.getPosition(spawner.getWorld().getDimensionKey(), spawner.getPos());
-        this.name = definition.getNameForEntity(spawner.getWorld(), spawner.getSpawnUUID());
+        this.location = spawner.getGlobalBlockPos();
+        this.name = definition.getNameForEntity(spawner.getLevel(), spawner.getSpawnUUID());
         this.definition = definition.getDefinitionName();
         this.structureId = spawner.getStructureId();
         this.spawnerId = spawner.getSpawnUUID();
@@ -52,7 +52,7 @@ public class NotableNpcEntry implements INBTSerializable<CompoundNBT> {
         return notableId;
     }
 
-    public StringTextComponent getName() {
+    public TextComponent getName() {
         return name;
     }
 
@@ -62,26 +62,26 @@ public class NotableNpcEntry implements INBTSerializable<CompoundNBT> {
     }
 
     @Override
-    public CompoundNBT serializeNBT() {
-        CompoundNBT tag = new CompoundNBT();
-        tag.put("location", GlobalPos.CODEC.encodeStart(NBTDynamicOps.INSTANCE, getLocation())
+    public CompoundTag serializeNBT() {
+        CompoundTag tag = new CompoundTag();
+        tag.put("location", GlobalPos.CODEC.encodeStart(NbtOps.INSTANCE, getLocation())
                 .getOrThrow(false, MKNpc.LOGGER::error));
-        tag.putUniqueId("spawnerId", spawnerId);
-        tag.putUniqueId("structureId", structureId);
-        tag.putUniqueId("notableId", notableId);
+        tag.putUUID("spawnerId", spawnerId);
+        tag.putUUID("structureId", structureId);
+        tag.putUUID("notableId", notableId);
         tag.putString("definition", definition.toString());
-        tag.putString("name", name.getUnformattedComponentText());
+        tag.putString("name", name.getContents());
         return tag;
     }
 
     @Override
-    public void deserializeNBT(CompoundNBT nbt) {
-        location = GlobalPos.CODEC.parse(NBTDynamicOps.INSTANCE, nbt.getCompound("location"))
-                .result().orElse(GlobalPos.getPosition(World.OVERWORLD, NBTUtil.readBlockPos(nbt.getCompound("location"))));
-        spawnerId = nbt.getUniqueId("spawnerId");
-        structureId = nbt.getUniqueId("structureId");
+    public void deserializeNBT(CompoundTag nbt) {
+        location = GlobalPos.CODEC.parse(NbtOps.INSTANCE, nbt.getCompound("location"))
+                .result().orElse(GlobalPos.of(Level.OVERWORLD, NbtUtils.readBlockPos(nbt.getCompound("location"))));
+        spawnerId = nbt.getUUID("spawnerId");
+        structureId = nbt.getUUID("structureId");
         definition = new ResourceLocation(nbt.getString("definition"));
-        name = new StringTextComponent(nbt.getString("name"));
-        notableId = nbt.getUniqueId("notableId");
+        name = new TextComponent(nbt.getString("name"));
+        notableId = nbt.getUUID("notableId");
     }
 }

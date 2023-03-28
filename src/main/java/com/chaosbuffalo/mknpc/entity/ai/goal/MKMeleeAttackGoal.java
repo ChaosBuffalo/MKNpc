@@ -9,23 +9,25 @@ import com.chaosbuffalo.mkcore.utils.EntityUtils;
 import com.chaosbuffalo.mknpc.MKNpc;
 import com.chaosbuffalo.mknpc.entity.MKEntity;
 import com.chaosbuffalo.mknpc.entity.ai.memory.MKMemoryModuleTypes;
-import net.minecraft.entity.LivingEntity;
-import net.minecraft.entity.ai.brain.Brain;
-import net.minecraft.entity.ai.goal.Goal;
-import net.minecraft.item.ItemStack;
-import net.minecraft.util.Hand;
+import net.minecraft.world.entity.LivingEntity;
+import net.minecraft.world.entity.ai.Brain;
+import net.minecraft.world.entity.ai.goal.Goal;
+import net.minecraft.world.item.ItemStack;
+import net.minecraft.world.InteractionHand;
 import net.minecraftforge.common.MinecraftForge;
 import net.minecraftforge.common.util.LazyOptional;
 
 import java.util.EnumSet;
 import java.util.Optional;
 
+import net.minecraft.world.entity.ai.goal.Goal.Flag;
+
 public class MKMeleeAttackGoal extends Goal {
     private final MKEntity entity;
     private LivingEntity target;
 
     @Override
-    public boolean shouldExecute() {
+    public boolean canUse() {
         Brain<?> brain = entity.getBrain();
         Optional<LivingEntity> targetOpt = brain.getMemory(MKMemoryModuleTypes.THREAT_TARGET);
         if (targetOpt.isPresent()) {
@@ -42,12 +44,12 @@ public class MKMeleeAttackGoal extends Goal {
     public MKMeleeAttackGoal(MKEntity entity) {
         this.entity = entity;
         this.target = null;
-        this.setMutexFlags(EnumSet.of(Flag.MOVE, Flag.LOOK));
+        this.setFlags(EnumSet.of(Flag.MOVE, Flag.LOOK));
     }
 
 
-    public void startExecuting() {
-        this.entity.setAggroed(true);
+    public void start() {
+        this.entity.setAggressive(true);
     }
 
     public int getComboCount() {
@@ -60,22 +62,22 @@ public class MKMeleeAttackGoal extends Goal {
 
     @Override
     public void tick() {
-        entity.getNavigator().tryMoveToEntityLiving(target, entity.getLungeSpeed());
-        entity.getLookController().setLookPositionWithEntity(target, 30.0f, 30.0f);
+        entity.getNavigation().moveTo(target, entity.getLungeSpeed());
+        entity.getLookControl().setLookAt(target, 30.0f, 30.0f);
         double cooldownPeriod = EntityUtils.getCooldownPeriod(entity);
         int ticksSinceSwing = entity.getTicksSinceLastSwing();
-        if (ticksSinceSwing >= cooldownPeriod && isInReach(target) && entity.getEntitySenses().canSee(target)) {
+        if (ticksSinceSwing >= cooldownPeriod && isInReach(target) && entity.getSensing().hasLineOfSight(target)) {
             performAttack(target);
         }
 
     }
 
     protected void performAttack(LivingEntity enemy) {
-        entity.swingArm(Hand.MAIN_HAND);
-        boolean didAttack = entity.attackEntityAsMob(enemy);
-        ItemStack mainHand = entity.getHeldItemMainhand();
+        entity.swing(InteractionHand.MAIN_HAND);
+        boolean didAttack = entity.doHurtTarget(enemy);
+        ItemStack mainHand = entity.getMainHandItem();
         if (didAttack && !mainHand.isEmpty()){
-            mainHand.getItem().hitEntity(mainHand, enemy, entity);
+            mainHand.getItem().hurtEnemy(mainHand, enemy, entity);
         }
         entity.resetSwing();
         LazyOptional<? extends IMKEntityData> entityData = MKCore.getEntityData(entity);
@@ -90,31 +92,31 @@ public class MKMeleeAttackGoal extends Goal {
     }
 
     public boolean isInMeleeRange(LivingEntity target){
-        return entity.getDistanceSq(target) <= this.getAttackReachSqr(target);
+        return entity.distanceToSqr(target) <= this.getAttackReachSqr(target);
     }
 
 
 
     public boolean isInReach(LivingEntity target) {
-        return entity.getDistanceSq(target) <= (this.getAttackReachSqr(target) * MKNpc.getDifficultyScale(target));
+        return entity.distanceToSqr(target) <= (this.getAttackReachSqr(target) * MKNpc.getDifficultyScale(target));
     }
 
-    public void resetTask() {
-        this.entity.setAggroed(false);
+    public void stop() {
+        this.entity.setAggressive(false);
         this.target = null;
     }
 
     protected double getAttackReachSqr(LivingEntity attackTarget) {
         double range = entity.getAttribute(MKAttributes.ATTACK_REACH).getValue();
-        range *= entity.getRenderScale();
+        range *= entity.getScale();
         return range * range;
     }
 
     @Override
-    public boolean shouldContinueExecuting() {
+    public boolean canContinueToUse() {
         Brain<?> brain = entity.getBrain();
         Optional<LivingEntity> targetOpt = brain.getMemory(MKMemoryModuleTypes.THREAT_TARGET);
-        return target != null && targetOpt.map((ent) -> ent.isEntityEqual(target) && isInMeleeRange(ent)).orElse(false);
+        return target != null && targetOpt.map((ent) -> ent.is(target) && isInMeleeRange(ent)).orElse(false);
     }
 
 

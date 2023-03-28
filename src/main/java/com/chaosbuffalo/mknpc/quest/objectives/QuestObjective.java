@@ -13,11 +13,11 @@ import com.chaosbuffalo.mknpc.quest.data.player.PlayerQuestObjectiveData;
 import com.google.common.collect.ImmutableMap;
 import com.mojang.serialization.Dynamic;
 import com.mojang.serialization.DynamicOps;
-import net.minecraft.nbt.CompoundNBT;
-import net.minecraft.util.ResourceLocation;
-import net.minecraft.util.text.IFormattableTextComponent;
-import net.minecraft.util.text.ITextComponent;
-import net.minecraft.util.text.StringTextComponent;
+import net.minecraft.nbt.CompoundTag;
+import net.minecraft.resources.ResourceLocation;
+import net.minecraft.network.chat.MutableComponent;
+import net.minecraft.network.chat.Component;
+import net.minecraft.network.chat.TextComponent;
 
 import java.util.*;
 import java.util.stream.Collectors;
@@ -27,14 +27,14 @@ public abstract class QuestObjective<T extends ObjectiveInstanceData>
 
     private static final String TYPE_NAME_FIELD = "objectiveType";
     public final static ResourceLocation INVALID_OPTION = new ResourceLocation(MKNpc.MODID, "quest_objective.invalid");
-    protected static final IFormattableTextComponent defaultDescription = new StringTextComponent("Placeholder");
+    protected static final MutableComponent defaultDescription = new TextComponent("Placeholder");
 
     private final List<ISerializableAttribute<?>> attributes;
     private final ResourceLocation typeName;
     protected final StringAttribute objectiveName = new StringAttribute("objectiveName", "invalid");
-    protected List<IFormattableTextComponent> description = new ArrayList<>();
+    protected List<MutableComponent> description = new ArrayList<>();
 
-    public QuestObjective(ResourceLocation typeName, String name, IFormattableTextComponent... description){
+    public QuestObjective(ResourceLocation typeName, String name, MutableComponent... description){
         this.attributes = new ArrayList<>();
         addAttribute(objectiveName);
         objectiveName.setValue(name);
@@ -42,11 +42,11 @@ public abstract class QuestObjective<T extends ObjectiveInstanceData>
         this.description.addAll(Arrays.asList(description));
     }
 
-    public void setDescription(IFormattableTextComponent... description) {
+    public void setDescription(MutableComponent... description) {
         this.setDescription(Arrays.asList(description));
     }
 
-    public void setDescription(List<IFormattableTextComponent> description){
+    public void setDescription(List<MutableComponent> description){
         this.description.clear();
         this.description.addAll(description);
     }
@@ -80,7 +80,7 @@ public abstract class QuestObjective<T extends ObjectiveInstanceData>
 
     public abstract T instanceDataFactory();
 
-    public T loadInstanceData(CompoundNBT nbt){
+    public T loadInstanceData(CompoundTag nbt){
         T data = instanceDataFactory();
         data.deserializeNBT(nbt);
         return data;
@@ -107,7 +107,7 @@ public abstract class QuestObjective<T extends ObjectiveInstanceData>
         data.putObjective(getObjectiveName(), generateInstanceData(questStructures));
     }
 
-    public List<IFormattableTextComponent> getDescription(){
+    public List<MutableComponent> getDescription(){
         return description;
     }
 
@@ -115,7 +115,7 @@ public abstract class QuestObjective<T extends ObjectiveInstanceData>
     public <D> void writeAdditionalData(DynamicOps<D> ops, ImmutableMap.Builder<D, D> builder) {
         builder.put(ops.createString("description"),
                 ops.createList(description.stream()
-                        .map(x -> ops.createString(ITextComponent.Serializer.toJson(x)))));
+                        .map(x -> ops.createString(Component.Serializer.toJson(x)))));
         builder.put(ops.createString("attributes"), serializeAttributeMap(ops));
     }
 
@@ -124,7 +124,7 @@ public abstract class QuestObjective<T extends ObjectiveInstanceData>
         description = dynamic.get("description")
                 .asList(x -> x.asString().resultOrPartial(MKNpc.LOGGER::error).orElseThrow(IllegalArgumentException::new))
                 .stream()
-                .map(ITextComponent.Serializer::getComponentFromJson)
+                .map(Component.Serializer::fromJson)
                 .collect(Collectors.toList());
 
         deserializeAttributeMap(dynamic, "attributes");

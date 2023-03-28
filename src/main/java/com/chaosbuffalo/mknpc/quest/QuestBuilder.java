@@ -9,9 +9,9 @@ import com.chaosbuffalo.mknpc.quest.dialogue.conditions.ObjectivesCompleteCondit
 import com.chaosbuffalo.mknpc.quest.dialogue.effects.ObjectiveCompleteEffect;
 import com.chaosbuffalo.mknpc.quest.objectives.*;
 import com.chaosbuffalo.mknpc.quest.rewards.QuestReward;
-import net.minecraft.item.ItemStack;
-import net.minecraft.util.ResourceLocation;
-import net.minecraft.util.text.IFormattableTextComponent;
+import net.minecraft.world.item.ItemStack;
+import net.minecraft.resources.ResourceLocation;
+import net.minecraft.network.chat.MutableComponent;
 
 import javax.annotation.Nullable;
 import java.util.List;
@@ -20,7 +20,7 @@ import java.util.function.Consumer;
 public class QuestBuilder {
     private Quest quest;
 
-    public QuestBuilder(String questName, IFormattableTextComponent description){
+    public QuestBuilder(String questName, MutableComponent description){
         this.quest = new Quest(questName, description);
     }
 
@@ -58,14 +58,14 @@ public class QuestBuilder {
         return this;
     }
 
-    public QuestBuilder questLootFromNotable(String objectiveName, QuestNpc npc, double chance, int count, IFormattableTextComponent itemDescription){
+    public QuestBuilder questLootFromNotable(String objectiveName, QuestNpc npc, double chance, int count, MutableComponent itemDescription){
         QuestLootNotableObjective obj = new QuestLootNotableObjective(objectiveName, npc.location.structureName,
                 npc.location.structureIndex, npc.npcDef, chance, count, itemDescription);
         objective(obj);
         return this;
     }
 
-    public QuestBuilder hailWithObjectives(String objectiveName, IFormattableTextComponent description,
+    public QuestBuilder hailWithObjectives(String objectiveName, MutableComponent description,
                                            QuestNpc talkTo, String withComplete,
                                            String withoutComplete, List<String> objectives,
                                            @Nullable Consumer<TalkToNpcObjective> additionalLogic){
@@ -86,7 +86,7 @@ public class QuestBuilder {
         return this;
     }
 
-    public QuestBuilder hailWithCondition(String objectiveName, IFormattableTextComponent description,
+    public QuestBuilder hailWithCondition(String objectiveName, MutableComponent description,
                                           QuestNpc talkTo, String withCondition, String withoutCondition,
                                           DialogueCondition withCond,
                                           @Nullable Consumer<TalkToNpcObjective> additionalLogic){
@@ -107,7 +107,7 @@ public class QuestBuilder {
         return this;
     }
 
-    public QuestBuilder simpleHail(String objectiveName, IFormattableTextComponent description,
+    public QuestBuilder simpleHail(String objectiveName, MutableComponent description,
                                    QuestNpc talkTo, String hailMessage,
                                    boolean immediateComplete, @Nullable Consumer<TalkToNpcObjective> additionalLogic){
         TalkToNpcObjective talkObj = new TalkToNpcObjective(
@@ -126,7 +126,7 @@ public class QuestBuilder {
         return this;
     }
 
-    public QuestBuilder lootChest(String objectiveName, IFormattableTextComponent description, QuestLocation location,
+    public QuestBuilder lootChest(String objectiveName, MutableComponent description, QuestLocation location,
                                   String chestTag, ItemStack... items){
         LootChestObjective chestObj = new LootChestObjective(objectiveName, location.structureName,
                 location.structureIndex, chestTag, description);

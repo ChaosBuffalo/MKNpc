@@ -1,36 +1,36 @@
 package com.chaosbuffalo.mknpc.quest.data.player;
 
 import com.chaosbuffalo.mknpc.quest.rewards.QuestReward;
-import net.minecraft.nbt.CompoundNBT;
-import net.minecraft.util.text.IFormattableTextComponent;
-import net.minecraft.util.text.ITextComponent;
+import net.minecraft.nbt.CompoundTag;
+import net.minecraft.network.chat.MutableComponent;
+import net.minecraft.network.chat.Component;
 import net.minecraftforge.common.util.INBTSerializable;
 
-public class PlayerQuestReward implements INBTSerializable<CompoundNBT> {
-    IFormattableTextComponent description;
+public class PlayerQuestReward implements INBTSerializable<CompoundTag> {
+    MutableComponent description;
 
 
     public PlayerQuestReward(QuestReward questReward){
         this.description = questReward.getDescription();
     }
 
-    public PlayerQuestReward(CompoundNBT nbt){
+    public PlayerQuestReward(CompoundTag nbt){
         deserializeNBT(nbt);
     }
 
-    public IFormattableTextComponent getDescription() {
+    public MutableComponent getDescription() {
         return description;
     }
 
     @Override
-    public CompoundNBT serializeNBT() {
-        CompoundNBT nbt = new CompoundNBT();
-        nbt.putString("description", ITextComponent.Serializer.toJson(description));
+    public CompoundTag serializeNBT() {
+        CompoundTag nbt = new CompoundTag();
+        nbt.putString("description", Component.Serializer.toJson(description));
         return nbt;
     }
 
     @Override
-    public void deserializeNBT(CompoundNBT nbt) {
-        description = ITextComponent.Serializer.getComponentFromJson(nbt.getString("description"));
+    public void deserializeNBT(CompoundTag nbt) {
+        description = Component.Serializer.fromJson(nbt.getString("description"));
     }
 }

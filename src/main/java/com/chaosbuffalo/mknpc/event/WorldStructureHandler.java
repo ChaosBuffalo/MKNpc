@@ -5,16 +5,16 @@ import com.chaosbuffalo.mknpc.capabilities.IWorldNpcData;
 import com.chaosbuffalo.mknpc.capabilities.NpcCapabilities;
 import com.chaosbuffalo.mknpc.capabilities.WorldStructureManager;
 import com.chaosbuffalo.mknpc.world.gen.feature.structure.MKJigsawStructure;
-import net.minecraft.entity.player.ServerPlayerEntity;
-import net.minecraft.util.ResourceLocation;
-import net.minecraft.world.World;
-import net.minecraft.world.gen.feature.structure.StructureManager;
-import net.minecraft.world.gen.feature.structure.StructureStart;
-import net.minecraft.world.server.ServerWorld;
+import net.minecraft.server.level.ServerPlayer;
+import net.minecraft.resources.ResourceLocation;
+import net.minecraft.world.level.Level;
+import net.minecraft.world.level.StructureFeatureManager;
+import net.minecraft.world.level.levelgen.structure.StructureStart;
+import net.minecraft.server.level.ServerLevel;
 import net.minecraftforge.event.TickEvent;
 import net.minecraftforge.eventbus.api.SubscribeEvent;
 import net.minecraftforge.fml.common.Mod;
-import net.minecraftforge.fml.event.server.FMLServerStartedEvent;
+import net.minecraftforge.fmlserverevents.FMLServerStartedEvent;
 import net.minecraftforge.registries.ForgeRegistries;
 
 import java.util.HashMap;
@@ -37,21 +37,21 @@ public class WorldStructureHandler {
 
     @SubscribeEvent
     public static void onWorldTick(TickEvent.WorldTickEvent ev) {
-        if (ev.phase == TickEvent.Phase.END && ev.world instanceof ServerWorld) {
-            ServerWorld sWorld = (ServerWorld) ev.world;
-            World overworld = sWorld.getServer().getWorld(World.OVERWORLD);
+        if (ev.phase == TickEvent.Phase.END && ev.world instanceof ServerLevel) {
+            ServerLevel sWorld = (ServerLevel) ev.world;
+            Level overworld = sWorld.getServer().getLevel(Level.OVERWORLD);
             if (overworld == null){
                 return;
             }
             Optional<IWorldNpcData> overOpt = overworld.getCapability(NpcCapabilities.WORLD_NPC_DATA_CAPABILITY).resolve();
             if (overOpt.isPresent()) {
-                StructureManager manager = sWorld.getStructureManager();
+                StructureFeatureManager manager = sWorld.structureFeatureManager();
                 IWorldNpcData over = overOpt.get();
                 WorldStructureManager activeStructures = over.getStructureManager();
-                for (ServerPlayerEntity player : sWorld.getPlayers()) {
+                for (ServerPlayer player : sWorld.players()) {
                     List<MKJigsawStructure.Start> starts = WorldStructureHandler.MK_STRUCTURE_CACHE.stream().map(
-                            x -> manager.getStructureStart(player.getPosition(), false, x))
-                            .filter(x -> x != StructureStart.DUMMY)
+                            x -> manager.getStructureAt(player.blockPosition(), false, x))
+                            .filter(x -> x != StructureStart.INVALID_START)
                             .map(x -> (MKJigsawStructure.Start) x)
                             .collect(Collectors.toList());
                     for (MKJigsawStructure.Start start : starts) {
@@ -59,7 +59,7 @@ public class WorldStructureHandler {
                         activeStructures.visitStructure(start.getInstanceId(), player);
                     }
                 }
-                if (ev.world.getDimensionKey() == World.OVERWORLD) {
+                if (ev.world.dimension() == Level.OVERWORLD) {
                     over.update();
                 }
             }
@@ -72,7 +72,7 @@ public class WorldStructureHandler {
                 .collect(Collectors.toList());
         MK_STRUCTURE_INDEX.clear();
         MK_STRUCTURE_CACHE.forEach(x -> {
-            MKNpc.LOGGER.info("Caching MK Structure {}", x.getStructureName());
+            MKNpc.LOGGER.info("Caching MK Structure {}", x.getFeatureName());
             MK_STRUCTURE_INDEX.put(x.getRegistryName(), x);
         });
     }

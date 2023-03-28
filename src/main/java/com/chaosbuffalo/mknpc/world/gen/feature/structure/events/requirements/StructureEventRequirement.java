@@ -9,8 +9,8 @@ import com.chaosbuffalo.mknpc.npc.MKStructureEntry;
 import com.google.common.collect.ImmutableMap;
 import com.mojang.serialization.Dynamic;
 import com.mojang.serialization.DynamicOps;
-import net.minecraft.util.ResourceLocation;
-import net.minecraft.world.World;
+import net.minecraft.resources.ResourceLocation;
+import net.minecraft.world.level.Level;
 
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -66,5 +66,5 @@ public abstract class StructureEventRequirement implements ISerializableAttribut
     }
 
     public abstract boolean meetsRequirements(MKStructureEntry entry,
-                                              WorldStructureManager.ActiveStructure activeStructure, World world);
+                                              WorldStructureManager.ActiveStructure activeStructure, Level world);
 }

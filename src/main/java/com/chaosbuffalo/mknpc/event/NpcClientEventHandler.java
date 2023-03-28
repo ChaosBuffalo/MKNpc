@@ -7,16 +7,15 @@ import com.chaosbuffalo.mknpc.capabilities.NpcCapabilities;
 import com.chaosbuffalo.mknpc.quest.data.player.PlayerQuestData;
 import com.chaosbuffalo.mknpc.quest.data.player.PlayerQuestObjectiveData;
 import net.minecraft.client.Minecraft;
-import net.minecraft.client.settings.KeyBinding;
-import net.minecraft.entity.player.PlayerEntity;
-import net.minecraft.util.math.BlockPos;
-import net.minecraft.util.math.GlobalPos;
+import net.minecraft.client.KeyMapping;
+import net.minecraft.world.entity.player.Player;
+import net.minecraft.core.GlobalPos;
 import net.minecraftforge.api.distmarker.Dist;
 import net.minecraftforge.client.event.InputEvent;
 import net.minecraftforge.client.event.RenderWorldLastEvent;
 import net.minecraftforge.eventbus.api.SubscribeEvent;
-import net.minecraftforge.fml.client.registry.ClientRegistry;
 import net.minecraftforge.fml.common.Mod;
+import net.minecraftforge.fmlclient.registry.ClientRegistry;
 import org.lwjgl.glfw.GLFW;
 
 import java.util.HashSet;
@@ -26,11 +25,11 @@ import java.util.Set;
 @Mod.EventBusSubscriber(modid = MKNpc.MODID, value = Dist.CLIENT)
 public class NpcClientEventHandler {
 
-    private static KeyBinding questMenuBind;
+    private static KeyMapping questMenuBind;
     private static int ticks = -1;
 
     public static void initKeybindings() {
-        questMenuBind = new KeyBinding("key.hud.questmenu", GLFW.GLFW_KEY_K, "key.mknpc.category");
+        questMenuBind = new KeyMapping("key.hud.questmenu", GLFW.GLFW_KEY_K, "key.mknpc.category");
         ClientRegistry.registerKeyBinding(questMenuBind);
     }
 
@@ -56,11 +55,11 @@ public class NpcClientEventHandler {
     @SubscribeEvent
     public static void onRenderLast(RenderWorldLastEvent event){
         Minecraft mc = Minecraft.getInstance();
-        PlayerEntity player = mc.player;
+        Player player = mc.player;
         if (player != null){
 
-            if (player.ticksExisted != ticks){
-                ticks = player.ticksExisted;
+            if (player.tickCount != ticks){
+                ticks = player.tickCount;
                 Set<GlobalPos> alreadySeen = new HashSet<>();
                 player.getCapability(NpcCapabilities.PLAYER_QUEST_DATA_CAPABILITY).ifPresent(x -> {
                     x.getQuestChains().forEach(pQuestChain -> {
@@ -70,10 +69,10 @@ public class NpcClientEventHandler {
                                 if (!objectiveData.isComplete()){
                                     Map<String, GlobalPos> posMap = objectiveData.getBlockPosData();
                                     for (GlobalPos pos : posMap.values()){
-                                        if (pos.getDimension().equals(player.getEntityWorld().getDimensionKey()) && !alreadySeen.contains(pos)){
+                                        if (pos.dimension().equals(player.getCommandSenderWorld().dimension()) && !alreadySeen.contains(pos)){
                                             event.getContext().addParticle(CoreParticles.INDICATOR_PARTICLE, true,
-                                                    pos.getPos().getX() + 0.5, pos.getPos().getY() + 1.0,
-                                                    pos.getPos().getZ() + 0.5, 0.0, 0.0, 0.0);
+                                                    pos.pos().getX() + 0.5, pos.pos().getY() + 1.0,
+                                                    pos.pos().getZ() + 0.5, 0.0, 0.0, 0.0);
                                             alreadySeen.add(pos);
                                         }
 

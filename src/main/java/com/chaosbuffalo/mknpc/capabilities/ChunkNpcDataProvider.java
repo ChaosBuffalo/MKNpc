@@ -1,16 +1,16 @@
 package com.chaosbuffalo.mknpc.capabilities;
 
-import net.minecraft.world.chunk.Chunk;
+import net.minecraft.world.level.chunk.LevelChunk;
 import net.minecraftforge.common.capabilities.Capability;
 
-public class ChunkNpcDataProvider extends NpcCapabilities.Provider<Chunk, IChunkNpcData> {
+public class ChunkNpcDataProvider extends NpcCapabilities.Provider<LevelChunk, IChunkNpcData> {
 
-    public ChunkNpcDataProvider(Chunk chunk) {
+    public ChunkNpcDataProvider(LevelChunk chunk) {
         super(chunk);
     }
 
     @Override
-    IChunkNpcData makeData(Chunk attached) {
+    IChunkNpcData makeData(LevelChunk attached) {
         return new ChunkNpcDataHandler(attached);
     }
 

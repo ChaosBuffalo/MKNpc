@@ -8,9 +8,9 @@ import com.chaosbuffalo.mknpc.npc.MKStructureEntry;
 import com.chaosbuffalo.mknpc.npc.NotableNpcEntry;
 import com.chaosbuffalo.mknpc.npc.NpcDefinitionManager;
 import com.chaosbuffalo.mknpc.tile_entities.MKSpawnerTileEntity;
-import net.minecraft.tileentity.TileEntity;
-import net.minecraft.util.ResourceLocation;
-import net.minecraft.world.World;
+import net.minecraft.world.level.block.entity.BlockEntity;
+import net.minecraft.resources.ResourceLocation;
+import net.minecraft.world.level.Level;
 
 public class NotableDeadCondition extends StructureEventCondition{
     public final static ResourceLocation TYPE_NAME = new ResourceLocation(MKNpc.MODID,
@@ -32,15 +32,15 @@ public class NotableDeadCondition extends StructureEventCondition{
     }
 
     @Override
-    public boolean meetsCondition(MKStructureEntry entry, WorldStructureManager.ActiveStructure activeStructure, World world) {
+    public boolean meetsCondition(MKStructureEntry entry, WorldStructureManager.ActiveStructure activeStructure, Level world) {
         return allNotables.value() ? entry.getAllNotablesOfType(npcDefinition.getValue()).stream()
                 .allMatch(x -> checkSpawnerDead(x, world)) : entry.getFirstNotableOfType(npcDefinition.getValue())
                 .map(x -> checkSpawnerDead(x, world)).orElse(false);
     }
 
-    private boolean checkSpawnerDead(NotableNpcEntry entry, World world) {
-        if (world.getDimensionKey() == entry.getLocation().getDimension()) {
-            TileEntity entity = world.getTileEntity(entry.getLocation().getPos());
+    private boolean checkSpawnerDead(NotableNpcEntry entry, Level world) {
+        if (world.dimension() == entry.getLocation().dimension()) {
+            BlockEntity entity = world.getBlockEntity(entry.getLocation().pos());
             if (entity instanceof MKSpawnerTileEntity) {
                 return ((MKSpawnerTileEntity) entity).isOnRespawnTimer();
             }

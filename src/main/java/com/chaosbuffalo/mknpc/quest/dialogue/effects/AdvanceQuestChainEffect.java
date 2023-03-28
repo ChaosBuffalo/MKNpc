@@ -11,12 +11,12 @@ import com.google.common.collect.ImmutableMap;
 import com.mojang.serialization.Dynamic;
 import com.mojang.serialization.DynamicOps;
 import com.mojang.serialization.JsonOps;
-import net.minecraft.entity.LivingEntity;
-import net.minecraft.entity.player.ServerPlayerEntity;
+import net.minecraft.world.entity.LivingEntity;
+import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.server.MinecraftServer;
-import net.minecraft.util.ResourceLocation;
-import net.minecraft.util.Util;
-import net.minecraft.world.World;
+import net.minecraft.resources.ResourceLocation;
+import net.minecraft.Util;
+import net.minecraft.world.level.Level;
 
 import java.util.UUID;
 
@@ -31,7 +31,7 @@ public class AdvanceQuestChainEffect extends DialogueEffect implements IReceives
 
     public AdvanceQuestChainEffect() {
         super(effectTypeName);
-        chainId = Util.DUMMY_UUID;
+        chainId = Util.NIL_UUID;
     }
 
     @Override
@@ -45,12 +45,12 @@ public class AdvanceQuestChainEffect extends DialogueEffect implements IReceives
     }
 
     @Override
-    public void applyEffect(ServerPlayerEntity serverPlayerEntity, LivingEntity livingEntity, DialogueNode dialogueNode) {
+    public void applyEffect(ServerPlayer serverPlayerEntity, LivingEntity livingEntity, DialogueNode dialogueNode) {
         MinecraftServer server = serverPlayerEntity.getServer();
         if (server == null){
             return;
         }
-        World overworld = server.getWorld(World.OVERWORLD);
+        Level overworld = server.getLevel(Level.OVERWORLD);
         if (overworld == null){
             return;
         }
@@ -79,13 +79,13 @@ public class AdvanceQuestChainEffect extends DialogueEffect implements IReceives
     @Override
     public <D> void readAdditionalData(Dynamic<D> dynamic) {
         super.readAdditionalData(dynamic);
-        chainId = dynamic.get("chainId").asString().result().map(UUID::fromString).orElse(Util.DUMMY_UUID);
+        chainId = dynamic.get("chainId").asString().result().map(UUID::fromString).orElse(Util.NIL_UUID);
     }
 
     @Override
     public <D> void writeAdditionalData(DynamicOps<D> ops, ImmutableMap.Builder<D, D> builder) {
         super.writeAdditionalData(ops, builder);
-        if (!chainId.equals(Util.DUMMY_UUID)){
+        if (!chainId.equals(Util.NIL_UUID)){
             builder.put(ops.createString("chainId"), ops.createString(chainId.toString()));
         }
     }

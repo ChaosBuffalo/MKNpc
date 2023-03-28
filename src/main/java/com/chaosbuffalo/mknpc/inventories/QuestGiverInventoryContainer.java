@@ -13,48 +13,48 @@ import com.chaosbuffalo.mknpc.quest.data.player.PlayerQuestData;
 import com.chaosbuffalo.mknpc.quest.data.player.PlayerQuestObjectiveData;
 import com.chaosbuffalo.mknpc.quest.objectives.ITradeObjectiveHandler;
 import com.chaosbuffalo.mknpc.quest.objectives.QuestObjective;
-import net.minecraft.entity.player.PlayerEntity;
-import net.minecraft.entity.player.PlayerInventory;
-import net.minecraft.inventory.IInventory;
-import net.minecraft.inventory.Inventory;
-import net.minecraft.inventory.container.ChestContainer;
-import net.minecraft.inventory.container.ContainerType;
-import net.minecraft.item.ItemStack;
+import net.minecraft.world.entity.player.Player;
+import net.minecraft.world.entity.player.Inventory;
+import net.minecraft.world.Container;
+import net.minecraft.world.SimpleContainer;
+import net.minecraft.world.inventory.ChestMenu;
+import net.minecraft.world.inventory.MenuType;
+import net.minecraft.world.item.ItemStack;
 import net.minecraft.server.MinecraftServer;
-import net.minecraft.util.Util;
-import net.minecraft.util.text.StringTextComponent;
-import net.minecraft.util.text.TranslationTextComponent;
-import net.minecraft.world.World;
+import net.minecraft.Util;
+import net.minecraft.network.chat.TextComponent;
+import net.minecraft.network.chat.TranslatableComponent;
+import net.minecraft.world.level.Level;
 
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.List;
 import java.util.Optional;
 
-public class QuestGiverInventoryContainer extends ChestContainer {
+public class QuestGiverInventoryContainer extends ChestMenu {
     private final MKEntity entity;
 
-    public QuestGiverInventoryContainer(ContainerType<?> type, int id, PlayerInventory playerInventoryIn,
-                                        IInventory p_i50092_4_, int rows, MKEntity entity) {
+    public QuestGiverInventoryContainer(MenuType<?> type, int id, Inventory playerInventoryIn,
+                                        Container p_i50092_4_, int rows, MKEntity entity) {
         super(type, id, playerInventoryIn, p_i50092_4_, rows);
         this.entity = entity;
     }
 
-    public static QuestGiverInventoryContainer createGeneric9X1(int id, PlayerInventory player, MKEntity entity) {
-        return new QuestGiverInventoryContainer(ContainerType.GENERIC_9X1, id, player, new Inventory(9), 1, entity);
+    public static QuestGiverInventoryContainer createGeneric9X1(int id, Inventory player, MKEntity entity) {
+        return new QuestGiverInventoryContainer(MenuType.GENERIC_9x1, id, player, new SimpleContainer(9), 1, entity);
     }
 
     @Override
-    public void onContainerClosed(PlayerEntity playerIn) {
-        super.onContainerClosed(playerIn);
-        IInventory inventory = getLowerChestInventory();
+    public void removed(Player playerIn) {
+        super.removed(playerIn);
+        Container inventory = getContainer();
         List<ItemStack> nonEmpty = new ArrayList<>();
         for (int i = 0; i < 9; i++) {
-            ItemStack stack = inventory.getStackInSlot(i);
+            ItemStack stack = inventory.getItem(i);
             if (!stack.isEmpty()) {
                 nonEmpty.add(stack);
             }
-            inventory.setInventorySlotContents(i, ItemStack.EMPTY);
+            inventory.setItem(i, ItemStack.EMPTY);
         }
         if (nonEmpty.isEmpty()){
             return;
@@ -62,7 +62,7 @@ public class QuestGiverInventoryContainer extends ChestContainer {
         Optional<? extends IPlayerQuestingData> playerQuestOpt = MKNpc.getPlayerQuestData(playerIn).resolve();
         MinecraftServer server = playerIn.getServer();
         if (server != null){
-            World overWorld = server.getWorld(World.OVERWORLD);
+            Level overWorld = server.getLevel(Level.OVERWORLD);
             if (overWorld != null){
                 Optional<? extends IWorldNpcData> worldDataOpt = overWorld.getCapability(NpcCapabilities.WORLD_NPC_DATA_CAPABILITY).resolve();
                 if (worldDataOpt.isPresent()){
@@ -105,10 +105,10 @@ public class QuestGiverInventoryContainer extends ChestContainer {
             }
         }
         for (ItemStack is : nonEmpty){
-            StringTextComponent name = new StringTextComponent(String.format("<%s>", entity.getDisplayName().getString()));
-            playerIn.sendMessage(new TranslationTextComponent("mknpc.quest.trade.dont_need", name,
-                    playerIn.getName(), is.getCount(), is.getDisplayName()), Util.DUMMY_UUID);
-            playerIn.inventory.placeItemBackInInventory(playerIn.getEntityWorld(), is);
+            TextComponent name = new TextComponent(String.format("<%s>", entity.getDisplayName().getString()));
+            playerIn.sendMessage(new TranslatableComponent("mknpc.quest.trade.dont_need", name,
+                    playerIn.getName(), is.getCount(), is.getHoverName()), Util.NIL_UUID);
+            playerIn.getInventory().placeItemBackInInventory(is, true);
         }
     }
 

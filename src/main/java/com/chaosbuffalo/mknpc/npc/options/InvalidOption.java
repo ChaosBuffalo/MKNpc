@@ -1,7 +1,7 @@
 package com.chaosbuffalo.mknpc.npc.options;
 
 import com.chaosbuffalo.mknpc.npc.NpcDefinition;
-import net.minecraft.entity.Entity;
+import net.minecraft.world.entity.Entity;
 
 public class InvalidOption extends BooleanOption {
 

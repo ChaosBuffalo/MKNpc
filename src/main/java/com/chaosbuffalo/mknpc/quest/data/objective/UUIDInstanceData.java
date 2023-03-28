@@ -1,7 +1,7 @@
 package com.chaosbuffalo.mknpc.quest.data.objective;
 
-import net.minecraft.nbt.CompoundNBT;
-import net.minecraft.util.Util;
+import net.minecraft.nbt.CompoundTag;
+import net.minecraft.Util;
 
 import java.util.UUID;
 
@@ -11,7 +11,7 @@ public class UUIDInstanceData extends ObjectiveInstanceData{
     private boolean isValid;
 
     public UUIDInstanceData(){
-        uuid = Util.DUMMY_UUID;
+        uuid = Util.NIL_UUID;
         isValid = false;
     }
 
@@ -25,16 +25,16 @@ public class UUIDInstanceData extends ObjectiveInstanceData{
     }
 
     @Override
-    public CompoundNBT serializeNBT() {
-        CompoundNBT tag = new CompoundNBT();
-        tag.putUniqueId("id", uuid);
+    public CompoundTag serializeNBT() {
+        CompoundTag tag = new CompoundTag();
+        tag.putUUID("id", uuid);
         tag.putBoolean("isValid", isValid);
         return tag;
     }
 
     @Override
-    public void deserializeNBT(CompoundNBT nbt) {
-        uuid = nbt.getUniqueId("id");
+    public void deserializeNBT(CompoundTag nbt) {
+        uuid = nbt.getUUID("id");
         isValid = nbt.getBoolean("isValid");
     }
 }

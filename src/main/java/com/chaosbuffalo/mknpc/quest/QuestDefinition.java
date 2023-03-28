@@ -11,10 +11,10 @@ import com.google.common.collect.ImmutableMap;
 import com.mojang.datafixers.util.Pair;
 import com.mojang.serialization.Dynamic;
 import com.mojang.serialization.DynamicOps;
-import net.minecraft.util.ResourceLocation;
-import net.minecraft.util.Util;
-import net.minecraft.util.text.ITextComponent;
-import net.minecraft.util.text.StringTextComponent;
+import net.minecraft.resources.ResourceLocation;
+import net.minecraft.Util;
+import net.minecraft.network.chat.Component;
+import net.minecraft.network.chat.TextComponent;
 
 import javax.annotation.Nullable;
 import java.util.*;
@@ -32,8 +32,8 @@ public class QuestDefinition {
     private final List<Quest> questChain;
     private final Map<String, Quest> questIndex;
     private boolean repeatable;
-    private ITextComponent questName;
-    private static final ITextComponent defaultQuestName = new StringTextComponent("Default");
+    private Component questName;
+    private static final Component defaultQuestName = new TextComponent("Default");
     private final List<QuestRequirement> requirements;
     private QuestMode mode;
     private DialogueTree startQuestTree;
@@ -68,11 +68,11 @@ public class QuestDefinition {
         this.requirements.add(requirement);
     }
 
-    public void setQuestName(ITextComponent questName) {
+    public void setQuestName(Component questName) {
         this.questName = questName;
     }
 
-    public ITextComponent getQuestName() {
+    public Component getQuestName() {
         return questName;
     }
 
@@ -98,7 +98,7 @@ public class QuestDefinition {
         DialoguePrompt hail = startQuestTree.getHailPrompt();
         if (hail != null){
             DialogueResponse startResponse = new DialogueResponse(node)
-                    .addCondition(new CanStartQuestCondition(Util.DUMMY_UUID, isRepeatable()));
+                    .addCondition(new CanStartQuestCondition(Util.NIL_UUID, isRepeatable()));
             hail.addResponse(startResponse);
         }
     }
@@ -115,7 +115,7 @@ public class QuestDefinition {
         startQuestResponse.addEffect(new StartQuestChainEffect());
         addStartNode(startQuestResponse);
         DialogueResponse startResponse = new DialogueResponse(startQuestResponse)
-                .addCondition(new CanStartQuestCondition(Util.DUMMY_UUID, isRepeatable()));
+                .addCondition(new CanStartQuestCondition(Util.NIL_UUID, isRepeatable()));
         for (DialogueCondition cond : extraConditions){
             startResponse.addCondition(cond);
         }
@@ -168,7 +168,7 @@ public class QuestDefinition {
         ImmutableMap.Builder<D, D> builder = ImmutableMap.builder();
         builder.put(ops.createString("quests"), ops.createList(questChain.stream().map(x -> x.serialize(ops))));
         builder.put(ops.createString("repeatable"), ops.createBoolean(isRepeatable()));
-        builder.put(ops.createString("questName"), ops.createString(ITextComponent.Serializer.toJson(questName)));
+        builder.put(ops.createString("questName"), ops.createString(Component.Serializer.toJson(questName)));
         builder.put(ops.createString("requirements"), ops.createList(requirements.stream().map(x -> x.serialize(ops))));
         builder.put(ops.createString("questMode"), ops.createInt(getMode().ordinal()));
         builder.put(ops.createString("dialogue"), startQuestTree.serialize(ops));
@@ -187,8 +187,8 @@ public class QuestDefinition {
         for (Quest quest : dQuests) {
             addQuest(quest);
         }
-        questName = ITextComponent.Serializer.getComponentFromJson(
-                dynamic.get("questName").asString(ITextComponent.Serializer.toJson(defaultQuestName)));
+        questName = Component.Serializer.fromJson(
+                dynamic.get("questName").asString(Component.Serializer.toJson(defaultQuestName)));
         mode = QuestMode.values()[dynamic.get("questMode").asInt(0)];
         List<Optional<QuestRequirement>> reqs = dynamic.get("requirements").asList(x -> {
             ResourceLocation type = QuestRequirement.getType(x);

@@ -9,21 +9,19 @@ import com.chaosbuffalo.mknpc.tile_entities.MKSpawnerTileEntity;
 import com.chaosbuffalo.mknpc.spawn.SpawnOption;
 import com.chaosbuffalo.mknpc.tile_entities.MKPoiTileEntity;
 import com.chaosbuffalo.mknpc.utils.NBTSerializableMappedData;
-import com.google.common.collect.Lists;
-import net.minecraft.nbt.CompoundNBT;
-import net.minecraft.nbt.INBT;
-import net.minecraft.nbt.ListNBT;
-import net.minecraft.nbt.StringNBT;
-import net.minecraft.util.ResourceLocation;
-import net.minecraft.util.math.ChunkPos;
-import net.minecraftforge.common.util.Constants;
+import net.minecraft.nbt.CompoundTag;
+import net.minecraft.nbt.Tag;
+import net.minecraft.nbt.ListTag;
+import net.minecraft.nbt.StringTag;
+import net.minecraft.resources.ResourceLocation;
+import net.minecraft.world.level.ChunkPos;
 import net.minecraftforge.common.util.INBTSerializable;
 
 import javax.annotation.Nullable;
 import java.util.*;
 import java.util.stream.Collectors;
 
-public class MKStructureEntry implements INBTSerializable<CompoundNBT> {
+public class MKStructureEntry implements INBTSerializable<CompoundTag> {
     private ResourceLocation structureName;
     private UUID structureId;
     private final List<NotableChestEntry> notableChests;
@@ -173,36 +171,36 @@ public class MKStructureEntry implements INBTSerializable<CompoundNBT> {
     }
 
     @Override
-    public CompoundNBT serializeNBT() {
-        CompoundNBT tag = new CompoundNBT();
+    public CompoundTag serializeNBT() {
+        CompoundTag tag = new CompoundTag();
         tag.putString("structureName", structureName.toString());
-        tag.putUniqueId("structureId", structureId);
-        ListNBT notablesNbt = new ListNBT();
+        tag.putUUID("structureId", structureId);
+        ListTag notablesNbt = new ListTag();
         for (NotableNpcEntry notableEntry : notables){
             notablesNbt.add(notableEntry.serializeNBT());
         }
         tag.put("notables", notablesNbt);
-        ListNBT mobNbt = new ListNBT();
+        ListTag mobNbt = new ListTag();
         for (ResourceLocation mob : mobs){
-            mobNbt.add(StringNBT.valueOf(mob.toString()));
+            mobNbt.add(StringTag.valueOf(mob.toString()));
         }
         tag.put("mobs", mobNbt);
-        ListNBT factionNbt = new ListNBT();
+        ListTag factionNbt = new ListTag();
         for (ResourceLocation faction : factions){
-            factionNbt.add(StringNBT.valueOf(faction.toString()));
+            factionNbt.add(StringTag.valueOf(faction.toString()));
         }
         tag.put("factions", factionNbt);
         if (structureData != null){
             tag.put("structureData", structureData.serializeNBT());
         }
-        ListNBT chestNbt = new ListNBT();
+        ListTag chestNbt = new ListTag();
         for (NotableChestEntry chest : notableChests){
             chestNbt.add(chest.serializeNBT());
         }
         tag.put("chests", chestNbt);
-        CompoundNBT poiTag = new CompoundNBT();
+        CompoundTag poiTag = new CompoundTag();
         for (String key : pois.keySet()) {
-            ListNBT poiList = new ListNBT();
+            ListTag poiList = new ListTag();
             for (PointOfInterestEntry entry : pois.getOrDefault(key, new ArrayList<>())) {
                 poiList.add(entry.serializeNBT());
             }
@@ -217,44 +215,44 @@ public class MKStructureEntry implements INBTSerializable<CompoundNBT> {
     }
 
     @Override
-    public void deserializeNBT(CompoundNBT nbt) {
+    public void deserializeNBT(CompoundTag nbt) {
         structureName = new ResourceLocation(nbt.getString("structureName"));
-        structureId = nbt.getUniqueId("structureId");
-        ListNBT notablesNbt = nbt.getList("notables", Constants.NBT.TAG_COMPOUND);
-        for (INBT notTag : notablesNbt){
+        structureId = nbt.getUUID("structureId");
+        ListTag notablesNbt = nbt.getList("notables", Tag.TAG_COMPOUND);
+        for (Tag notTag : notablesNbt){
             NotableNpcEntry newEntry = new NotableNpcEntry();
-            newEntry.deserializeNBT((CompoundNBT) notTag);
+            newEntry.deserializeNBT((CompoundTag) notTag);
             worldData.putNotableNpc(newEntry);
             notables.add(newEntry);
         }
-        ListNBT mobNbt = nbt.getList("mobs", Constants.NBT.TAG_STRING);
-        for (INBT mobName : mobNbt){
-            ResourceLocation mobLoc = new ResourceLocation(mobName.getString());
+        ListTag mobNbt = nbt.getList("mobs", Tag.TAG_STRING);
+        for (Tag mobName : mobNbt){
+            ResourceLocation mobLoc = new ResourceLocation(mobName.getAsString());
             mobs.add(mobLoc);
         }
-        ListNBT factionNbt = nbt.getList("factions", Constants.NBT.TAG_STRING);
-        for (INBT factionName : factionNbt){
-            ResourceLocation factionLoc = new ResourceLocation(factionName.getString());
+        ListTag factionNbt = nbt.getList("factions", Tag.TAG_STRING);
+        for (Tag factionName : factionNbt){
+            ResourceLocation factionLoc = new ResourceLocation(factionName.getAsString());
             factions.add(factionLoc);
         }
         if (nbt.contains("structureData")){
             structureData = new StructureData();
             structureData.deserializeNBT(nbt.getCompound("structureData"));
         }
-        ListNBT chestNbt = nbt.getList("chests", Constants.NBT.TAG_COMPOUND);
-        for (INBT chest : chestNbt){
+        ListTag chestNbt = nbt.getList("chests", Tag.TAG_COMPOUND);
+        for (Tag chest : chestNbt){
             NotableChestEntry chestEntry = new NotableChestEntry();
-            chestEntry.deserializeNBT((CompoundNBT) chest);
+            chestEntry.deserializeNBT((CompoundTag) chest);
             worldData.putNotableChest(chestEntry);
             notableChests.add(chestEntry);
         }
         pois.clear();
-        CompoundNBT poiNbt = nbt.getCompound("pois");
-        for (String key : poiNbt.keySet()) {
-            ListNBT poiLNbt = poiNbt.getList(key, Constants.NBT.TAG_COMPOUND);
-            for (INBT poi : poiLNbt) {
+        CompoundTag poiNbt = nbt.getCompound("pois");
+        for (String key : poiNbt.getAllKeys()) {
+            ListTag poiLNbt = poiNbt.getList(key, Tag.TAG_COMPOUND);
+            for (Tag poi : poiLNbt) {
                 PointOfInterestEntry entry  = new PointOfInterestEntry();
-                entry.deserializeNBT((CompoundNBT) poi);
+                entry.deserializeNBT((CompoundTag) poi);
                 putPoi(entry);
             }
         }

@@ -1,8 +1,8 @@
 package com.chaosbuffalo.mknpc.mixins;
 
 import com.chaosbuffalo.mknpc.entity.MKEntity;
-import net.minecraft.client.renderer.entity.LivingRenderer;
-import net.minecraft.entity.LivingEntity;
+import net.minecraft.client.renderer.entity.LivingEntityRenderer;
+import net.minecraft.world.entity.LivingEntity;
 import org.spongepowered.asm.mixin.Mixin;
 import org.spongepowered.asm.mixin.Unique;
 import org.spongepowered.asm.mixin.injection.At;
@@ -10,14 +10,14 @@ import org.spongepowered.asm.mixin.injection.Constant;
 import org.spongepowered.asm.mixin.injection.ModifyConstant;
 import org.spongepowered.asm.mixin.injection.ModifyVariable;
 
-@Mixin(LivingRenderer.class)
+@Mixin(LivingEntityRenderer.class)
 public class LivingRendererMixins {
 
     @Unique
     private LivingEntity toRender;
 
     @ModifyVariable(
-            method = "Lnet/minecraft/client/renderer/entity/LivingRenderer;render(Lnet/minecraft/entity/LivingEntity;FFLcom/mojang/blaze3d/matrix/MatrixStack;Lnet/minecraft/client/renderer/IRenderTypeBuffer;I)V",
+            method = "render(Lnet/minecraft/world/entity/LivingEntity;FFLcom/mojang/blaze3d/vertex/PoseStack;Lnet/minecraft/client/renderer/MultiBufferSource;I)V",
             at = @At("HEAD"),
             index = 1,
             ordinal = 0,
@@ -28,7 +28,7 @@ public class LivingRendererMixins {
         return entity;
     }
 
-    @ModifyConstant(method = "Lnet/minecraft/client/renderer/entity/LivingRenderer;render(Lnet/minecraft/entity/LivingEntity;FFLcom/mojang/blaze3d/matrix/MatrixStack;Lnet/minecraft/client/renderer/IRenderTypeBuffer;I)V",
+    @ModifyConstant(method = "render(Lnet/minecraft/world/entity/LivingEntity;FFLcom/mojang/blaze3d/vertex/PoseStack;Lnet/minecraft/client/renderer/MultiBufferSource;I)V",
             constant = @Constant(floatValue = 0.15f))
     private float modifyTransparency(float value) {
         if (toRender instanceof MKEntity){

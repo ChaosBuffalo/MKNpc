@@ -39,47 +39,62 @@ import com.chaosbuffalo.mkweapons.items.MKBow;
 import com.chaosbuffalo.targeting_api.ITargetingOwner;
 import com.chaosbuffalo.targeting_api.Targeting;
 import com.google.common.collect.ImmutableList;
-import net.minecraft.block.BlockState;
-import net.minecraft.entity.*;
-import net.minecraft.entity.ai.attributes.AttributeModifier;
-import net.minecraft.entity.ai.attributes.AttributeModifierMap;
-import net.minecraft.entity.ai.attributes.Attributes;
-import net.minecraft.entity.ai.attributes.ModifiableAttributeInstance;
-import net.minecraft.entity.ai.brain.Brain;
-import net.minecraft.entity.ai.brain.memory.MemoryModuleType;
-import net.minecraft.entity.ai.goal.SwimGoal;
-import net.minecraft.entity.monster.MonsterEntity;
-import net.minecraft.entity.player.PlayerEntity;
-import net.minecraft.entity.player.ServerPlayerEntity;
-import net.minecraft.entity.projectile.AbstractArrowEntity;
-import net.minecraft.entity.projectile.ProjectileHelper;
-import net.minecraft.inventory.EquipmentSlotType;
-import net.minecraft.inventory.container.INamedContainerProvider;
-import net.minecraft.item.*;
-import net.minecraft.nbt.CompoundNBT;
-import net.minecraft.network.PacketBuffer;
-import net.minecraft.network.datasync.DataParameter;
-import net.minecraft.network.datasync.DataSerializers;
-import net.minecraft.network.datasync.EntityDataManager;
+import net.minecraft.world.level.block.state.BlockState;
+import net.minecraft.world.entity.ai.attributes.AttributeModifier;
+import net.minecraft.world.entity.ai.attributes.AttributeSupplier;
+import net.minecraft.world.entity.ai.attributes.Attributes;
+import net.minecraft.world.entity.ai.attributes.AttributeInstance;
+import net.minecraft.world.entity.ai.Brain;
+import net.minecraft.world.entity.ai.memory.MemoryModuleType;
+import net.minecraft.world.entity.ai.goal.FloatGoal;
+import net.minecraft.world.entity.monster.Monster;
+import net.minecraft.world.entity.player.Player;
+import net.minecraft.server.level.ServerPlayer;
+import net.minecraft.world.entity.projectile.AbstractArrow;
+import net.minecraft.world.entity.projectile.ProjectileUtil;
+import net.minecraft.world.entity.EquipmentSlot;
+import net.minecraft.nbt.CompoundTag;
+import net.minecraft.network.syncher.EntityDataAccessor;
+import net.minecraft.network.syncher.EntityDataSerializers;
+import net.minecraft.network.syncher.SynchedEntityData;
 import net.minecraft.util.*;
-import net.minecraft.util.math.BlockPos;
-import net.minecraft.util.math.vector.Vector3d;
-import net.minecraft.util.text.ITextComponent;
+import net.minecraft.core.BlockPos;
+import net.minecraft.world.phys.Vec3;
 import net.minecraft.world.*;
-import net.minecraft.world.server.ServerWorld;
-import net.minecraftforge.fml.common.registry.IEntityAdditionalSpawnData;
+import net.minecraft.server.level.ServerLevel;
 
 import javax.annotation.Nullable;
 import java.util.*;
 import java.util.function.Predicate;
 import java.util.stream.Collectors;
 
+import net.minecraft.sounds.SoundEvent;
+import net.minecraft.sounds.SoundEvents;
+import net.minecraft.world.damagesource.DamageSource;
+import net.minecraft.world.entity.Entity;
+import net.minecraft.world.entity.EntityDimensions;
+import net.minecraft.world.entity.EntityType;
+import net.minecraft.world.entity.LivingEntity;
+import net.minecraft.world.entity.MobSpawnType;
+import net.minecraft.world.entity.PathfinderMob;
+import net.minecraft.world.entity.Pose;
+import net.minecraft.world.entity.SpawnGroupData;
+import net.minecraft.world.entity.monster.RangedAttackMob;
+import net.minecraft.world.item.BowItem;
+import net.minecraft.world.item.Item;
+import net.minecraft.world.item.ItemStack;
+import net.minecraft.world.item.Items;
+import net.minecraft.world.item.ProjectileWeaponItem;
+import net.minecraft.world.level.Level;
+import net.minecraft.world.level.LevelReader;
+import net.minecraft.world.level.ServerLevelAccessor;
+
 @SuppressWarnings("EntityConstructor")
-public abstract class MKEntity extends CreatureEntity implements IModelLookProvider, IRangedAttackMob, IUpdateEngineProvider, IMKPet, ITargetingOwner {
-    private static final DataParameter<String> LOOK_STYLE = EntityDataManager.createKey(MKEntity.class, DataSerializers.STRING);
-    private static final DataParameter<Float> SCALE = EntityDataManager.createKey(MKEntity.class, DataSerializers.FLOAT);
-    private static final DataParameter<Boolean> IS_GHOST = EntityDataManager.createKey(MKEntity.class, DataSerializers.BOOLEAN);
-    private static final DataParameter<Float> GHOST_TRANSLUCENCY = EntityDataManager.createKey(MKEntity.class, DataSerializers.FLOAT);
+public abstract class MKEntity extends PathfinderMob implements IModelLookProvider, RangedAttackMob, IUpdateEngineProvider, IMKPet, ITargetingOwner {
+    private static final EntityDataAccessor<String> LOOK_STYLE = SynchedEntityData.defineId(MKEntity.class, EntityDataSerializers.STRING);
+    private static final EntityDataAccessor<Float> SCALE = SynchedEntityData.defineId(MKEntity.class, EntityDataSerializers.FLOAT);
+    private static final EntityDataAccessor<Boolean> IS_GHOST = SynchedEntityData.defineId(MKEntity.class, EntityDataSerializers.BOOLEAN);
+    private static final EntityDataAccessor<Float> GHOST_TRANSLUCENCY = SynchedEntityData.defineId(MKEntity.class, EntityDataSerializers.FLOAT);
     private final SyncComponent animSync = new SyncComponent("anim");
     private int castAnimTimer;
     private VisualCastState visualCastState;
@@ -119,15 +134,15 @@ public abstract class MKEntity extends CreatureEntity implements IModelLookProvi
     }
 
     public void setGhost(boolean ghost) {
-        getDataManager().set(IS_GHOST, ghost);
+        getEntityData().set(IS_GHOST, ghost);
     }
 
     public boolean isGhost() {
-        return getDataManager().get(IS_GHOST);
+        return getEntityData().get(IS_GHOST);
     }
 
     public void setGhostTranslucency(float ghostTranslucency) {
-        getDataManager().set(GHOST_TRANSLUCENCY, ghostTranslucency);
+        getEntityData().set(GHOST_TRANSLUCENCY, ghostTranslucency);
     }
 
     @Nullable
@@ -142,12 +157,12 @@ public abstract class MKEntity extends CreatureEntity implements IModelLookProvi
     }
 
     public float getGhostTranslucency() {
-        return getDataManager().get(GHOST_TRANSLUCENCY);
+        return getEntityData().get(GHOST_TRANSLUCENCY);
     }
 
-    protected MKEntity(EntityType<? extends CreatureEntity> type, World worldIn) {
+    protected MKEntity(EntityType<? extends PathfinderMob> type, Level worldIn) {
         super(type, worldIn);
-        if (!worldIn.isRemote()){
+        if (!worldIn.isClientSide()){
             setAttackComboStatsAndDefault(1, GameConstants.TICKS_PER_SECOND);
             setupDifficulty(worldIn.getDifficulty());
         }
@@ -186,8 +201,8 @@ public abstract class MKEntity extends CreatureEntity implements IModelLookProvi
     }
 
     @Override
-    public boolean isInvisibleToPlayer(PlayerEntity player) {
-        return !isGhost() && super.isInvisibleToPlayer(player);
+    public boolean isInvisibleTo(Player player) {
+        return !isGhost() && super.isInvisibleTo(player);
     }
 
     @Override
@@ -216,9 +231,9 @@ public abstract class MKEntity extends CreatureEntity implements IModelLookProvi
     }
 
     protected void setupDifficulty(Difficulty difficulty){
-        ModifiableAttributeInstance inst = getAttribute(MKAttributes.CASTING_SPEED);
+        AttributeInstance inst = getAttribute(MKAttributes.CASTING_SPEED);
         if (inst != null){
-            inst.applyNonPersistentModifier(new AttributeModifier("difficulty",
+            inst.addTransientModifier(new AttributeModifier("difficulty",
                     getCastingSpeedForDifficulty(difficulty), AttributeModifier.Operation.MULTIPLY_TOTAL));
         }
     }
@@ -234,9 +249,9 @@ public abstract class MKEntity extends CreatureEntity implements IModelLookProvi
         if (maxHealth > 100.0f){
             float ratio = maxHealth / 100.0f;
             float adjustForBase = ratio - 1.0f;
-            ModifiableAttributeInstance inst = getAttribute(MKAttributes.HEAL_EFFICIENCY);
+            AttributeInstance inst = getAttribute(MKAttributes.HEAL_EFFICIENCY);
             if (inst != null){
-                inst.applyNonPersistentModifier(new AttributeModifier("heal_scaling",
+                inst.addTransientModifier(new AttributeModifier("heal_scaling",
                         adjustForBase, AttributeModifier.Operation.ADDITION));
             }
         }
@@ -261,27 +276,27 @@ public abstract class MKEntity extends CreatureEntity implements IModelLookProvi
         this.lungeSpeed = lungeSpeed;
     }
 
-    public static AttributeModifierMap.MutableAttribute registerAttributes(double attackDamage, double movementSpeed) {
-        return MonsterEntity.func_234295_eP_()
-                .createMutableAttribute(Attributes.ATTACK_DAMAGE, attackDamage)
-                .createMutableAttribute(Attributes.MOVEMENT_SPEED, movementSpeed)
-                .createMutableAttribute(NpcAttributes.AGGRO_RANGE, 6)
-                .createMutableAttribute(Attributes.ATTACK_SPEED)
-                .createMutableAttribute(Attributes.FOLLOW_RANGE, 32.0D)
-                .createMutableAttribute(Attributes.KNOCKBACK_RESISTANCE, 1.0);
+    public static AttributeSupplier.Builder registerAttributes(double attackDamage, double movementSpeed) {
+        return Monster.createMonsterAttributes()
+                .add(Attributes.ATTACK_DAMAGE, attackDamage)
+                .add(Attributes.MOVEMENT_SPEED, movementSpeed)
+                .add(NpcAttributes.AGGRO_RANGE, 6)
+                .add(Attributes.ATTACK_SPEED)
+                .add(Attributes.FOLLOW_RANGE, 32.0D)
+                .add(Attributes.KNOCKBACK_RESISTANCE, 1.0);
     }
 
     @Override
-    protected void registerData() {
-        super.registerData();
-        this.dataManager.register(LOOK_STYLE, "default");
-        this.dataManager.register(SCALE, 1.0f);
-        this.dataManager.register(IS_GHOST, false);
-        this.dataManager.register(GHOST_TRANSLUCENCY, 1.0f);
+    protected void defineSynchedData() {
+        super.defineSynchedData();
+        this.entityData.define(LOOK_STYLE, "default");
+        this.entityData.define(SCALE, 1.0f);
+        this.entityData.define(IS_GHOST, false);
+        this.entityData.define(GHOST_TRANSLUCENCY, 1.0f);
     }
 
     @Override
-    public void attackEntityWithRangedAttack(LivingEntity target, float distanceFactor) {
+    public void performRangedAttack(LivingEntity target, float distanceFactor) {
         attackEntityWithRangedAttack(target, distanceFactor, 1.6f);
     }
 
@@ -291,19 +306,19 @@ public abstract class MKEntity extends CreatureEntity implements IModelLookProvi
     }
 
     public void attackEntityWithRangedAttack(LivingEntity target, float launchPower, float launchVelocity) {
-        ItemStack arrowStack = this.findAmmo(this.getHeldItem(Hand.MAIN_HAND));
-        AbstractArrowEntity arrowEntity = ProjectileHelper.fireArrow(this, arrowStack, launchPower);
-        Item mainhand = this.getHeldItemMainhand().getItem();
+        ItemStack arrowStack = this.getProjectile(this.getItemInHand(InteractionHand.MAIN_HAND));
+        AbstractArrow arrowEntity = ProjectileUtil.getMobArrow(this, arrowStack, launchPower);
+        Item mainhand = this.getMainHandItem().getItem();
         if (mainhand instanceof BowItem){
-            arrowEntity = ((BowItem) this.getHeldItemMainhand().getItem()).customArrow(arrowEntity);
+            arrowEntity = ((BowItem) this.getMainHandItem().getItem()).customArrow(arrowEntity);
         }
         EntityUtils.shootArrow(this, arrowEntity, target, launchPower * launchVelocity);
-        this.playSound(getShootSound(), 1.0F, 1.0F / (this.getRNG().nextFloat() * 0.4F + 0.8F));
-        this.world.addEntity(arrowEntity);
+        this.playSound(getShootSound(), 1.0F, 1.0F / (this.getRandom().nextFloat() * 0.4F + 0.8F));
+        this.level.addFreshEntity(arrowEntity);
     }
 
     protected SoundEvent getShootSound(){
-        return SoundEvents.ENTITY_ARROW_SHOOT;
+        return SoundEvents.ARROW_SHOOT;
     }
 
     @Override
@@ -312,16 +327,16 @@ public abstract class MKEntity extends CreatureEntity implements IModelLookProvi
     }
 
     protected SoundEvent getStepSound(){
-        return SoundEvents.ENTITY_ZOMBIE_VILLAGER_STEP;
+        return SoundEvents.ZOMBIE_VILLAGER_STEP;
     }
 
     @Override
-    public float getRenderScale() {
-        return dataManager.get(SCALE);
+    public float getScale() {
+        return entityData.get(SCALE);
     }
 
     public void setRenderScale(float newScale){
-        dataManager.set(SCALE, newScale);
+        entityData.set(SCALE, newScale);
     }
 
     @Override
@@ -334,7 +349,7 @@ public abstract class MKEntity extends CreatureEntity implements IModelLookProvi
         this.goalSelector.addGoal(4, new MKBowAttackGoal(this, 5, 15.0f));
         this.goalSelector.addGoal(5, meleeAttackGoal);
         this.goalSelector.addGoal(3, new UseAbilityGoal(this));
-        this.goalSelector.addGoal(1, new SwimGoal(this));
+        this.goalSelector.addGoal(1, new FloatGoal(this));
     }
 
     public boolean avoidsWater(){
@@ -353,7 +368,7 @@ public abstract class MKEntity extends CreatureEntity implements IModelLookProvi
        brain.getMemory(MKMemoryModuleTypes.ALLIES).ifPresent(x -> {
            x.forEach(ent -> {
                if (ent instanceof MKEntity){
-                   if (ent.getDistanceSq(this) < 9.0){
+                   if (ent.distanceToSqr(this) < 9.0){
                        ((MKEntity) ent).addThreat(entity, threatVal, true);
                    }
                }
@@ -362,24 +377,24 @@ public abstract class MKEntity extends CreatureEntity implements IModelLookProvi
     }
 
     @Override
-    public void setHeldItem(Hand hand, ItemStack stack) {
-        super.setHeldItem(hand, stack);
-        if (hand == Hand.MAIN_HAND){
+    public void setItemInHand(InteractionHand hand, ItemStack stack) {
+        super.setItemInHand(hand, stack);
+        if (hand == InteractionHand.MAIN_HAND){
             handleCombatMovementDetect(stack);
         }
     }
 
     @Override
-    public void setItemStackToSlot(EquipmentSlotType slotIn, ItemStack stack) {
-        super.setItemStackToSlot(slotIn, stack);
-        if (slotIn == EquipmentSlotType.MAINHAND){
+    public void setItemSlot(EquipmentSlot slotIn, ItemStack stack) {
+        super.setItemSlot(slotIn, stack);
+        if (slotIn == EquipmentSlot.MAINHAND){
             handleCombatMovementDetect(stack);
         }
     }
 
     @Override
-    public void onKillEntity(ServerWorld world, LivingEntity killedEntity) {
-        super.onKillEntity(world, killedEntity);
+    public void killed(ServerLevel world, LivingEntity killedEntity) {
+        super.killed(world, killedEntity);
         enterNonCombatMovementState();
     }
 
@@ -398,7 +413,7 @@ public abstract class MKEntity extends CreatureEntity implements IModelLookProvi
     }
 
     @Override
-    public boolean canDespawn(double distanceToClosestPlayer) {
+    public boolean removeWhenFarAway(double distanceToClosestPlayer) {
         return false;
     }
 
@@ -425,32 +440,32 @@ public abstract class MKEntity extends CreatureEntity implements IModelLookProvi
 
     @Override
     public void clearThreat() {
-        getBrain().removeMemory(MKMemoryModuleTypes.THREAT_MAP);
-        getBrain().removeMemory(MKMemoryModuleTypes.THREAT_TARGET);
-        getBrain().removeMemory(MKMemoryModuleTypes.THREAT_LIST);
+        getBrain().eraseMemory(MKMemoryModuleTypes.THREAT_MAP);
+        getBrain().eraseMemory(MKMemoryModuleTypes.THREAT_TARGET);
+        getBrain().eraseMemory(MKMemoryModuleTypes.THREAT_LIST);
     }
 
     @Override
-    public void notifyDataManagerChange(DataParameter<?> key) {
-        super.notifyDataManagerChange(key);
+    public void onSyncedDataUpdated(EntityDataAccessor<?> key) {
+        super.onSyncedDataUpdated(key);
         if (key.equals(SCALE)){
-            recalculateSize();
+            refreshDimensions();
         }
     }
 
     @Override
-    protected float getStandingEyeHeight(Pose poseIn, EntitySize sizeIn) {
-        return super.getStandingEyeHeight(poseIn, sizeIn) * dataManager.get(SCALE);
+    protected float getStandingEyeHeight(Pose poseIn, EntityDimensions sizeIn) {
+        return super.getStandingEyeHeight(poseIn, sizeIn) * entityData.get(SCALE);
     }
 
     @Override
     public String getCurrentModelLook() {
-        return dataManager.get(LOOK_STYLE);
+        return entityData.get(LOOK_STYLE);
     }
 
     @Override
     public void setCurrentModelLook(String group) {
-        dataManager.set(LOOK_STYLE, group);
+        entityData.set(LOOK_STYLE, group);
     }
 
     public MovementStrategy getMovementStrategy(AbilityTargetingDecision decision){
@@ -473,7 +488,7 @@ public abstract class MKEntity extends CreatureEntity implements IModelLookProvi
 
     public void returnToSpawnTick(){
         boolean isReturningToPlayer = MKCore.getEntityData(this).map(x -> x.getPets().isPet()
-                && x.getPets().getOwner() instanceof PlayerEntity).orElse(false);
+                && x.getPets().getOwner() instanceof Player).orElse(false);
         if (!isReturningToPlayer) {
             setHealth(Math.min(getHealth() + getMaxHealth() * .2f * 1.0f / GameConstants.TICKS_PER_SECOND,
                     getMaxHealth()));
@@ -482,9 +497,9 @@ public abstract class MKEntity extends CreatureEntity implements IModelLookProvi
 
     @Nullable
     @Override
-    public ILivingEntityData onInitialSpawn(IServerWorld worldIn, DifficultyInstance difficultyIn, SpawnReason reason, @Nullable ILivingEntityData spawnDataIn, @Nullable CompoundNBT dataTag) {
+    public SpawnGroupData finalizeSpawn(ServerLevelAccessor worldIn, DifficultyInstance difficultyIn, MobSpawnType reason, @Nullable SpawnGroupData spawnDataIn, @Nullable CompoundTag dataTag) {
         MKNpc.LOGGER.info("In initial spawn for {}", this);
-        ILivingEntityData entityData = super.onInitialSpawn(worldIn, difficultyIn, reason, spawnDataIn, dataTag);
+        SpawnGroupData entityData = super.finalizeSpawn(worldIn, difficultyIn, reason, spawnDataIn, dataTag);
         this.getCapability(NpcCapabilities.ENTITY_NPC_DATA_CAPABILITY).ifPresent((cap) -> {
             if (cap.wasMKSpawned()){
                 getBrain().setMemory(MKMemoryModuleTypes.SPAWN_POINT, cap.getSpawnPos());
@@ -527,26 +542,26 @@ public abstract class MKEntity extends CreatureEntity implements IModelLookProvi
 
 
     @Override
-    public void livingTick() {
-        updateArmSwingProgress();
+    public void aiStep() {
+        updateSwingTime();
         updateEntityCastState();
-        ticksSinceLastSwing++;
-        super.livingTick();
+        attackStrengthTicker++;
+        super.aiStep();
         if (nonCombatBehavior != null && !hasThreatTarget()){
-            nonCombatBehavior.getEntity().ifPresent(x -> getBrain().setMemory(MKMemoryModuleTypes.SPAWN_POINT, x.getPosition()));
+            nonCombatBehavior.getEntity().ifPresent(x -> getBrain().setMemory(MKMemoryModuleTypes.SPAWN_POINT, x.blockPosition()));
         }
     }
 
     public void resetSwing(){
-        ticksSinceLastSwing = 0;
+        attackStrengthTicker = 0;
     }
 
     public void subtractFromTicksSinceLastSwing(int toSubtract){
-        ticksSinceLastSwing -= toSubtract;
+        attackStrengthTicker -= toSubtract;
     }
 
     public int getTicksSinceLastSwing(){
-        return ticksSinceLastSwing;
+        return attackStrengthTicker;
     }
 
     public VisualCastState getVisualCastState() {
@@ -652,22 +667,22 @@ public abstract class MKEntity extends CreatureEntity implements IModelLookProvi
     }
 
     @Override
-    public void setAttackTarget(@Nullable LivingEntity entitylivingbaseIn) {
-        super.setAttackTarget(entitylivingbaseIn);
+    public void setTarget(@Nullable LivingEntity entitylivingbaseIn) {
+        super.setTarget(entitylivingbaseIn);
     }
 
     public double getAttackSpeedMultiplier(){
-        ModifiableAttributeInstance attackSpeed = getAttribute(Attributes.ATTACK_SPEED);
+        AttributeInstance attackSpeed = getAttribute(Attributes.ATTACK_SPEED);
         return attackSpeed.getValue() / getBaseAttackSpeedValueWithItem();
     }
 
     public double getBaseAttackSpeedValueWithItem(){
-        ItemStack itemInHand = getHeldItemMainhand();
+        ItemStack itemInHand = getMainHandItem();
         double baseValue = getAttribute(Attributes.ATTACK_SPEED).getBaseValue();
         if (!itemInHand.equals(ItemStack.EMPTY)) {
-            if (itemInHand.getAttributeModifiers(EquipmentSlotType.MAINHAND).containsKey(
+            if (itemInHand.getAttributeModifiers(EquipmentSlot.MAINHAND).containsKey(
                     Attributes.ATTACK_SPEED)) {
-                Collection<AttributeModifier> itemAttackSpeed = itemInHand.getAttributeModifiers(EquipmentSlotType.MAINHAND)
+                Collection<AttributeModifier> itemAttackSpeed = itemInHand.getAttributeModifiers(EquipmentSlot.MAINHAND)
                         .get(Attributes.ATTACK_SPEED);
                 double attackSpeed = 4.0;
                 for (AttributeModifier mod : itemAttackSpeed) {
@@ -682,44 +697,44 @@ public abstract class MKEntity extends CreatureEntity implements IModelLookProvi
     }
 
     @Override
-    public void writeAdditional(CompoundNBT compound) {
-        super.writeAdditional(compound);
+    public void addAdditionalSaveData(CompoundTag compound) {
+        super.addAdditionalSaveData(compound);
     }
 
     @Override
-    protected void updateAITasks() {
-        super.updateAITasks();
-        this.world.getProfiler().startSection("brain");
-        this.getBrain().tick((ServerWorld) this.world, this);
-        this.world.getProfiler().endSection();
+    protected void customServerAiStep() {
+        super.customServerAiStep();
+        this.level.getProfiler().push("brain");
+        this.getBrain().tick((ServerLevel) this.level, this);
+        this.level.getProfiler().pop();
     }
 
 @Override
-    public void setPositionAndRotation(double x, double y, double z, float yaw, float pitch) {
-        super.setPositionAndRotation(x, y, z, yaw, pitch);
-        this.renderYawOffset = yaw;
-        this.prevRenderYawOffset = yaw;
-        this.setRotationYawHead(yaw);
-        this.prevRotationYawHead = yaw;
+    public void absMoveTo(double x, double y, double z, float yaw, float pitch) {
+        super.absMoveTo(x, y, z, yaw, pitch);
+        this.yBodyRot = yaw;
+        this.yBodyRotO = yaw;
+        this.setYHeadRot(yaw);
+        this.yHeadRotO = yaw;
     }
 
     @Override
-    public float getBlockPathWeight(BlockPos pos, IWorldReader worldIn) {
+    public float getWalkTargetValue(BlockPos pos, LevelReader worldIn) {
         return 0.5F - worldIn.getBrightness(pos);
     }
 
 
 
     @Override
-    public boolean attackEntityFrom(DamageSource source, float amount) {
-        if (source.getTrueSource() instanceof LivingEntity) {
-            addThreat((LivingEntity) source.getTrueSource(), amount * NpcConstants.DAMAGE_THREAT_MULTIPLIER, true);
+    public boolean hurt(DamageSource source, float amount) {
+        if (source.getEntity() instanceof LivingEntity) {
+            addThreat((LivingEntity) source.getEntity(), amount * NpcConstants.DAMAGE_THREAT_MULTIPLIER, true);
         }
-        return super.attackEntityFrom(source, amount);
+        return super.hurt(source, amount);
     }
 
     @Override
-    public void onDeath(DamageSource cause) {
+    public void die(DamageSource cause) {
         if (hasNextStage()){
             BossStage next = getNextStage();
             next.apply(this);
@@ -728,7 +743,7 @@ public abstract class MKEntity extends CreatureEntity implements IModelLookProvi
             currentStage++;
             return;
         }
-        super.onDeath(cause);
+        super.die(cause);
     }
 
     public boolean hasThreatWithTarget(LivingEntity target) {
@@ -736,29 +751,29 @@ public abstract class MKEntity extends CreatureEntity implements IModelLookProvi
     }
 
     @Override
-    public void setRevengeTarget(@Nullable LivingEntity target) {
-        super.setRevengeTarget(target);
+    public void setLastHurtByMob(@Nullable LivingEntity target) {
+        super.setLastHurtByMob(target);
         if (target != null){
             addThreat(target, NpcConstants.INITIAL_THREAT, true);
         }
     }
 
     @Override
-    public ActionResultType applyPlayerInteraction(PlayerEntity player, Vector3d vec, Hand hand) {
-        if (hand.equals(Hand.MAIN_HAND) && getCapability(FactionCapabilities.MOB_FACTION_CAPABILITY)
+    public InteractionResult interactAt(Player player, Vec3 vec, InteractionHand hand) {
+        if (hand.equals(InteractionHand.MAIN_HAND) && getCapability(FactionCapabilities.MOB_FACTION_CAPABILITY)
                 .map((cap) -> cap.getRelationToEntity(player) != Targeting.TargetRelation.ENEMY).orElse(false)){
-            if (!player.world.isRemote() && player instanceof ServerPlayerEntity){
-                if (player.isSneaking()){
-                    player.openContainer(entityTradeContainer);
+            if (!player.level.isClientSide() && player instanceof ServerPlayer){
+                if (player.isShiftKeyDown()){
+                    player.openMenu(entityTradeContainer);
                 } else {
                     getCapability(ChatCapabilities.NPC_DIALOGUE_CAPABILITY).ifPresent(cap ->
-                            cap.startDialogue((ServerPlayerEntity) player, false));
+                            cap.startDialogue((ServerPlayer) player, false));
                 }
 
             }
-            return ActionResultType.CONSUME;
+            return InteractionResult.CONSUME;
         }
-        return ActionResultType.PASS;
+        return InteractionResult.PASS;
     }
 
     @Override
@@ -781,8 +796,8 @@ public abstract class MKEntity extends CreatureEntity implements IModelLookProvi
     }
 
     @Override
-    protected Brain.BrainCodec<?> getBrainCodec() {
-        return Brain.createCodec(
+    protected Brain.Provider<?> brainProvider() {
+        return Brain.provider(
                 ImmutableList.of(
                         MKMemoryModuleTypes.ALLIES,
                         MKMemoryModuleTypes.ENEMIES,
@@ -809,10 +824,10 @@ public abstract class MKEntity extends CreatureEntity implements IModelLookProvi
     }
 
     @Override
-    public ItemStack findAmmo(ItemStack shootable) {
-        if (shootable.getItem() instanceof ShootableItem) {
-            Predicate<ItemStack> predicate = ((ShootableItem)shootable.getItem()).getAmmoPredicate();
-            ItemStack itemstack = ShootableItem.getHeldAmmo(this, predicate);
+    public ItemStack getProjectile(ItemStack shootable) {
+        if (shootable.getItem() instanceof ProjectileWeaponItem) {
+            Predicate<ItemStack> predicate = ((ProjectileWeaponItem)shootable.getItem()).getSupportedHeldProjectiles();
+            ItemStack itemstack = ProjectileWeaponItem.getHeldProjectile(this, predicate);
             return itemstack.isEmpty() ? new ItemStack(Items.ARROW) : itemstack;
         } else {
             return ItemStack.EMPTY;

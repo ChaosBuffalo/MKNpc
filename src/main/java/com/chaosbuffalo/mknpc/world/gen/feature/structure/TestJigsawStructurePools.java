@@ -3,12 +3,10 @@ package com.chaosbuffalo.mknpc.world.gen.feature.structure;
 import com.chaosbuffalo.mknpc.MKNpc;
 import com.google.common.collect.ImmutableList;
 import com.mojang.datafixers.util.Pair;
-import net.minecraft.util.ResourceLocation;
-import net.minecraft.world.gen.feature.jigsaw.JigsawPattern;
-import net.minecraft.world.gen.feature.jigsaw.JigsawPatternRegistry;
-import net.minecraft.world.gen.feature.jigsaw.JigsawPiece;
-import net.minecraft.world.gen.feature.structure.PillagerOutpostPools;
-import net.minecraft.world.gen.feature.template.ProcessorLists;
+import net.minecraft.resources.ResourceLocation;
+import net.minecraft.world.level.levelgen.feature.structures.StructureTemplatePool;
+import net.minecraft.data.worldgen.Pools;
+import net.minecraft.world.level.levelgen.feature.structures.StructurePoolElement;
 
 public class TestJigsawStructurePools {
 
@@ -19,20 +17,20 @@ public class TestJigsawStructurePools {
 
     public static final int GEN_DEPTH = 7;
 
-    public static final JigsawPattern BASE_PATTERN = JigsawPatternRegistry.func_244094_a(
-            new JigsawPattern(new ResourceLocation(MKNpc.MODID, "digger/diggerbase"),
+    public static final StructureTemplatePool BASE_PATTERN = Pools.register(
+            new StructureTemplatePool(new ResourceLocation(MKNpc.MODID, "digger/diggerbase"),
                     new ResourceLocation("empty"), ImmutableList.of(
-                            Pair.of(MKSingleJigsawPiece.getMKSingleJigsaw(DIGGER_BIG_1, false), 1)), JigsawPattern.PlacementBehaviour.RIGID));
+                            Pair.of(MKSingleJigsawPiece.getMKSingleJigsaw(DIGGER_BIG_1, false), 1)), StructureTemplatePool.Projection.RIGID));
 
     public static void registerPatterns() {
-        JigsawPatternRegistry.func_244094_a(new JigsawPattern(new ResourceLocation(MKNpc.MODID, "digger/diggerroad"), new ResourceLocation("empty"),
-                ImmutableList.of(Pair.of(MKSingleJigsawPiece.getMKSingleJigsaw(DIGGER_ROAD_1, false), 1)), JigsawPattern.PlacementBehaviour.RIGID));
-        JigsawPatternRegistry.func_244094_a(new JigsawPattern(new ResourceLocation(MKNpc.MODID, "digger/diggercamp"), new ResourceLocation("empty"),
+        Pools.register(new StructureTemplatePool(new ResourceLocation(MKNpc.MODID, "digger/diggerroad"), new ResourceLocation("empty"),
+                ImmutableList.of(Pair.of(MKSingleJigsawPiece.getMKSingleJigsaw(DIGGER_ROAD_1, false), 1)), StructureTemplatePool.Projection.RIGID));
+        Pools.register(new StructureTemplatePool(new ResourceLocation(MKNpc.MODID, "digger/diggercamp"), new ResourceLocation("empty"),
                 ImmutableList.of(
                         Pair.of(MKSingleJigsawPiece.getMKSingleJigsaw(DIGGER_TENT_DBL_1, false), 1),
                         Pair.of(MKSingleJigsawPiece.getMKSingleJigsaw(DIGGER_TENT_SGL_1, false), 1),
-                        Pair.of(JigsawPiece.func_242864_g(), 2)
+                        Pair.of(StructurePoolElement.empty(), 2)
                 ),
-                JigsawPattern.PlacementBehaviour.RIGID));
+                StructureTemplatePool.Projection.RIGID));
     }
 }

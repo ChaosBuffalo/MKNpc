@@ -21,8 +21,8 @@ import com.chaosbuffalo.mknpc.quest.dialogue.effects.IReceivesChainId;
 import com.google.common.collect.ImmutableMap;
 import com.mojang.serialization.Dynamic;
 import com.mojang.serialization.DynamicOps;
-import net.minecraft.util.ResourceLocation;
-import net.minecraft.util.text.IFormattableTextComponent;
+import net.minecraft.resources.ResourceLocation;
+import net.minecraft.network.chat.MutableComponent;
 
 import java.util.*;
 
@@ -31,7 +31,7 @@ public class TalkToNpcObjective extends StructureInstanceObjective<UUIDInstanceD
     protected ResourceLocationAttribute npcDefinition = new ResourceLocationAttribute("npcDefinition", NpcDefinitionManager.INVALID_NPC_DEF);
     protected DialogueTree tree;
 
-    public TalkToNpcObjective(String name, ResourceLocation structure, int index, ResourceLocation npcDefinition, IFormattableTextComponent... description){
+    public TalkToNpcObjective(String name, ResourceLocation structure, int index, ResourceLocation npcDefinition, MutableComponent... description){
         super(NAME, name, structure, index, description);
         addAttribute(this.npcDefinition);
         this.npcDefinition.setValue(npcDefinition);

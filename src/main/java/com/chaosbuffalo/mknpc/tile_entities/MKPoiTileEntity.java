@@ -3,21 +3,20 @@ package com.chaosbuffalo.mknpc.tile_entities;
 import com.chaosbuffalo.mknpc.capabilities.NpcCapabilities;
 import com.chaosbuffalo.mknpc.init.MKNpcTileEntityTypes;
 import com.chaosbuffalo.mknpc.world.gen.IStructurePlaced;
-import net.minecraft.block.BlockState;
-import net.minecraft.block.Blocks;
-import net.minecraft.nbt.CompoundNBT;
+import net.minecraft.core.BlockPos;
+import net.minecraft.world.level.block.state.BlockState;
+import net.minecraft.world.level.block.Blocks;
+import net.minecraft.nbt.CompoundTag;
 import net.minecraft.server.MinecraftServer;
-import net.minecraft.tileentity.ITickableTileEntity;
-import net.minecraft.tileentity.TileEntity;
-import net.minecraft.tileentity.TileEntityType;
-import net.minecraft.util.ResourceLocation;
-import net.minecraft.util.math.GlobalPos;
-import net.minecraft.world.World;
+import net.minecraft.world.level.block.entity.BlockEntity;
+import net.minecraft.resources.ResourceLocation;
+import net.minecraft.core.GlobalPos;
+import net.minecraft.world.level.Level;
 
 import javax.annotation.Nullable;
 import java.util.UUID;
 
-public class MKPoiTileEntity extends TileEntity implements ITickableTileEntity, IStructurePlaced {
+public class MKPoiTileEntity extends BlockEntity implements IStructurePlaced {
     private ResourceLocation structureName;
     private UUID structureId;
     private UUID poiID;
@@ -25,12 +24,10 @@ public class MKPoiTileEntity extends TileEntity implements ITickableTileEntity, 
     private boolean placedByStructure;
     private String tag;
 
-    public MKPoiTileEntity(){
-        this(MKNpcTileEntityTypes.MK_POI_TILE_ENTITY_TYPE.get());
-    }
 
-    public MKPoiTileEntity(TileEntityType<?> tileEntityTypeIn) {
-        super(tileEntityTypeIn);
+
+    public MKPoiTileEntity(BlockPos blockPos, BlockState blockState) {
+        super(MKNpcTileEntityTypes.MK_POI_TILE_ENTITY_TYPE.get(), blockPos, blockState);
         this.structureName = null;
         this.structureId = null;
         this.placedByStructure = false;
@@ -79,29 +76,31 @@ public class MKPoiTileEntity extends TileEntity implements ITickableTileEntity, 
 
 
     @Override
-    public GlobalPos getBlockPos() {
-        return GlobalPos.getPosition(getWorld().getDimensionKey(), getPos());
+    public GlobalPos getGlobalBlockPos() {
+        return GlobalPos.of(getLevel().dimension(), getBlockPos());
     }
 
     @Override
     @Nullable
-    public World getStructureWorld() {
-        return getWorld();
+    public Level getStructureWorld() {
+        return getLevel();
     }
 
-    @Override
-    public void tick() {
-        World world = getWorld();
-        if (world != null && !world.isRemote()) {
+    public static void poiTick(Level world, BlockPos blockPos, BlockState blockState, MKPoiTileEntity tileEntity) {
+        tileEntity.tick(world);
+    }
+
+    public void tick(Level level) {
+        if (level != null) {
             if (needsUploadToWorld) {
-                MinecraftServer server = world.getServer();
+                MinecraftServer server = level.getServer();
                 if (server != null) {
-                    World overworld = server.getWorld(World.OVERWORLD);
+                    Level overworld = server.getLevel(Level.OVERWORLD);
                     if (overworld != null) {
                         overworld.getCapability(NpcCapabilities.WORLD_NPC_DATA_CAPABILITY)
                                 .ifPresent(cap -> cap.addPointOfInterest(this));
                     }
-                    world.setBlockState(getPos(), Blocks.AIR.getDefaultState(), 3);
+                    level.setBlock(getBlockPos(), Blocks.AIR.defaultBlockState(), 3);
                     needsUploadToWorld = false;
                 }
             }
@@ -117,25 +116,25 @@ public class MKPoiTileEntity extends TileEntity implements ITickableTileEntity, 
     }
 
     @Override
-    public CompoundNBT write(CompoundNBT compound) {
-        compound.putUniqueId("poiId", poiID);
+    public CompoundTag save(CompoundTag compound) {
+        compound.putUUID("poiId", poiID);
         compound.putBoolean("hasUploadedToWorld", needsUploadToWorld);
         compound.putBoolean("placedByStructure", placedByStructure);
         if (isInsideStructure()){
             compound.putString("structureName", structureName.toString());
-            compound.putUniqueId("structureId", structureId);
+            compound.putUUID("structureId", structureId);
         }
-        return super.write(compound);
+        return super.save(compound);
     }
 
     @Override
-    public void read(BlockState state, CompoundNBT compound) {
-        super.read(state, compound);
+    public void load(CompoundTag compound) {
+        super.load(compound);
         if (compound.contains("structureName")){
             setStructureName(new ResourceLocation(compound.getString("structureName")));
         }
         if (compound.contains("structureId")){
-            setStructureId(compound.getUniqueId("structureId"));
+            setStructureId(compound.getUUID("structureId"));
         }
         if (compound.contains("hasUploadedToWorld")){
             needsUploadToWorld = compound.getBoolean("hasUploadedToWorld");
@@ -145,7 +144,7 @@ public class MKPoiTileEntity extends TileEntity implements ITickableTileEntity, 
         }
 
         if (compound.contains("poiId")){
-            poiID = compound.getUniqueId("poiId");
+            poiID = compound.getUUID("poiId");
         } else {
             poiID = UUID.randomUUID();
         }

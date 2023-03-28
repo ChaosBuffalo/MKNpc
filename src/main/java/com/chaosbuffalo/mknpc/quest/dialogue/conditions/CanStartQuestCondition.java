@@ -7,10 +7,10 @@ import com.chaosbuffalo.mknpc.quest.dialogue.effects.IReceivesChainId;
 import com.google.common.collect.ImmutableMap;
 import com.mojang.serialization.Dynamic;
 import com.mojang.serialization.DynamicOps;
-import net.minecraft.entity.LivingEntity;
-import net.minecraft.entity.player.ServerPlayerEntity;
-import net.minecraft.util.ResourceLocation;
-import net.minecraft.util.Util;
+import net.minecraft.world.entity.LivingEntity;
+import net.minecraft.server.level.ServerPlayer;
+import net.minecraft.resources.ResourceLocation;
+import net.minecraft.Util;
 
 import java.util.UUID;
 
@@ -27,11 +27,11 @@ public class CanStartQuestCondition extends DialogueCondition implements IReceiv
     }
 
     public CanStartQuestCondition(){
-        this(Util.DUMMY_UUID, false);
+        this(Util.NIL_UUID, false);
     }
 
     @Override
-    public boolean meetsCondition(ServerPlayerEntity player, LivingEntity source) {
+    public boolean meetsCondition(ServerPlayer player, LivingEntity source) {
         return MKNpc.getPlayerQuestData(player).map(x -> {
             PlayerQuestingDataHandler.QuestStatus status = x.getQuestStatus(questId);
             if (status == PlayerQuestingDataHandler.QuestStatus.NOT_ON){
@@ -50,14 +50,14 @@ public class CanStartQuestCondition extends DialogueCondition implements IReceiv
     @Override
     public <D> void readAdditionalData(Dynamic<D> dynamic) {
         super.readAdditionalData(dynamic);
-        questId = dynamic.get("questId").asString().result().map(UUID::fromString).orElse(Util.DUMMY_UUID);
+        questId = dynamic.get("questId").asString().result().map(UUID::fromString).orElse(Util.NIL_UUID);
         allowRepeat = dynamic.get("allowRepeat").asBoolean(false);
     }
 
     @Override
     public <D> void writeAdditionalData(DynamicOps<D> ops, ImmutableMap.Builder<D, D> builder) {
         super.writeAdditionalData(ops, builder);
-        if (!questId.equals(Util.DUMMY_UUID)){
+        if (!questId.equals(Util.NIL_UUID)){
             builder.put(ops.createString("questId"), ops.createString(questId.toString()));
         }
         builder.put(ops.createString("allowRepeat"), ops.createBoolean(allowRepeat));

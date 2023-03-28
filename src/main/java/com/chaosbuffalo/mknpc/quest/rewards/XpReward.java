@@ -2,12 +2,12 @@ package com.chaosbuffalo.mknpc.quest.rewards;
 
 import com.chaosbuffalo.mkcore.serialization.attributes.IntAttribute;
 import com.chaosbuffalo.mknpc.MKNpc;
-import net.minecraft.entity.player.PlayerEntity;
-import net.minecraft.util.ResourceLocation;
-import net.minecraft.util.Util;
-import net.minecraft.util.text.IFormattableTextComponent;
-import net.minecraft.util.text.TextFormatting;
-import net.minecraft.util.text.TranslationTextComponent;
+import net.minecraft.world.entity.player.Player;
+import net.minecraft.resources.ResourceLocation;
+import net.minecraft.Util;
+import net.minecraft.network.chat.MutableComponent;
+import net.minecraft.ChatFormatting;
+import net.minecraft.network.chat.TranslatableComponent;
 
 public class XpReward extends QuestReward {
     public final static ResourceLocation TYPE_NAME = new ResourceLocation(MKNpc.MODID, "quest_reward.xp");
@@ -25,8 +25,8 @@ public class XpReward extends QuestReward {
     }
 
     @Override
-    public IFormattableTextComponent getDescription() {
-        return new TranslationTextComponent("mknpc.quest_reward.xp.name", xpAmount.value());
+    public MutableComponent getDescription() {
+        return new TranslatableComponent("mknpc.quest_reward.xp.name", xpAmount.value());
     }
 
     @Override
@@ -35,9 +35,9 @@ public class XpReward extends QuestReward {
     }
 
     @Override
-    public void grantReward(PlayerEntity player) {
+    public void grantReward(Player player) {
         player.giveExperiencePoints(xpAmount.value());
-        player.sendMessage(new TranslationTextComponent("mknpc.quest_reward.xp.message", xpAmount.value())
-                .mergeStyle(TextFormatting.GOLD), Util.DUMMY_UUID);
+        player.sendMessage(new TranslatableComponent("mknpc.quest_reward.xp.message", xpAmount.value())
+                .withStyle(ChatFormatting.GOLD), Util.NIL_UUID);
     }
 }

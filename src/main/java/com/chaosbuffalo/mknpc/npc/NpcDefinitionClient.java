@@ -1,7 +1,7 @@
 package com.chaosbuffalo.mknpc.npc;
 
-import net.minecraft.network.PacketBuffer;
-import net.minecraft.util.ResourceLocation;
+import net.minecraft.network.FriendlyByteBuf;
+import net.minecraft.resources.ResourceLocation;
 
 public class NpcDefinitionClient {
 
@@ -23,9 +23,9 @@ public class NpcDefinitionClient {
         return name;
     }
 
-    public void toBuffer(PacketBuffer buffer){
+    public void toBuffer(FriendlyByteBuf buffer){
         buffer.writeResourceLocation(getDefinitionName());
-        buffer.writeString(getName());
+        buffer.writeUtf(getName());
         buffer.writeResourceLocation(getFaction());
     }
 
@@ -37,9 +37,9 @@ public class NpcDefinitionClient {
         return faction;
     }
 
-    public static NpcDefinitionClient fromBuffer(PacketBuffer buffer){
+    public static NpcDefinitionClient fromBuffer(FriendlyByteBuf buffer){
         return new NpcDefinitionClient(buffer.readResourceLocation(),
-                buffer.readString(), buffer.readResourceLocation());
+                buffer.readUtf(), buffer.readResourceLocation());
     }
 
 }

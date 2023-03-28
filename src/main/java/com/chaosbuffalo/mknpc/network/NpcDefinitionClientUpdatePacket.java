@@ -3,8 +3,8 @@ package com.chaosbuffalo.mknpc.network;
 import com.chaosbuffalo.mknpc.MKNpc;
 import com.chaosbuffalo.mknpc.npc.NpcDefinitionClient;
 import com.chaosbuffalo.mknpc.npc.NpcDefinitionManager;
-import net.minecraft.network.PacketBuffer;
-import net.minecraftforge.fml.network.NetworkEvent;
+import net.minecraft.network.FriendlyByteBuf;
+import net.minecraftforge.fmllegacy.network.NetworkEvent;
 
 import java.util.ArrayList;
 import java.util.Collection;
@@ -19,7 +19,7 @@ public class NpcDefinitionClientUpdatePacket {
         this.clientDefs.addAll(clientDefinitions);
     }
 
-    public NpcDefinitionClientUpdatePacket(PacketBuffer buffer){
+    public NpcDefinitionClientUpdatePacket(FriendlyByteBuf buffer){
         clientDefs = new ArrayList<>();
         int count = buffer.readInt();
         for (int i=0; i < count; i++){
@@ -28,7 +28,7 @@ public class NpcDefinitionClientUpdatePacket {
         }
     }
 
-    public void toBytes(PacketBuffer buffer){
+    public void toBytes(FriendlyByteBuf buffer){
         buffer.writeInt(clientDefs.size());
         for (NpcDefinitionClient def : clientDefs){
             def.toBuffer(buffer);

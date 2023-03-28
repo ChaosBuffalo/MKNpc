@@ -5,7 +5,7 @@ import com.chaosbuffalo.mknpc.MKNpc;
 import com.chaosbuffalo.mknpc.event.WorldStructureHandler;
 import com.chaosbuffalo.mknpc.npc.MKStructureEntry;
 import com.chaosbuffalo.mknpc.world.gen.feature.structure.MKJigsawStructure;
-import net.minecraft.entity.player.ServerPlayerEntity;
+import net.minecraft.server.level.ServerPlayer;
 
 import java.util.*;
 import java.util.function.BiConsumer;
@@ -14,9 +14,9 @@ public class WorldStructureManager {
 
     public class ActivePlayerEntry {
         public int ticksSinceSeen;
-        public final ServerPlayerEntity player;
+        public final ServerPlayer player;
 
-        public ActivePlayerEntry(ServerPlayerEntity player) {
+        public ActivePlayerEntry(ServerPlayer player) {
             ticksSinceSeen = 0;
             this.player = player;
         }
@@ -28,9 +28,9 @@ public class WorldStructureManager {
         private final Map<UUID, ActivePlayerEntry> activePlayers;
         private final int PLAYER_TIMEOUT = 20 * 5;
         private final int EMPTY_TIMEOUT = 20 * 60;
-        private final BiConsumer<ServerPlayerEntity, ActiveStructure> playerRemoveCallback;
+        private final BiConsumer<ServerPlayer, ActiveStructure> playerRemoveCallback;
 
-        public ActiveStructure(UUID structureId, BiConsumer<ServerPlayerEntity, ActiveStructure> removalCallback){
+        public ActiveStructure(UUID structureId, BiConsumer<ServerPlayer, ActiveStructure> removalCallback){
             this.activePlayers = new HashMap<>();
             this.structureId = structureId;
             this.playerRemoveCallback = removalCallback;
@@ -44,8 +44,8 @@ public class WorldStructureManager {
             return structureId;
         }
 
-        private void addPlayer(ServerPlayerEntity player) {
-            activePlayers.put(player.getUniqueID(), new ActivePlayerEntry(player));
+        private void addPlayer(ServerPlayer player) {
+            activePlayers.put(player.getUUID(), new ActivePlayerEntry(player));
         }
 
         private void removePlayer(UUID uuid) {
@@ -57,9 +57,9 @@ public class WorldStructureManager {
         }
 
         // returns true if we are not already in structure
-        public boolean visit(ServerPlayerEntity player) {
-            if (activePlayers.containsKey(player.getUniqueID())) {
-                ActivePlayerEntry active = activePlayers.get(player.getUniqueID());
+        public boolean visit(ServerPlayer player) {
+            if (activePlayers.containsKey(player.getUUID())) {
+                ActivePlayerEntry active = activePlayers.get(player.getUUID());
                 active.ticksSinceSeen = 0;
                 return false;
             } else {
@@ -98,7 +98,7 @@ public class WorldStructureManager {
         this.handler = handler;
     }
 
-    public void visitStructure(UUID structureId, ServerPlayerEntity player) {
+    public void visitStructure(UUID structureId, ServerPlayer player) {
         ActiveStructure struct = activeStructures.computeIfAbsent(structureId, (id) -> {
             ActiveStructure activeStructure = new ActiveStructure(id, this::removePlayer);
             MKStructureEntry structureEntry = handler.getStructureData(id);
@@ -122,7 +122,7 @@ public class WorldStructureManager {
         }
     }
 
-    public void removePlayer(ServerPlayerEntity player, ActiveStructure activeStructure) {
+    public void removePlayer(ServerPlayer player, ActiveStructure activeStructure) {
         MKStructureEntry entry = handler.getStructureData(activeStructure.getStructureId());
         if (player != null && entry != null) {
             MKNpc.LOGGER.debug("Player {} exiting structure {} (ID: {})", player, entry.getStructureName(), activeStructure.getStructureId());

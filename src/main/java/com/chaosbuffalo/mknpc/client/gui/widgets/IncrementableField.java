@@ -1,8 +1,8 @@
 package com.chaosbuffalo.mknpc.client.gui.widgets;
 
 import com.chaosbuffalo.mkwidgets.client.gui.widgets.MKText;
-import net.minecraft.client.gui.FontRenderer;
-import net.minecraft.client.gui.screen.Screen;
+import net.minecraft.client.gui.Font;
+import net.minecraft.client.gui.screens.Screen;
 
 import java.util.function.BiConsumer;
 
@@ -11,14 +11,14 @@ public class IncrementableField extends CenteringHorizontalLayout {
     private double value;
     private final String name;
 
-    public IncrementableField(int x, int y, int height, String name, double value, FontRenderer fontRenderer,
+    public IncrementableField(int x, int y, int height, String name, double value, Font fontRenderer,
                               BiConsumer<IncrementableField, Double> callback) {
         super(x, y, height, fontRenderer);
         this.name = name;
         this.value = value;
         String textStr = String.format("%s: %.2f", name, value);
         text = new MKText(fontRenderer, textStr);
-        text.setWidth(fontRenderer.getStringWidth(textStr));
+        text.setWidth(fontRenderer.width(textStr));
         setPaddingLeft(2);
         setPaddingRight(2);
         addWidget(text);

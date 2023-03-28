@@ -1,16 +1,16 @@
 package com.chaosbuffalo.mknpc.capabilities.structure_tracking;
 
-import net.minecraft.nbt.CompoundNBT;
-import net.minecraft.util.ResourceLocation;
-import net.minecraft.util.math.MutableBoundingBox;
+import net.minecraft.nbt.CompoundTag;
+import net.minecraft.resources.ResourceLocation;
+import net.minecraft.world.level.levelgen.structure.BoundingBox;
 import net.minecraftforge.common.util.INBTSerializable;
 
 
-public class StructureComponentData implements INBTSerializable<CompoundNBT> {
+public class StructureComponentData implements INBTSerializable<CompoundTag> {
     private ResourceLocation pieceName;
-    private MutableBoundingBox bounds;
+    private BoundingBox bounds;
 
-    public StructureComponentData(ResourceLocation pieceName, MutableBoundingBox bounds){
+    public StructureComponentData(ResourceLocation pieceName, BoundingBox bounds){
         this.pieceName = pieceName;
         this.bounds = bounds;
     }
@@ -20,7 +20,7 @@ public class StructureComponentData implements INBTSerializable<CompoundNBT> {
         this.pieceName = null;
     }
 
-    public MutableBoundingBox getBounds() {
+    public BoundingBox getBounds() {
         return bounds;
     }
 
@@ -30,18 +30,18 @@ public class StructureComponentData implements INBTSerializable<CompoundNBT> {
 
 
     @Override
-    public CompoundNBT serializeNBT() {
-        CompoundNBT nbt = new CompoundNBT();
-        int[] boundsArr = {bounds.minX, bounds.minY, bounds.minZ, bounds.maxX, bounds.maxY, bounds.maxZ};
+    public CompoundTag serializeNBT() {
+        CompoundTag nbt = new CompoundTag();
+        int[] boundsArr = {bounds.minX(), bounds.minY(), bounds.minZ(), bounds.maxX(), bounds.maxY(), bounds.maxZ()};
         nbt.putIntArray("bounds", boundsArr);
         nbt.putString("pieceName", pieceName.toString());
         return nbt;
     }
 
     @Override
-    public void deserializeNBT(CompoundNBT nbt) {
+    public void deserializeNBT(CompoundTag nbt) {
         int[] boundsArr = nbt.getIntArray("bounds");
-        bounds = new MutableBoundingBox(boundsArr);
+        bounds = new BoundingBox(boundsArr[0], boundsArr[1], boundsArr[2], boundsArr[3], boundsArr[4], boundsArr[5]);
         pieceName = new ResourceLocation(nbt.getString("pieceName"));
     }
 }

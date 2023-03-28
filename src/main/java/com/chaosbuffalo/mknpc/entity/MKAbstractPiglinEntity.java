@@ -1,37 +1,37 @@
 package com.chaosbuffalo.mknpc.entity;
 
-import net.minecraft.entity.EntityType;
-import net.minecraft.entity.monster.piglin.PiglinAction;
-import net.minecraft.item.TieredItem;
-import net.minecraft.pathfinding.GroundPathNavigator;
-import net.minecraft.pathfinding.PathNodeType;
-import net.minecraft.util.GroundPathHelper;
-import net.minecraft.world.World;
+import net.minecraft.world.entity.EntityType;
+import net.minecraft.world.entity.monster.piglin.PiglinArmPose;
+import net.minecraft.world.item.TieredItem;
+import net.minecraft.world.entity.ai.navigation.GroundPathNavigation;
+import net.minecraft.world.level.pathfinder.BlockPathTypes;
+import net.minecraft.world.entity.ai.util.GoalUtils;
+import net.minecraft.world.level.Level;
 
 public abstract class MKAbstractPiglinEntity extends MKEntity implements IPiglinActionProvider{
 
-    protected MKAbstractPiglinEntity(EntityType<? extends MKAbstractPiglinEntity> type, World worldIn) {
+    protected MKAbstractPiglinEntity(EntityType<? extends MKAbstractPiglinEntity> type, Level worldIn) {
         super(type, worldIn);
         setupBreakDoors();
-        this.setPathPriority(PathNodeType.DANGER_FIRE, 16.0F);
-        this.setPathPriority(PathNodeType.DAMAGE_FIRE, -1.0F);
+        this.setPathfindingMalus(BlockPathTypes.DANGER_FIRE, 16.0F);
+        this.setPathfindingMalus(BlockPathTypes.DAMAGE_FIRE, -1.0F);
     }
 
     private void setupBreakDoors() {
-        if (GroundPathHelper.isGroundNavigator(this)) {
-            ((GroundPathNavigator)this.getNavigator()).setBreakDoors(true);
+        if (GoalUtils.hasGroundPathNavigation(this)) {
+            ((GroundPathNavigation)this.getNavigation()).setCanOpenDoors(true);
         }
     }
 
     @Override
-    public double getYOffset() {
-        return this.isChild() ? -0.05D : -0.45D;
+    public double getMyRidingOffset() {
+        return this.isBaby() ? -0.05D : -0.45D;
     }
 
     @Override
-    public abstract PiglinAction getPiglinAction();
+    public abstract PiglinArmPose getPiglinAction();
 
     protected boolean isHoldingMeleeWeapon() {
-        return getHeldItemMainhand().getItem() instanceof TieredItem;
+        return getMainHandItem().getItem() instanceof TieredItem;
     }
 }

@@ -11,19 +11,17 @@ import com.chaosbuffalo.mknpc.quest.QuestDefinition;
 import com.chaosbuffalo.mknpc.tile_entities.MKSpawnerTileEntity;
 import com.chaosbuffalo.mknpc.tile_entities.MKPoiTileEntity;
 import com.chaosbuffalo.mknpc.world.gen.feature.structure.MKJigsawStructure;
-import com.chaosbuffalo.mknpc.world.gen.feature.structure.MKStructureStart;
-import net.minecraft.entity.Entity;
-import net.minecraft.nbt.CompoundNBT;
-import net.minecraft.util.math.BlockPos;
-import net.minecraft.world.World;
-import net.minecraft.world.gen.feature.structure.StructureStart;
+import net.minecraft.world.entity.Entity;
+import net.minecraft.nbt.CompoundTag;
+import net.minecraft.core.BlockPos;
+import net.minecraft.world.level.Level;
 import net.minecraftforge.common.util.INBTSerializable;
 
 import javax.annotation.Nullable;
 import java.util.Optional;
 import java.util.UUID;
 
-public interface IWorldNpcData extends INBTSerializable<CompoundNBT> {
+public interface IWorldNpcData extends INBTSerializable<CompoundTag> {
 
     boolean hasEntityOptionEntry(NpcDefinition definition, WorldPermanentOption attribute, Entity entity);
 
@@ -62,10 +60,10 @@ public interface IWorldNpcData extends INBTSerializable<CompoundNBT> {
     @Nullable
     NotableNpcEntry getNotableNpc(UUID id);
 
-    void setupStructureDataIfAbsent(MKJigsawStructure.Start start, World world);
+    void setupStructureDataIfAbsent(MKJigsawStructure.Start start, Level world);
 
     @Nullable
     PointOfInterestEntry getPointOfInterest(UUID id);
 
-    World getWorld();
+    Level getWorld();
 }

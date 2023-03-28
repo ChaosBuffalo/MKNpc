@@ -17,28 +17,33 @@ import com.chaosbuffalo.mknpc.quest.data.player.PlayerQuestObjectiveData;
 import com.google.common.collect.ImmutableMap;
 import com.mojang.serialization.Dynamic;
 import com.mojang.serialization.DynamicOps;
-import net.minecraft.entity.LivingEntity;
-import net.minecraft.entity.player.PlayerEntity;
-import net.minecraft.util.ResourceLocation;
-import net.minecraft.util.Util;
-import net.minecraft.util.text.*;
+import net.minecraft.world.entity.LivingEntity;
+import net.minecraft.world.entity.player.Player;
+import net.minecraft.resources.ResourceLocation;
+import net.minecraft.Util;
 import net.minecraftforge.event.entity.living.LivingDeathEvent;
 
 import java.util.List;
 import java.util.Map;
+
+import net.minecraft.ChatFormatting;
+import net.minecraft.network.chat.Component;
+import net.minecraft.network.chat.MutableComponent;
+import net.minecraft.network.chat.TextComponent;
+import net.minecraft.network.chat.TranslatableComponent;
 
 public class QuestLootNpcObjective extends StructureInstanceObjective<UUIDInstanceData> implements IKillObjectiveHandler {
     public static final ResourceLocation NAME = new ResourceLocation(MKNpc.MODID, "objective.quest_loot_npc");
     protected ResourceLocationAttribute npcDefinition = new ResourceLocationAttribute("npcDefinition", NpcDefinitionManager.INVALID_NPC_DEF);
     protected DoubleAttribute chanceToFind = new DoubleAttribute("chance", 1.0);
     protected IntAttribute count = new IntAttribute("count", 1);
-    protected IFormattableTextComponent itemDescription;
-    protected static final IFormattableTextComponent defaultItemDescription = new StringTextComponent("Placeholder Item");
+    protected MutableComponent itemDescription;
+    protected static final MutableComponent defaultItemDescription = new TextComponent("Placeholder Item");
 
 
     public QuestLootNpcObjective(String name, ResourceLocation structure, int index, ResourceLocation npcDefinition,
-                                 double chance, int count, IFormattableTextComponent itemDescription,
-                                 IFormattableTextComponent... description) {
+                                 double chance, int count, MutableComponent itemDescription,
+                                 MutableComponent... description) {
         super(NAME, name,  structure, index, description);
         this.npcDefinition.setValue(npcDefinition);
         this.chanceToFind.setValue(chance);
@@ -56,42 +61,42 @@ public class QuestLootNpcObjective extends StructureInstanceObjective<UUIDInstan
     @Override
     public <D> void writeAdditionalData(DynamicOps<D> ops, ImmutableMap.Builder<D, D> builder) {
         super.writeAdditionalData(ops, builder);
-        builder.put(ops.createString("itemDescription"),  ops.createString(ITextComponent.Serializer.toJson(itemDescription)));
+        builder.put(ops.createString("itemDescription"),  ops.createString(Component.Serializer.toJson(itemDescription)));
     }
 
     @Override
     public <D> void readAdditionalData(Dynamic<D> dynamic) {
         super.readAdditionalData(dynamic);
-        itemDescription = ITextComponent.Serializer.getComponentFromJson(dynamic.get("itemDescription").asString()
+        itemDescription = Component.Serializer.fromJson(dynamic.get("itemDescription").asString()
                 .resultOrPartial(MKNpc.LOGGER::error).orElseThrow(IllegalArgumentException::new));
     }
 
-    private IFormattableTextComponent getDescriptionWithCount(int count){
+    private MutableComponent getDescriptionWithCount(int count){
         NpcDefinition def = NpcDefinitionManager.getDefinition(npcDefinition.getValue());
-        return new TranslationTextComponent("mknpc.objective.quest_loot_npc.desc", itemDescription, def.getDisplayName(),
+        return new TranslatableComponent("mknpc.objective.quest_loot_npc.desc", itemDescription, def.getDisplayName(),
                 MKAbility.INTEGER_FORMATTER.format(count), MKAbility.INTEGER_FORMATTER.format(this.count.value()));
     }
 
-    private IFormattableTextComponent getProgressMessage(LivingEntity entity, int count){
-        return new TranslationTextComponent("mknpc.objective.quest_loot_npc.progress", itemDescription, entity.getName(),
+    private MutableComponent getProgressMessage(LivingEntity entity, int count){
+        return new TranslatableComponent("mknpc.objective.quest_loot_npc.progress", itemDescription, entity.getName(),
                 MKAbility.INTEGER_FORMATTER.format(count), MKAbility.INTEGER_FORMATTER.format(this.count.value()));
     }
 
     @Override
-    public boolean onPlayerKillNpcDefEntity(PlayerEntity player, PlayerQuestObjectiveData objectiveData, NpcDefinition def,
+    public boolean onPlayerKillNpcDefEntity(Player player, PlayerQuestObjectiveData objectiveData, NpcDefinition def,
                                          LivingDeathEvent event, QuestData quest, PlayerQuestChainInstance playerChain) {
         if (!isComplete(objectiveData)){
             UUIDInstanceData objData = getInstanceData(quest);
             boolean applies = event.getEntityLiving().getCapability(NpcCapabilities.ENTITY_NPC_DATA_CAPABILITY).map(
                     x -> x.getStructureId().map(structId -> structId.equals(objData.getUuid())).orElse(false)).orElse(false)
                     && def.getDefinitionName().equals(npcDefinition.getValue());
-            if (applies && player.getRNG().nextDouble() <= chanceToFind.value()){
+            if (applies && player.getRandom().nextDouble() <= chanceToFind.value()){
                 int currentCount = objectiveData.getInt("lootCount");
                 currentCount++;
                 objectiveData.putInt("lootCount", currentCount);
                 objectiveData.setDescription(getDescriptionWithCount(currentCount));
                 player.sendMessage(getProgressMessage(event.getEntityLiving(), currentCount)
-                        .mergeStyle(TextFormatting.GOLD), Util.DUMMY_UUID);
+                        .withStyle(ChatFormatting.GOLD), Util.NIL_UUID);
                 if (currentCount == count.value()){
                     signalCompleted(objectiveData);
                 }

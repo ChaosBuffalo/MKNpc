@@ -1,8 +1,8 @@
 package com.chaosbuffalo.mknpc.entity;
 
-import net.minecraft.entity.monster.piglin.PiglinAction;
+import net.minecraft.world.entity.monster.piglin.PiglinArmPose;
 
 public interface IPiglinActionProvider {
 
-    PiglinAction getPiglinAction();
+    PiglinArmPose getPiglinAction();
 }

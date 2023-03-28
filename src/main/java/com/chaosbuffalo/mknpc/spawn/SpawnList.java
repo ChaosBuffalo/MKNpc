@@ -1,14 +1,14 @@
 package com.chaosbuffalo.mknpc.spawn;
 
-import net.minecraft.nbt.CompoundNBT;
-import net.minecraft.nbt.ListNBT;
-import net.minecraftforge.common.util.Constants;
+import net.minecraft.nbt.CompoundTag;
+import net.minecraft.nbt.ListTag;
+import net.minecraft.nbt.Tag;
 import net.minecraftforge.common.util.INBTSerializable;
 
 import java.util.ArrayList;
 import java.util.List;
 
-public class SpawnList implements INBTSerializable<CompoundNBT> {
+public class SpawnList implements INBTSerializable<CompoundTag> {
 
     private final List<SpawnOption> options;
 
@@ -36,9 +36,9 @@ public class SpawnList implements INBTSerializable<CompoundNBT> {
     }
 
     @Override
-    public CompoundNBT serializeNBT() {
-        CompoundNBT tag = new CompoundNBT();
-        ListNBT opts = new ListNBT();
+    public CompoundTag serializeNBT() {
+        CompoundTag tag = new CompoundTag();
+        ListTag opts = new ListTag();
         for (SpawnOption option : getOptions()){
             opts.add(option.serializeNBT());
         }
@@ -47,11 +47,11 @@ public class SpawnList implements INBTSerializable<CompoundNBT> {
     }
 
     @Override
-    public void deserializeNBT(CompoundNBT nbt) {
-        ListNBT opts = nbt.getList("options", Constants.NBT.TAG_COMPOUND);
+    public void deserializeNBT(CompoundTag nbt) {
+        ListTag opts = nbt.getList("options", Tag.TAG_COMPOUND);
         options.clear();
         for (int i = 0; i < opts.size(); i++){
-            CompoundNBT option = opts.getCompound(i);
+            CompoundTag option = opts.getCompound(i);
             SpawnOption spawnOption = new SpawnOption();
             spawnOption.deserializeNBT(option);
             addOption(spawnOption);

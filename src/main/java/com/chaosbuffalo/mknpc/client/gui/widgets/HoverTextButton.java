@@ -1,16 +1,16 @@
 package com.chaosbuffalo.mknpc.client.gui.widgets;
 
 import com.chaosbuffalo.mkwidgets.client.gui.widgets.MKText;
-import com.mojang.blaze3d.matrix.MatrixStack;
+import com.mojang.blaze3d.vertex.PoseStack;
 import net.minecraft.client.Minecraft;
-import net.minecraft.client.gui.FontRenderer;
+import net.minecraft.client.gui.Font;
 
 
 public class HoverTextButton extends MKText {
     private boolean isClicked;
     private final Runnable callback;
 
-    public HoverTextButton(FontRenderer renderer, String text, Runnable callback) {
+    public HoverTextButton(Font renderer, String text, Runnable callback) {
         super(renderer, text);
         setWidth(20);
         setHeight(20);
@@ -32,7 +32,7 @@ public class HoverTextButton extends MKText {
     }
 
     @Override
-    public void draw(MatrixStack stack, Minecraft mc, int x, int y, int width, int height, int mouseX, int mouseY, float partialTicks) {
+    public void draw(PoseStack stack, Minecraft mc, int x, int y, int width, int height, int mouseX, int mouseY, float partialTicks) {
         super.draw(stack, mc, x, y, width, height, mouseX, mouseY, partialTicks);
         if (!isHovered() && isClicked){
             isClicked = false;
@@ -40,7 +40,7 @@ public class HoverTextButton extends MKText {
     }
 
     @Override
-    public void postDraw(MatrixStack stack, Minecraft mc, int x, int y, int width, int height, int mouseX, int mouseY, float partialTicks) {
+    public void postDraw(PoseStack stack, Minecraft mc, int x, int y, int width, int height, int mouseX, int mouseY, float partialTicks) {
         if (isHovered()) {
             mkFill(stack, x, y, x + width, y + height, 0x55ffffff);
         }
