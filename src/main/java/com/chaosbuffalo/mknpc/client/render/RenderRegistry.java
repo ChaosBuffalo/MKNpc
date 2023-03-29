@@ -1,6 +1,7 @@
 package com.chaosbuffalo.mknpc.client.render;
 
 import com.chaosbuffalo.mknpc.MKNpc;
+import com.chaosbuffalo.mknpc.client.render.models.MKPiglinModel;
 import com.chaosbuffalo.mknpc.client.render.models.MKSkeletalModel;
 import com.chaosbuffalo.mknpc.client.render.models.styling.ModelArgs;
 import com.chaosbuffalo.mknpc.client.render.models.styling.ModelStyles;
@@ -30,9 +31,12 @@ public class RenderRegistry {
 
     @SubscribeEvent
     public static void registerModels(EntityRenderersEvent.RegisterRenderers evt) {
-        evt.registerEntityRenderer(MKNpcEntityTypes.SKELETON_TYPE.get(), (context) -> new SkeletalGroupRenderer(context, SkeletonStyles.SKELETON_LOOKS,
-                MKNpcEntityTypes.SKELETON_TYPE.getId()));
-//        evt.registerEntityRenderer(MKNpcEntityTypes.ZOMBIFIED_PIGLIN_TYPE, (context) -> new ZombifiedPiglinGroupRenderer(context, PiglinStyles.ZOMBIFIED_PIGLIN_LOOKS));
+        evt.registerEntityRenderer(MKNpcEntityTypes.SKELETON_TYPE.get(),
+                (context) -> new SkeletalGroupRenderer(context, SkeletonStyles.SKELETON_LOOKS,
+                        MKNpcEntityTypes.SKELETON_TYPE.getId()));
+        evt.registerEntityRenderer(MKNpcEntityTypes.ZOMBIE_PIGLIN_TYPE.get(),
+                (context) -> new ZombifiedPiglinGroupRenderer(context, PiglinStyles.ZOMBIFIED_PIGLIN_LOOKS,
+                        MKNpcEntityTypes.ZOMBIE_PIGLIN_TYPE.getId()));
     }
 
     @SubscribeEvent
@@ -43,6 +47,18 @@ public class RenderRegistry {
                 new ModelArgs(CubeDeformation.NONE, true, 0.0f));
         ModelStyles.CLOTHES_ONLY_STYLE.registerModelLayers(event, MKSkeletalModel::createBodyLayer,
                 MKNpcEntityTypes.SKELETON_TYPE.getId(), 64, 32,
+                new ModelArgs(CubeDeformation.NONE, true, 0.0f));
+        ModelStyles.CLOTHES_ONLY_STYLE.registerModelLayers(event, MKPiglinModel::createMesh,
+                MKNpcEntityTypes.ZOMBIE_PIGLIN_TYPE.getId(), 64, 64,
+                new ModelArgs(CubeDeformation.NONE, true, 0.0f));
+        ModelStyles.BASIC_STYLE.registerModelLayers(event, MKPiglinModel::createMesh,
+                MKNpcEntityTypes.ZOMBIE_PIGLIN_TYPE.getId(), 64, 64,
+                new ModelArgs(CubeDeformation.NONE, true, 0.0f));
+        ModelStyles.CLOTHES_ARMOR_STYLE.registerModelLayers(event, MKPiglinModel::createMesh,
+                MKNpcEntityTypes.ZOMBIE_PIGLIN_TYPE.getId(), 64, 64,
+                new ModelArgs(CubeDeformation.NONE, true, 0.0f));
+        ModelStyles.CLOTHES_ARMOR_TRANSLUCENT_STYLE.registerModelLayers(event, MKPiglinModel::createMesh,
+                MKNpcEntityTypes.ZOMBIE_PIGLIN_TYPE.getId(), 64, 64,
                 new ModelArgs(CubeDeformation.NONE, true, 0.0f));
 
         //        event.registerLayerDefinition(NpcLayerLocations.MAIN_SKELETON_LAYER, MKSkeletalModel::createBodyLayer);

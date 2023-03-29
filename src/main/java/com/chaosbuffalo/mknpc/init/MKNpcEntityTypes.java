@@ -20,8 +20,6 @@ import net.minecraftforge.registries.ForgeRegistries;
 public class MKNpcEntityTypes {
     public static final String SKELETON_NAME = "skeleton";
     public static final String ZOMBIFIED_PIGLIN_NAME = "zombified_piglin";
-//    public static EntityType<MKSkeletonEntity> SKELETON_TYPE;
-//    public static EntityType<MKZombifiedPiglinEntity> ZOMBIFIED_PIGLIN_TYPE;
 
     @SubscribeEvent
     public static void registerEntities(RegistryEvent.Register<EntityType<?>> event){
@@ -45,15 +43,20 @@ public class MKNpcEntityTypes {
     @SubscribeEvent
     public static void registerEntityAttributes(EntityAttributeCreationEvent event){
         event.put(SKELETON_TYPE.get(), MKSkeletonEntity.registerAttributes(1.0, 0.3).build());
-//        event.put(ZOMBIFIED_PIGLIN_TYPE, MKZombifiedPiglinEntity.registerAttributes(1.0, 0.2).build());
+        event.put(ZOMBIE_PIGLIN_TYPE.get(), MKZombifiedPiglinEntity.registerAttributes(1.0, 0.2).build());
     }
 
     public static final DeferredRegister<EntityType<?>> ENTITIES = DeferredRegister.create(ForgeRegistries.ENTITIES, MKNpc.MODID);
 
-    public static final RegistryObject<EntityType<MKSkeletonEntity>> SKELETON_TYPE = ENTITIES.register("skeleton",
+    public static final RegistryObject<EntityType<MKSkeletonEntity>> SKELETON_TYPE = ENTITIES.register(SKELETON_NAME,
             () -> EntityType.Builder.of(MKSkeletonEntity::new, MobCategory.MONSTER)
                     .sized(EntityType.SKELETON.getWidth(), EntityType.SKELETON.getHeight())
-                    .build(new ResourceLocation(MKNpc.MODID, "skeleton").toString()));
+                    .build(new ResourceLocation(MKNpc.MODID, SKELETON_NAME).toString()));
+
+    public static final RegistryObject<EntityType<MKZombifiedPiglinEntity>> ZOMBIE_PIGLIN_TYPE = ENTITIES.register(ZOMBIFIED_PIGLIN_NAME,
+            () -> EntityType.Builder.of(MKZombifiedPiglinEntity::new, MobCategory.MONSTER)
+                    .sized(EntityType.ZOMBIFIED_PIGLIN.getWidth(), EntityType.ZOMBIFIED_PIGLIN.getHeight())
+                    .build(new ResourceLocation(MKNpc.MODID, ZOMBIFIED_PIGLIN_NAME).toString()));
 
 
 

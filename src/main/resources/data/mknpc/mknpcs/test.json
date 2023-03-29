@@ -1,5 +1,5 @@
 {
-  "entityType": "mknpc:green_lady",
+  "entityType": "mknpc:zombified_piglin",
   "options": [
     {
       "optionType": "mknpc:attributes",
