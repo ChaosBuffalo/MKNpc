@@ -45,9 +45,9 @@ public class MKBipedRenderer<T extends MKEntity, M extends HumanoidModel<T>> ext
             addLayer(new MKAdditionalBipedLayer<>(this, context, modelSupplier, style, layer, entityType));
         }
         if (style.shouldDrawArmor()){
-            addLayer(new HumanoidArmorLayer<>(this, modelSupplier.apply(
+            addLayer(new HumanoidArmorLayer<>(this, new HumanoidModel<>(
                     context.bakeLayer(style.getInnerArmorLocation(entityType))),
-                    modelSupplier.apply(context.bakeLayer(style.getOuterArmorLocation(entityType)))));
+                    new HumanoidModel<>(context.bakeLayer(style.getOuterArmorLocation(entityType)))));
         }
 
     }

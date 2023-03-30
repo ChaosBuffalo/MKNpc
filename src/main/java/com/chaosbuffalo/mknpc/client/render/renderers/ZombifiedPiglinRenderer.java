@@ -8,6 +8,7 @@ import net.minecraft.resources.ResourceLocation;
 
 public class ZombifiedPiglinRenderer extends MKBipedRenderer<MKZombifiedPiglinEntity, MKPiglinModel<MKZombifiedPiglinEntity>> {
 
+
     public ZombifiedPiglinRenderer(EntityRendererProvider.Context context, ModelStyle style,
                                    ResourceLocation entityType) {
         super(context, style, PiglinStyles.DEFAULT_ZOMBIE_LOOK, 0.5f, MKPiglinModel::new, entityType);

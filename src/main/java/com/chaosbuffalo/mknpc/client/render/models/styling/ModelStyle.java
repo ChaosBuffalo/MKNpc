@@ -1,6 +1,7 @@
 package com.chaosbuffalo.mknpc.client.render.models.styling;
 
 
+import net.minecraft.client.model.HumanoidModel;
 import net.minecraft.client.model.geom.LayerDefinitions;
 import net.minecraft.client.model.geom.ModelLayerLocation;
 import net.minecraft.client.model.geom.builders.CubeDeformation;
@@ -69,13 +70,9 @@ public class ModelStyle {
                 () -> LayerDefinition.create(layerProvider.apply(args), textureWidth, textureHeight));
         if (shouldDrawArmor()) {
             event.registerLayerDefinition(new ModelLayerLocation(entityTypeName, String.format("%s.outer_armor", name)),
-                    () -> LayerDefinition.create(layerProvider.apply(
-                            new ModelArgs(LayerDefinitions.OUTER_ARMOR_DEFORMATION, false, 0.0f)),
-                            64, 32));
+                    () -> LayerDefinition.create(HumanoidModel.createMesh(args.outerArmorDeformation, 0.0f), 64, 32));
             event.registerLayerDefinition(new ModelLayerLocation(entityTypeName, String.format("%s.inner_armor", name)),
-                    () -> LayerDefinition.create(layerProvider.apply(
-                            new ModelArgs(LayerDefinitions.INNER_ARMOR_DEFORMATION, false, 0.0f)),
-                            64, 32));
+                    () -> LayerDefinition.create(HumanoidModel.createMesh(args.innerArmorDeformation, 0.0f), 64, 32));
         }
         for (LayerStyle style : getAdditionalLayers()) {
             event.registerLayerDefinition(new ModelLayerLocation(entityTypeName, String.format("%s.%s", name, style.getLayerName())),
