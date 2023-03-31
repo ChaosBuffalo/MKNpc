@@ -124,8 +124,10 @@ public class ChestNpcDataHandler implements IChestNpcData{
         this.chestLabel = chestLabel;
     }
 
+
+
     @Override
-    public void tick() {
+    public void onLoad() {
         if (needsUploadToWorld){
             Level world = getTileEntity().getLevel();
             if (world != null && !world.isClientSide()) {

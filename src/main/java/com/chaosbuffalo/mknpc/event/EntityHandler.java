@@ -38,14 +38,13 @@ import net.minecraft.world.level.levelgen.feature.StructureFeature;
 import net.minecraft.world.level.StructureFeatureManager;
 import net.minecraft.world.level.levelgen.structure.StructureStart;
 import net.minecraft.server.level.ServerLevel;
-import net.minecraftforge.event.TickEvent;
 import net.minecraftforge.event.entity.EntityJoinWorldEvent;
 import net.minecraftforge.event.entity.living.*;
 import net.minecraftforge.event.entity.player.PlayerInteractEvent;
+import net.minecraftforge.event.world.ChunkEvent;
 import net.minecraftforge.eventbus.api.Event;
 import net.minecraftforge.eventbus.api.EventPriority;
 import net.minecraftforge.eventbus.api.SubscribeEvent;
-import net.minecraftforge.fml.LogicalSide;
 import net.minecraftforge.fml.common.Mod;
 import net.minecraftforge.registries.ForgeRegistries;
 
@@ -81,16 +80,19 @@ public class EntityHandler {
     }
 
     @SubscribeEvent
-    public static void onWorldTick(TickEvent.WorldTickEvent event){
-        if (event.side == LogicalSide.SERVER && event.phase == TickEvent.Phase.END){
-            event.world.blockEntityTickers.forEach(ticker -> {
-                BlockEntity entity = event.world.getBlockEntity(ticker.getPos());
-                if (entity != null) {
-                    entity.getCapability(NpcCapabilities.CHEST_NPC_DATA_CAPABILITY).ifPresent(IChestNpcData::tick);
+    public static void onChunkLoad(ChunkEvent.Load event){
+        if (!event.getWorld().isClientSide()) {
+            event.getChunk().getBlockEntitiesPos().forEach(pos -> {
+                BlockEntity entity = event.getChunk().getBlockEntity(pos);
+                if (entity != null){
+                    entity.getCapability(NpcCapabilities.CHEST_NPC_DATA_CAPABILITY).ifPresent(IChestNpcData::onLoad);
                 }
             });
         }
+
     }
+
+
 
     @SubscribeEvent(priority = EventPriority.LOWEST)
     public static void onEntityInteract(PlayerInteractEvent.RightClickBlock event){

@@ -27,5 +27,5 @@ public interface IChestNpcData extends INBTSerializable<CompoundTag>, IStructure
 
     void generateChestId(String chestLabel);
 
-    void tick();
+    void onLoad();
 }
