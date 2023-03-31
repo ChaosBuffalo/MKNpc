@@ -3,8 +3,10 @@ package com.chaosbuffalo.mknpc.client.render.models;
 import com.chaosbuffalo.mkcore.client.rendering.animations.AdditionalBipedAnimation;
 import com.chaosbuffalo.mkcore.client.rendering.animations.BipedCastAnimation;
 import com.chaosbuffalo.mknpc.client.render.animations.MKEntityCompleteCastAnimation;
+import com.chaosbuffalo.mknpc.client.render.models.styling.ModelArgs;
 import com.chaosbuffalo.mknpc.entity.MKEntity;
 import net.minecraft.client.model.geom.ModelPart;
+import net.minecraft.client.model.geom.builders.MeshDefinition;
 import net.minecraft.client.renderer.RenderType;
 import net.minecraft.client.model.HumanoidModel;
 import net.minecraft.client.model.AnimationUtils;
@@ -31,6 +33,10 @@ public class MKBipedModel<T extends MKEntity> extends HumanoidModel<T> {
 
     public MKBipedModel(ModelPart modelPart, Function<ResourceLocation, RenderType> renderSupplier){
         super(modelPart, renderSupplier);
+    }
+
+    public static MeshDefinition createBodyLayer(ModelArgs args) {
+        return HumanoidModel.createMesh(args.deformation, 0.0f);
     }
 
     @Override

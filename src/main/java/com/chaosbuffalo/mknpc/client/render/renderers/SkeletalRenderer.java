@@ -14,4 +14,5 @@ public class SkeletalRenderer extends MKBipedRenderer<MKSkeletonEntity, MKSkelet
                             ResourceLocation entityType) {
         super(context, style, SkeletonStyles.DEFAULT_LOOK, 0.5f, MKSkeletalModel::new, entityType);
     }
+
 }

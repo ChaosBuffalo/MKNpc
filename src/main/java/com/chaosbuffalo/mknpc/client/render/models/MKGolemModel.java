@@ -2,19 +2,22 @@ package com.chaosbuffalo.mknpc.client.render.models;
 
 
 import com.chaosbuffalo.mkcore.client.rendering.animations.AdditionalBipedAnimation;
+import com.chaosbuffalo.mknpc.client.render.models.styling.ModelArgs;
 import com.chaosbuffalo.mknpc.entity.MKEntity;
+import net.minecraft.client.model.IronGolemModel;
 import net.minecraft.client.model.geom.ModelPart;
 import net.minecraft.client.model.geom.PartPose;
 import net.minecraft.client.model.geom.builders.*;
 import net.minecraft.util.Mth;
 
 public class MKGolemModel<T extends MKEntity> extends MKBipedModel<T> {
-
     public MKGolemModel(ModelPart modelPart) {
         super(modelPart);
     }
 
-    public static MeshDefinition createBodyLayer(CubeDeformation deformation, float headOffset) {
+    public static MeshDefinition createBodyLayer(ModelArgs args) {
+        CubeDeformation deformation = args.deformation;
+        float headOffset = args.heightOffset;
         MeshDefinition meshdefinition = new MeshDefinition();
         PartDefinition partdefinition = meshdefinition.getRoot();
         partdefinition.addOrReplaceChild("head", CubeListBuilder.create().texOffs(0, 0).addBox(-4.0F, -12.0F, -5.5F, 8.0F, 10.0F, 8.0F, deformation).texOffs(24, 0).addBox(-1.0F, -5.0F, -7.5F, 2.0F, 4.0F, 2.0F, deformation), PartPose.offset(0.0F, -7.0F, -2.0F));

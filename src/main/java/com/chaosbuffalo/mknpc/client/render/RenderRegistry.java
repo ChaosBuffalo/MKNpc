@@ -64,13 +64,5 @@ public class RenderRegistry {
                 MKNpcEntityTypes.ZOMBIE_PIGLIN_TYPE.getId(), 64, 64,
                 new ModelArgs(CubeDeformation.NONE, true, 0.0f,
                         new CubeDeformation(1.02F), LayerDefinitions.INNER_ARMOR_DEFORMATION));
-
-        //        event.registerLayerDefinition(NpcLayerLocations.MAIN_SKELETON_LAYER, MKSkeletalModel::createBodyLayer);
-//        event.registerLayerDefinition(NpcLayerLocations.OUTER_ARMOR_SKELETON_LAYER, () -> LayerDefinition.create(
-//                HumanoidModel.createMesh(LayerDefinitions.OUTER_ARMOR_DEFORMATION, 0.0F), 64, 32));
-//        event.registerLayerDefinition(NpcLayerLocations.INNER_ARMOR_SKELETON_LAYER, () -> LayerDefinition.create(
-//                HumanoidModel.createMesh(LayerDefinitions.INNER_ARMOR_DEFORMATION, 0.0F), 64, 32));
-//        event.registerLayerDefinition(OUTER_LAYER, () -> MyEntityModel.createLayer(new CubeDeformation(1.0f)));
-//        event.registerLayerDefinition(ADDED_LAYER, () -> MyEntityModel.createLayer(new CubeDeformation(2.0f)));
     }
 }
