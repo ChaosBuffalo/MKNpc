@@ -4,7 +4,6 @@ import com.chaosbuffalo.mknpc.init.MKNpcTileEntityTypes;
 import com.chaosbuffalo.mknpc.network.OpenMKSpawnerPacket;
 import com.chaosbuffalo.mknpc.network.PacketHandler;
 import com.chaosbuffalo.mknpc.tile_entities.MKSpawnerTileEntity;
-import net.minecraft.world.item.context.BlockPlaceContext;
 import net.minecraft.world.level.block.BaseEntityBlock;
 import net.minecraft.world.level.block.Block;
 import net.minecraft.world.level.block.RenderShape;
@@ -36,7 +35,7 @@ import net.minecraft.core.Direction;
 import net.minecraft.world.InteractionHand;
 import net.minecraft.world.InteractionResult;
 import net.minecraft.world.level.block.Rotation;
-import net.minecraftforge.fmllegacy.network.NetworkDirection;
+import net.minecraftforge.network.NetworkDirection;
 
 public class MKSpawnerBlock extends BaseEntityBlock {
 

@@ -3,7 +3,9 @@ package com.chaosbuffalo.mknpc.capabilities;
 import com.chaosbuffalo.mknpc.MKNpc;
 import com.chaosbuffalo.mknpc.capabilities.structure_tracking.StructureComponentData;
 import com.chaosbuffalo.mknpc.capabilities.structure_tracking.StructureData;
+import com.chaosbuffalo.mknpc.event.WorldStructureHandler;
 import com.chaosbuffalo.mknpc.init.MKNpcWorldGen;
+import com.chaosbuffalo.mknpc.world.gen.IStructureStartMixin;
 import com.chaosbuffalo.mknpc.npc.*;
 import com.chaosbuffalo.mknpc.npc.option_entries.INpcOptionEntry;
 import com.chaosbuffalo.mknpc.npc.options.WorldPermanentOption;
@@ -23,12 +25,12 @@ import net.minecraft.resources.ResourceLocation;
 import net.minecraft.core.BlockPos;
 import net.minecraft.world.level.ChunkPos;
 import net.minecraft.world.level.Level;
+import net.minecraft.world.level.levelgen.feature.ConfiguredStructureFeature;
 import net.minecraft.world.level.levelgen.structure.PoolElementStructurePiece;
 import net.minecraft.world.level.levelgen.feature.StructureFeature;
 import net.minecraft.world.level.levelgen.structure.StructurePiece;
 import net.minecraft.world.level.levelgen.structure.StructureStart;
 import net.minecraft.server.level.ServerLevel;
-import net.minecraftforge.registries.ForgeRegistries;
 
 import java.util.*;
 import java.util.stream.Collectors;
@@ -83,13 +85,14 @@ public class WorldNpcDataHandler implements IWorldNpcData{
     }
 
     @Override
-    public void setupStructureDataIfAbsent(MKJigsawStructure.Start start, Level world) {
-        StructureFeature<?> struct = start.getFeature();
+    public void setupStructureDataIfAbsent(StructureStart start, Level world) {
+        StructureFeature<?> struct = start.getFeature().feature;
         StructureData structureData = new StructureData(world.dimension(),
                 start.getChunkPos().x, start.getChunkPos().z, start.getBoundingBox(), start.getPieces().stream().map(
                 this::getComponentDataFromPiece).collect(Collectors.toList()));
+
         MKStructureEntry structureEntry = new MKStructureEntry(this, struct.getRegistryName(),
-                start.getInstanceId(), structureData);
+                IStructureStartMixin.getInstanceIdFromStart(start), structureData);
         indexStructureEntry(structureEntry);
     }
 
@@ -182,9 +185,9 @@ public class WorldNpcDataHandler implements IWorldNpcData{
         Level structureWorld = structurePlaced.getStructureWorld();
         if (structureWorld instanceof ServerLevel){
             ServerLevel world = (ServerLevel) structureWorld;
-            StructureFeature<?> struct = ForgeRegistries.STRUCTURE_FEATURES.getValue(structurePlaced.getStructureName());
+            ConfiguredStructureFeature<?, MKJigsawStructure> struct = WorldStructureHandler.MK_STRUCTURE_INDEX.get(structurePlaced.getStructureName());
             if (struct != null){
-                StructureStart<?> start = world.structureFeatureManager().getStructureAt(structurePlaced.getGlobalBlockPos().pos(), false, struct);
+                StructureStart start = world.structureFeatureManager().getStructureAt(structurePlaced.getGlobalBlockPos().pos(), struct);
                 structureData = new StructureData(structurePlaced.getStructureWorld().dimension(),
                         start.getChunkPos().x, start.getChunkPos().z, start.getBoundingBox(), start.getPieces().stream().map(
                         this::getComponentDataFromPiece).collect(Collectors.toList()));

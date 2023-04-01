@@ -81,12 +81,11 @@ public class StructureUtils {
         }
     }
 
-    public static Optional<List<MKJigsawStructure.Start>> getStructuresOverlaps(Entity entity) {
+    public static Optional<List<StructureStart>> getStructuresOverlaps(Entity entity) {
         if (entity.getCommandSenderWorld() instanceof ServerLevel){
             StructureFeatureManager manager = ((ServerLevel) entity.getCommandSenderWorld()).structureFeatureManager();
             return Optional.of(WorldStructureHandler.MK_STRUCTURE_CACHE.stream().map(
-                    x -> manager.getStructureAt(entity.blockPosition(), false, x)).filter(x -> x != StructureStart.INVALID_START)
-                    .map(x -> (MKJigsawStructure.Start) x)
+                    x -> manager.getStructureAt(entity.blockPosition(), x)).filter(x -> x != StructureStart.INVALID_START)
                     .collect(Collectors.toList()));
         } else {
             return Optional.empty();

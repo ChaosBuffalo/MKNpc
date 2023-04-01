@@ -6,6 +6,7 @@ import com.chaosbuffalo.mknpc.event.WorldStructureHandler;
 import com.chaosbuffalo.mknpc.npc.MKStructureEntry;
 import com.chaosbuffalo.mknpc.world.gen.feature.structure.MKJigsawStructure;
 import net.minecraft.server.level.ServerPlayer;
+import net.minecraft.world.level.levelgen.feature.ConfiguredStructureFeature;
 
 import java.util.*;
 import java.util.function.BiConsumer;
@@ -103,9 +104,9 @@ public class WorldStructureManager {
             ActiveStructure activeStructure = new ActiveStructure(id, this::removePlayer);
             MKStructureEntry structureEntry = handler.getStructureData(id);
             if (structureEntry != null) {
-                MKJigsawStructure mkStruct = WorldStructureHandler.MK_STRUCTURE_INDEX.get(structureEntry.getStructureName());
-                if (mkStruct != null) {
-                    mkStruct.onStructureActivate(structureEntry, activeStructure, handler.getWorld());
+                ConfiguredStructureFeature<?, MKJigsawStructure> configuredStruct = WorldStructureHandler.MK_STRUCTURE_INDEX.get(structureEntry.getStructureName());
+                if (configuredStruct != null) {
+                    configuredStruct.feature.onStructureActivate(structureEntry, activeStructure, handler.getWorld());
                 }
             }
             return activeStructure;
@@ -114,9 +115,9 @@ public class WorldStructureManager {
             MKStructureEntry entry = handler.getStructureData(structureId);
             if (entry != null) {
                 MKNpc.LOGGER.debug("Player {} entering structure {} (ID: {})", player, entry.getStructureName(), structureId);
-                MKJigsawStructure mkStruct = WorldStructureHandler.MK_STRUCTURE_INDEX.get(entry.getStructureName());
-                if (mkStruct != null) {
-                    mkStruct.onPlayerEnter(player, entry, struct);
+                ConfiguredStructureFeature<?, MKJigsawStructure> configuredStruct = WorldStructureHandler.MK_STRUCTURE_INDEX.get(entry.getStructureName());
+                if (configuredStruct != null) {
+                    configuredStruct.feature.onPlayerEnter(player, entry, struct);
                 }
             }
         }
@@ -126,9 +127,9 @@ public class WorldStructureManager {
         MKStructureEntry entry = handler.getStructureData(activeStructure.getStructureId());
         if (player != null && entry != null) {
             MKNpc.LOGGER.debug("Player {} exiting structure {} (ID: {})", player, entry.getStructureName(), activeStructure.getStructureId());
-            MKJigsawStructure mkStruct = WorldStructureHandler.MK_STRUCTURE_INDEX.get(entry.getStructureName());
-            if (mkStruct != null) {
-                mkStruct.onPlayerExit(player, entry, activeStructure);
+            ConfiguredStructureFeature<?, MKJigsawStructure> configuredStruct = WorldStructureHandler.MK_STRUCTURE_INDEX.get(entry.getStructureName());
+            if (configuredStruct != null) {
+                configuredStruct.feature.onPlayerExit(player, entry, activeStructure);
             }
         }
 
@@ -140,9 +141,9 @@ public class WorldStructureManager {
                 MKStructureEntry entry = handler.getStructureData(structureId);
                 ActiveStructure activeStruct = activeStructures.get(structureId);
                 if (entry != null && activeStruct != null) {
-                    MKJigsawStructure mkStruct = WorldStructureHandler.MK_STRUCTURE_INDEX.get(entry.getStructureName());
-                    if (mkStruct != null) {
-                        mkStruct.onNpcDeath(entry, activeStruct, npcData);
+                    ConfiguredStructureFeature<?, MKJigsawStructure> configuredStruct = WorldStructureHandler.MK_STRUCTURE_INDEX.get(entry.getStructureName());
+                    if (configuredStruct != null) {
+                        configuredStruct.feature.onNpcDeath(entry, activeStruct, npcData);
                     }
                 }
             }
@@ -161,19 +162,19 @@ public class WorldStructureManager {
             }
             MKStructureEntry structureEntry = handler.getStructureData(entry.getValue().structureId);
             if (structureEntry != null) {
-                MKJigsawStructure mkStruct = WorldStructureHandler.MK_STRUCTURE_INDEX.get(structureEntry.getStructureName());
-                if (mkStruct != null) {
+                ConfiguredStructureFeature<?, MKJigsawStructure> configuredStruct = WorldStructureHandler.MK_STRUCTURE_INDEX.get(structureEntry.getStructureName());
+                if (configuredStruct != null) {
                     structureEntry.getCooldownTracker().tick();
-                    mkStruct.onActiveTick(structureEntry, entry.getValue(), handler.getWorld());
+                    configuredStruct.feature.onActiveTick(structureEntry, entry.getValue(), handler.getWorld());
                 }
             }
         }
         for (UUID structId : toRemove) {
             MKStructureEntry structureEntry = handler.getStructureData(structId);
             if (structureEntry != null) {
-                MKJigsawStructure mkStruct = WorldStructureHandler.MK_STRUCTURE_INDEX.get(structureEntry.getStructureName());
-                if (mkStruct != null) {
-                    mkStruct.onStructureDeactivate(structureEntry, activeStructures.get(structId), handler.getWorld());
+                ConfiguredStructureFeature<?, MKJigsawStructure> configuredStruct = WorldStructureHandler.MK_STRUCTURE_INDEX.get(structureEntry.getStructureName());
+                if (configuredStruct != null) {
+                    configuredStruct.feature.onStructureDeactivate(structureEntry, activeStructures.get(structId), handler.getWorld());
                 }
             }
             activeStructures.remove(structId);

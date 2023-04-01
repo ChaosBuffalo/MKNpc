@@ -116,7 +116,8 @@ public class MKPoiTileEntity extends BlockEntity implements IStructurePlaced {
     }
 
     @Override
-    public CompoundTag save(CompoundTag compound) {
+    protected void saveAdditional(CompoundTag compound) {
+        super.saveAdditional(compound);
         compound.putUUID("poiId", poiID);
         compound.putBoolean("hasUploadedToWorld", needsUploadToWorld);
         compound.putBoolean("placedByStructure", placedByStructure);
@@ -124,7 +125,6 @@ public class MKPoiTileEntity extends BlockEntity implements IStructurePlaced {
             compound.putString("structureName", structureName.toString());
             compound.putUUID("structureId", structureId);
         }
-        return super.save(compound);
     }
 
     @Override

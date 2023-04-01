@@ -57,10 +57,11 @@ public class MKNpc {
         NpcDialogueUtils.setupMKNpcHandlers();
         npcDefinitionManager = new NpcDefinitionManager();
         questDefinitionManager = new QuestDefinitionManager();
-        MKNpcWorldGen.registerStructurePieces();
-        TestJigsawStructurePools.registerPatterns();
-        MinecraftForge.EVENT_BUS.addListener(MKNpcWorldGen::biomeSetup);
-        MinecraftForge.EVENT_BUS.addListener(MKNpcWorldGen::worldSetup);
+        MKNpcWorldGen.register();
+//        MKNpcWorldGen.registerStructurePieces();
+//        TestJigsawStructurePools.registerPatterns();
+//        MinecraftForge.EVENT_BUS.addListener(MKNpcWorldGen::biomeSetup);
+//        MinecraftForge.EVENT_BUS.addListener(MKNpcWorldGen::worldSetup);
         //make sure not to class load server specific events on client
     }
 
@@ -98,6 +99,7 @@ public class MKNpc {
     private void setup(final FMLCommonSetupEvent event) {
         PacketHandler.setupHandler();
         NpcCommands.registerArguments();
+//        MKNpcWorldGen.registerStructurePoolTypes();
     }
 
 

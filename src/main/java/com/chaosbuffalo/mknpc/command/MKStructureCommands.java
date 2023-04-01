@@ -1,30 +1,29 @@
 package com.chaosbuffalo.mknpc.command;
 
-import com.chaosbuffalo.mknpc.MKNpc;
-import com.chaosbuffalo.mknpc.capabilities.IWorldNpcData;
 import com.chaosbuffalo.mknpc.capabilities.NpcCapabilities;
 import com.chaosbuffalo.mknpc.capabilities.PointOfInterestEntry;
+import com.chaosbuffalo.mknpc.world.gen.IStructureStartMixin;
 import com.chaosbuffalo.mknpc.npc.MKStructureEntry;
 import com.chaosbuffalo.mknpc.world.gen.StructureUtils;
-import com.chaosbuffalo.mknpc.world.gen.feature.structure.MKJigsawStructure;
 import com.mojang.brigadier.Command;
-import com.mojang.brigadier.arguments.StringArgumentType;
 import com.mojang.brigadier.builder.LiteralArgumentBuilder;
 import com.mojang.brigadier.context.CommandContext;
 import com.mojang.brigadier.exceptions.CommandSyntaxException;
 import net.minecraft.commands.CommandSourceStack;
 import net.minecraft.commands.Commands;
+import net.minecraft.resources.ResourceLocation;
 import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.server.MinecraftServer;
 import net.minecraft.Util;
 import net.minecraft.network.chat.TranslatableComponent;
 import net.minecraft.world.level.Level;
+import net.minecraft.world.level.levelgen.structure.StructureStart;
 
 
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
-import java.util.stream.Stream;
+import java.util.UUID;
 
 public class MKStructureCommands {
     public static LiteralArgumentBuilder<CommandSourceStack> register() {
@@ -39,16 +38,15 @@ public class MKStructureCommands {
         MinecraftServer server = player.getServer();
         if (server != null){
 
-            Optional<List<MKJigsawStructure.Start>> starts = StructureUtils.getStructuresOverlaps(player);
+            Optional<List<StructureStart>> starts = StructureUtils.getStructuresOverlaps(player);
             if (starts.isPresent()) {
-                List<MKJigsawStructure.Start> s = starts.get();
+                List<StructureStart> s = starts.get();
                 if (s.isEmpty()) {
                     player.sendMessage(new TranslatableComponent("mknpc.command.not_in_struct"), Util.NIL_UUID);
                 } else {
                     s.forEach(start -> {
-                        MKJigsawStructure struct = (MKJigsawStructure) start.getFeature();
                         player.sendMessage(new TranslatableComponent("mknpc.command.in_struct",
-                                struct.getFeatureName(), start.getInstanceId()), Util.NIL_UUID);
+                                start.getFeature().feature.getRegistryName(), IStructureStartMixin.getInstanceIdFromStart(start)), Util.NIL_UUID);
                     });
                 }
 
@@ -70,9 +68,9 @@ public class MKStructureCommands {
         MinecraftServer server = player.getServer();
         if (server != null){
 
-            Optional<List<MKJigsawStructure.Start>> starts = StructureUtils.getStructuresOverlaps(player);
+            Optional<List<StructureStart>> starts = StructureUtils.getStructuresOverlaps(player);
             if (starts.isPresent()) {
-                List<MKJigsawStructure.Start> s = starts.get();
+                List<StructureStart> s = starts.get();
                 if (s.isEmpty()) {
                     player.sendMessage(new TranslatableComponent("mknpc.command.not_in_struct"), Util.NIL_UUID);
                 } else {
@@ -81,17 +79,18 @@ public class MKStructureCommands {
                         overworld.getCapability(NpcCapabilities.WORLD_NPC_DATA_CAPABILITY)
                                 .ifPresent(cap ->  {
                                     s.forEach(start -> {
-                                        MKJigsawStructure struct = (MKJigsawStructure) start.getFeature();
-                                        MKStructureEntry entry = cap.getStructureData(start.getInstanceId());
+                                        UUID startId = IStructureStartMixin.getInstanceIdFromStart(start);
+                                        MKStructureEntry entry = cap.getStructureData(startId);
+                                        ResourceLocation featureName = start.getFeature().feature.getRegistryName();
                                         if (entry != null) {
                                             Map<String, List<PointOfInterestEntry>> pois = entry.getPointsOfInterest();
                                             if (pois.entrySet().stream().allMatch(m -> m.getValue().isEmpty())) {
                                                 player.sendMessage(new TranslatableComponent(
                                                         "mknpc.command.pois_struct_no_poi",
-                                                        struct.getFeatureName(), start.getInstanceId()), Util.NIL_UUID);
+                                                        featureName, startId), Util.NIL_UUID);
                                             } else {
                                                 player.sendMessage(new TranslatableComponent("mknpc.command.pois_for_struct",
-                                                        struct.getFeatureName(), start.getInstanceId()), Util.NIL_UUID);
+                                                        featureName, startId), Util.NIL_UUID);
                                                 pois.forEach((key, value) -> value.forEach(
                                                         poi -> player.sendMessage(new TranslatableComponent(
                                                                 "mknpc.command.pois_struct_desc",
@@ -100,7 +99,7 @@ public class MKStructureCommands {
                                         } else {
                                             player.sendMessage(new TranslatableComponent(
                                                     "mknpc.command.pois_struct_not_found",
-                                                    struct.getFeatureName(), start.getInstanceId()), Util.NIL_UUID);
+                                                    featureName, startId), Util.NIL_UUID);
                                         }
                                     });
                                 });
@@ -113,9 +112,6 @@ public class MKStructureCommands {
             } else {
                 player.sendMessage(new TranslatableComponent("mknpc.command.not_in_struct"), Util.NIL_UUID);
             }
-
-
-
 
 
         }
