@@ -12,6 +12,9 @@ public class MKNpcGenerator {
         DataGenerator gen = event.getGenerator();
         if (event.includeServer()){
             gen.addProvider(new NpcDefinitionProvider(gen));
+            gen.addProvider(new NpcPoolProvider(gen));
+            gen.addProvider(new NpcConfiguredStructureProvider(gen));
+            gen.addProvider(new NpcStructureSetProvider(gen));
         }
     }
 }
