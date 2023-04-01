@@ -56,7 +56,7 @@ public class NpcClientEventHandler {
     public static void onRenderLast(RenderLevelStageEvent event){
         Minecraft mc = Minecraft.getInstance();
         Player player = mc.player;
-        if (player != null){
+        if (player != null && event.getStage() == RenderLevelStageEvent.Stage.AFTER_TRIPWIRE_BLOCKS){
 
             if (player.tickCount != ticks){
                 ticks = player.tickCount;
