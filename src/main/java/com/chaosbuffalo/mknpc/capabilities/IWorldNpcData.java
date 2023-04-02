@@ -11,10 +11,12 @@ import com.chaosbuffalo.mknpc.quest.QuestDefinition;
 import com.chaosbuffalo.mknpc.tile_entities.MKSpawnerTileEntity;
 import com.chaosbuffalo.mknpc.tile_entities.MKPoiTileEntity;
 import com.chaosbuffalo.mknpc.world.gen.feature.structure.MKJigsawStructure;
+import net.minecraft.core.GlobalPos;
 import net.minecraft.world.entity.Entity;
 import net.minecraft.nbt.CompoundTag;
 import net.minecraft.core.BlockPos;
 import net.minecraft.world.level.Level;
+import net.minecraft.world.level.levelgen.structure.StructureStart;
 import net.minecraftforge.common.util.INBTSerializable;
 
 import javax.annotation.Nullable;
@@ -60,10 +62,12 @@ public interface IWorldNpcData extends INBTSerializable<CompoundTag> {
     @Nullable
     NotableNpcEntry getNotableNpc(UUID id);
 
-    void setupStructureDataIfAbsent(MKJigsawStructure.Start start, Level world);
+    void setupStructureDataIfAbsent(StructureStart start, Level world);
 
     @Nullable
     PointOfInterestEntry getPointOfInterest(UUID id);
 
     Level getWorld();
+
+    void queueChestForProcessing(GlobalPos pos);
 }

@@ -49,8 +49,8 @@ public class AbilityUseSensor extends Sensor<MKEntity> {
                     continue;
 
                 if (mkAbility.isValidTarget(entityIn, targetSelection.getTargetEntity())) {
-                    entityIn.getBrain().setMemory(MKAbilityMemories.ABILITY_TARGET, targetSelection.getTargetEntity());
-                    entityIn.getBrain().setMemory(MKAbilityMemories.ABILITY_POSITION_TARGET, new TargetUtil.LivingOrPosition(targetSelection.getTargetEntity()));
+                    entityIn.getBrain().setMemory(MKAbilityMemories.ABILITY_TARGET.get(), targetSelection.getTargetEntity());
+                    entityIn.getBrain().setMemory(MKAbilityMemories.ABILITY_POSITION_TARGET.get(), new TargetUtil.LivingOrPosition(targetSelection.getTargetEntity()));
                     entityIn.getBrain().setMemory(MKMemoryModuleTypes.CURRENT_ABILITY, mkAbility);
                     entityIn.getBrain().setMemory(MKMemoryModuleTypes.MOVEMENT_STRATEGY,
                             entityIn.getMovementStrategy(targetSelection));
@@ -74,7 +74,7 @@ public class AbilityUseSensor extends Sensor<MKEntity> {
     @Override
     public Set<MemoryModuleType<?>> requires() {
         return ImmutableSet.of(MKMemoryModuleTypes.CURRENT_ABILITY, MKMemoryModuleTypes.THREAT_TARGET,
-                MKAbilityMemories.ABILITY_TARGET, MKMemoryModuleTypes.ALLIES, MKMemoryModuleTypes.ENEMIES,
-                MKMemoryModuleTypes.MOVEMENT_STRATEGY, MKMemoryModuleTypes.ABILITY_TIMEOUT, MKAbilityMemories.ABILITY_POSITION_TARGET);
+                MKAbilityMemories.ABILITY_TARGET.get(), MKMemoryModuleTypes.ALLIES, MKMemoryModuleTypes.ENEMIES,
+                MKMemoryModuleTypes.MOVEMENT_STRATEGY, MKMemoryModuleTypes.ABILITY_TIMEOUT, MKAbilityMemories.ABILITY_POSITION_TARGET.get());
     }
 }

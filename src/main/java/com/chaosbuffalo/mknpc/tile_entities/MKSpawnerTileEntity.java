@@ -156,7 +156,8 @@ public class MKSpawnerTileEntity extends BlockEntity implements IStructurePlaced
     }
 
     @Override
-    public CompoundTag save(CompoundTag compound) {
+    protected void saveAdditional(CompoundTag compound) {
+        super.saveAdditional(compound);
         compound.put("spawnList", spawnList.serializeNBT());
         compound.putUUID("spawnId", spawnUUID);
         compound.putInt("ticksSinceDeath", ticksSinceDeath);
@@ -173,8 +174,8 @@ public class MKSpawnerTileEntity extends BlockEntity implements IStructurePlaced
             notableTag.putUUID(entry.getKey().toString(), entry.getValue());
         }
         compound.put("notableIds", notableTag);
-        return super.save(compound);
     }
+
 
     public UUID getSpawnUUID() {
         return spawnUUID;

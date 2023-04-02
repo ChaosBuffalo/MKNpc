@@ -4,7 +4,7 @@ import com.chaosbuffalo.mknpc.MKNpc;
 import com.chaosbuffalo.mknpc.npc.NpcDefinitionClient;
 import com.chaosbuffalo.mknpc.npc.NpcDefinitionManager;
 import net.minecraft.network.FriendlyByteBuf;
-import net.minecraftforge.fmllegacy.network.NetworkEvent;
+import net.minecraftforge.network.NetworkEvent;
 
 import java.util.ArrayList;
 import java.util.Collection;

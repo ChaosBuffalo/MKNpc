@@ -28,7 +28,7 @@ public class HasEntitlementRequirement extends QuestRequirement{
     @Override
     public <D> void writeAdditionalData(DynamicOps<D> ops, ImmutableMap.Builder<D, D> builder) {
         super.writeAdditionalData(ops, builder);
-        builder.put(ops.createString("entitlement"), ops.createString(entitlement.getRegistryName().toString()));
+        builder.put(ops.createString("entitlement"), ops.createString(entitlement.getId().toString()));
     }
 
     @Override

@@ -21,13 +21,16 @@ import com.chaosbuffalo.mknpc.quest.objectives.IKillObjectiveHandler;
 import com.chaosbuffalo.mknpc.quest.objectives.QuestObjective;
 import com.chaosbuffalo.mknpc.utils.NpcConstants;
 import com.chaosbuffalo.mknpc.world.gen.feature.structure.IControlNaturalSpawns;
+import com.chaosbuffalo.mknpc.world.gen.feature.structure.MKJigsawStructure;
 import com.chaosbuffalo.targeting_api.TargetingContexts;
+import net.minecraft.core.GlobalPos;
 import net.minecraft.world.level.block.ChestBlock;
 import net.minecraft.world.entity.MobCategory;
 import net.minecraft.world.entity.LivingEntity;
 import net.minecraft.world.entity.MobSpawnType;
 import net.minecraft.world.entity.player.Player;
 import net.minecraft.server.level.ServerPlayer;
+import net.minecraft.world.level.levelgen.feature.ConfiguredStructureFeature;
 import net.minecraft.world.scores.Team;
 import net.minecraft.server.MinecraftServer;
 import net.minecraft.world.level.block.entity.BlockEntity;
@@ -82,10 +85,16 @@ public class EntityHandler {
     @SubscribeEvent
     public static void onChunkLoad(ChunkEvent.Load event){
         if (!event.getWorld().isClientSide()) {
+            MinecraftServer server = event.getWorld().getServer();
+            Level level = (Level) event.getWorld();
+            if (server == null || level == null) {
+                return;
+            }
             event.getChunk().getBlockEntitiesPos().forEach(pos -> {
                 BlockEntity entity = event.getChunk().getBlockEntity(pos);
                 if (entity != null){
-                    entity.getCapability(NpcCapabilities.CHEST_NPC_DATA_CAPABILITY).ifPresent(IChestNpcData::onLoad);
+                    server.overworld().getCapability(NpcCapabilities.WORLD_NPC_DATA_CAPABILITY).ifPresent(x ->
+                            x.queueChestForProcessing(GlobalPos.of(level.dimension(), pos)));
                 }
             });
         }
@@ -272,13 +281,11 @@ public class EntityHandler {
             BlockPos spawnPos = new BlockPos(event.getX(), event.getY(), event.getZ());
             if (event.getWorld() instanceof ServerLevel){
                 StructureFeatureManager manager = ((ServerLevel) event.getWorld()).structureFeatureManager();
-                for (StructureFeature<?> structure : ForgeRegistries.STRUCTURE_FEATURES){
-                    if (structure instanceof IControlNaturalSpawns){
-                        if (!((IControlNaturalSpawns) structure).doesAllowSpawns()){
-                            StructureStart<?> start = manager.getStructureAt(spawnPos, false, structure);
-                            if (start != StructureStart.INVALID_START){
-                                event.setResult(Event.Result.DENY);
-                            }
+                for (ConfiguredStructureFeature<?, MKJigsawStructure> structure : WorldStructureHandler.MK_STRUCTURE_CACHE){
+                    if (!((IControlNaturalSpawns) structure.feature).doesAllowSpawns()){
+                        StructureStart start = manager.getStructureAt(spawnPos, structure);
+                        if (start != StructureStart.INVALID_START){
+                            event.setResult(Event.Result.DENY);
                         }
                     }
                 }

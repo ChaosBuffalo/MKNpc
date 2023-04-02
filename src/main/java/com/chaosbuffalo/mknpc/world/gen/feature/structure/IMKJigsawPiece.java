@@ -18,10 +18,10 @@ public interface IMKJigsawPiece {
 
     boolean mkPlace(StructureManager templateManager, WorldGenLevel seedReader, StructureFeatureManager structureManager,
                     ChunkGenerator chunkGenerator, BlockPos structurePos, BlockPos blockPos, Rotation rot,
-                    BoundingBox boundingBox, Random rand, boolean bool, MKAbstractJigsawPiece parent);
+                    BoundingBox boundingBox, Random rand, boolean bool, MKPoolElementPiece parent);
 
     default void mkHandleDataMarker(LevelAccessor worldIn, StructureTemplate.StructureBlockInfo blockInfo, BlockPos pos, Rotation rotationIn,
-                                   Random rand, BoundingBox boundingBox, MKAbstractJigsawPiece parent) {
+                                   Random rand, BoundingBox boundingBox, MKPoolElementPiece parent) {
         StructureUtils.handleMKDataMarker(blockInfo.nbt.getString("metadata"), pos, worldIn, rand, boundingBox,
                 parent.getStructureName(), parent.getInstanceId());
     }

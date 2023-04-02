@@ -11,11 +11,11 @@ import net.minecraft.client.KeyMapping;
 import net.minecraft.world.entity.player.Player;
 import net.minecraft.core.GlobalPos;
 import net.minecraftforge.api.distmarker.Dist;
+import net.minecraftforge.client.ClientRegistry;
 import net.minecraftforge.client.event.InputEvent;
-import net.minecraftforge.client.event.RenderWorldLastEvent;
+import net.minecraftforge.client.event.RenderLevelStageEvent;
 import net.minecraftforge.eventbus.api.SubscribeEvent;
 import net.minecraftforge.fml.common.Mod;
-import net.minecraftforge.fmlclient.registry.ClientRegistry;
 import org.lwjgl.glfw.GLFW;
 
 import java.util.HashSet;
@@ -53,10 +53,10 @@ public class NpcClientEventHandler {
     }
 
     @SubscribeEvent
-    public static void onRenderLast(RenderWorldLastEvent event){
+    public static void onRenderLast(RenderLevelStageEvent event){
         Minecraft mc = Minecraft.getInstance();
         Player player = mc.player;
-        if (player != null){
+        if (player != null && event.getStage() == RenderLevelStageEvent.Stage.AFTER_TRIPWIRE_BLOCKS){
 
             if (player.tickCount != ticks){
                 ticks = player.tickCount;
@@ -70,7 +70,7 @@ public class NpcClientEventHandler {
                                     Map<String, GlobalPos> posMap = objectiveData.getBlockPosData();
                                     for (GlobalPos pos : posMap.values()){
                                         if (pos.dimension().equals(player.getCommandSenderWorld().dimension()) && !alreadySeen.contains(pos)){
-                                            event.getContext().addParticle(CoreParticles.INDICATOR_PARTICLE, true,
+                                            event.getLevelRenderer().addParticle(CoreParticles.INDICATOR_PARTICLE.get(), true,
                                                     pos.pos().getX() + 0.5, pos.pos().getY() + 1.0,
                                                     pos.pos().getZ() + 0.5, 0.0, 0.0, 0.0);
                                             alreadySeen.add(pos);

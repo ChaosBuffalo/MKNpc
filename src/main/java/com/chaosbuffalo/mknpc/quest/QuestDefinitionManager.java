@@ -1,7 +1,6 @@
 package com.chaosbuffalo.mknpc.quest;
 
 import com.chaosbuffalo.mknpc.MKNpc;
-import com.chaosbuffalo.mknpc.npc.NpcDefinition;
 import com.chaosbuffalo.mknpc.quest.objectives.*;
 import com.chaosbuffalo.mknpc.quest.requirements.HasEntitlementRequirement;
 import com.chaosbuffalo.mknpc.quest.requirements.QuestRequirement;
@@ -22,9 +21,9 @@ import net.minecraft.resources.ResourceLocation;
 import net.minecraftforge.common.MinecraftForge;
 import net.minecraftforge.event.AddReloadListenerEvent;
 import net.minecraftforge.event.OnDatapackSyncEvent;
+import net.minecraftforge.event.server.ServerAboutToStartEvent;
+import net.minecraftforge.event.server.ServerStoppingEvent;
 import net.minecraftforge.eventbus.api.SubscribeEvent;
-import net.minecraftforge.fmlserverevents.FMLServerAboutToStartEvent;
-import net.minecraftforge.fmlserverevents.FMLServerStoppingEvent;
 
 import javax.annotation.Nullable;
 import java.util.HashMap;
@@ -116,13 +115,13 @@ public class QuestDefinitionManager extends SimpleJsonResourceReloadListener {
     }
 
     @SubscribeEvent
-    public void serverStop(FMLServerStoppingEvent event) {
+    public void serverStop(ServerStoppingEvent event) {
         serverStarted = false;
         server = null;
     }
 
     @SubscribeEvent
-    public void serverStart(FMLServerAboutToStartEvent event) {
+    public void serverStart(ServerAboutToStartEvent event) {
         server = event.getServer();
         serverStarted = true;
     }

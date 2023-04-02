@@ -6,29 +6,38 @@ import com.chaosbuffalo.mknpc.capabilities.WorldStructureManager;
 import com.chaosbuffalo.mknpc.npc.MKStructureEntry;
 import com.chaosbuffalo.mknpc.world.gen.feature.structure.events.StructureEvent;
 import com.mojang.serialization.Codec;
-import net.minecraft.server.level.ServerLevel;
-import net.minecraft.server.level.ServerPlayer;
-import net.minecraft.nbt.CompoundTag;
-import net.minecraft.Util;
 import net.minecraft.core.BlockPos;
-import net.minecraft.world.level.ChunkPos;
-import net.minecraft.world.level.LevelHeightAccessor;
+import net.minecraft.core.Holder;
 import net.minecraft.core.RegistryAccess;
+import net.minecraft.data.worldgen.Pools;
+import net.minecraft.resources.ResourceLocation;
+import net.minecraft.server.level.ServerPlayer;
+import net.minecraft.Util;
 import net.minecraft.network.chat.Component;
+import net.minecraft.world.level.ChunkPos;
 import net.minecraft.world.level.Level;
-import net.minecraft.world.level.biome.Biome;
-import net.minecraft.world.level.chunk.ChunkGenerator;
-import net.minecraft.world.level.levelgen.feature.structures.JigsawPlacement;
-import net.minecraft.world.level.levelgen.structure.templatesystem.StructureManager;
 
 import javax.annotation.Nullable;
 import java.util.HashMap;
 import java.util.Map;
-import java.util.UUID;
+import java.util.Optional;
+import java.util.function.Predicate;
 
+import net.minecraft.world.level.LevelHeightAccessor;
+import net.minecraft.world.level.biome.Biome;
+import net.minecraft.world.level.biome.BiomeSource;
+import net.minecraft.world.level.chunk.ChunkGenerator;
+import net.minecraft.world.level.levelgen.GenerationStep;
 import net.minecraft.world.level.levelgen.feature.JigsawFeature;
-import net.minecraft.world.level.levelgen.feature.StructureFeature;
 import net.minecraft.world.level.levelgen.feature.configurations.JigsawConfiguration;
+import net.minecraft.world.level.levelgen.structure.BoundingBox;
+import net.minecraft.world.level.levelgen.structure.PoolElementStructurePiece;
+import net.minecraft.world.level.levelgen.structure.pieces.PieceGeneratorSupplier;
+import net.minecraft.world.level.levelgen.structure.pools.JigsawPlacement;
+import net.minecraft.world.level.levelgen.structure.pools.StructurePoolElement;
+import net.minecraft.world.level.levelgen.structure.templatesystem.StructureManager;
+import net.minecraftforge.registries.ForgeRegistries;
+import org.jetbrains.annotations.NotNull;
 
 public class MKJigsawStructure extends JigsawFeature implements IControlNaturalSpawns {
 
@@ -38,14 +47,38 @@ public class MKJigsawStructure extends JigsawFeature implements IControlNaturalS
     @Nullable
     private Component exitMessage;
     private final Map<String, StructureEvent> events = new HashMap<>();
+    private final PieceGeneratorSupplier<JigsawConfiguration> pieceGenerator;
 
 
     public MKJigsawStructure(Codec<JigsawConfiguration> codec, int groundLevel, boolean offsetVertical,
-                             boolean offsetFromWorldSurface, boolean allowSpawns) {
-        super(codec, groundLevel, offsetVertical, offsetFromWorldSurface);
+                             boolean offsetFromWorldSurface,
+                             Predicate<PieceGeneratorSupplier.Context<JigsawConfiguration>> pieceSupplier,
+                             boolean allowSpawns) {
+        super(codec, groundLevel, offsetVertical, offsetFromWorldSurface, pieceSupplier);
         this.allowSpawns = allowSpawns;
         enterMessage = null;
         exitMessage = null;
+        pieceGenerator = makePieceGenerator(groundLevel, offsetVertical, offsetFromWorldSurface, pieceSupplier);
+    }
+
+    @NotNull
+    private PieceGeneratorSupplier<JigsawConfiguration> makePieceGenerator(int groundLevel, boolean offsetVertical, boolean offsetFromWorldSurface, Predicate<PieceGeneratorSupplier.Context<JigsawConfiguration>> pieceSupplier) {
+        return (p_197102_) -> {
+            if (!pieceSupplier.test(p_197102_)) {
+                return Optional.empty();
+            } else {
+                ResourceLocation featureName = ForgeRegistries.STRUCTURE_FEATURES.getKey(this);
+                BlockPos blockpos = new BlockPos(p_197102_.chunkPos().getMinBlockX(), groundLevel, p_197102_.chunkPos().getMinBlockZ());
+                return JigsawPlacement.addPieces(p_197102_,
+                        (structureManager, poolElement, blockPos, groundLevelData, rot, boundingBox) ->
+                                new MKPoolElementPiece(structureManager, poolElement, blockPos, groundLevelData, rot, boundingBox, featureName), blockpos, offsetVertical, offsetFromWorldSurface);
+            }
+        };
+    }
+
+    @Override
+    public PieceGeneratorSupplier<JigsawConfiguration> pieceGeneratorSupplier() {
+        return pieceGenerator;
     }
 
     public MKJigsawStructure addEvent(String name, StructureEvent event) {
@@ -57,13 +90,6 @@ public class MKJigsawStructure extends JigsawFeature implements IControlNaturalS
     @Override
     public boolean doesAllowSpawns(){
         return allowSpawns;
-    }
-
-    @Override
-    public StructureFeature.StructureStartFactory<JigsawConfiguration> getStartFactory() {
-        return (p_159909_, p_159910_, p_159911_, p_159912_) -> {
-            return new Start(this, p_159910_, p_159911_, p_159912_);
-        };
     }
 
 
@@ -113,6 +139,11 @@ public class MKJigsawStructure extends JigsawFeature implements IControlNaturalS
 
     }
 
+    @Override
+    public boolean canGenerate(RegistryAccess p_197172_, ChunkGenerator p_197173_, BiomeSource p_197174_, StructureManager p_197175_, long p_197176_, ChunkPos p_197177_, JigsawConfiguration p_197178_, LevelHeightAccessor p_197179_, Predicate<Holder<Biome>> p_197180_) {
+        return this.pieceGenerator.createGenerator(new PieceGeneratorSupplier.Context<>(p_197173_, p_197174_, p_197176_, p_197177_, p_197178_, p_197179_, p_197180_, p_197175_, p_197172_)).isPresent();
+    }
+
     protected void checkAndExecuteEvent(StructureEvent ev, MKStructureEntry entry,
                                         WorldStructureManager.ActiveStructure activeStructure, Level world) {
         if (!entry.getCooldownTracker().hasTimer(ev.getTimerName()) && ev.meetsConditions(entry, activeStructure, world)) {
@@ -144,6 +175,11 @@ public class MKJigsawStructure extends JigsawFeature implements IControlNaturalS
         }
     }
 
+    @Override
+    public GenerationStep.Decoration step() {
+        return GenerationStep.Decoration.SURFACE_STRUCTURES;
+    }
+
     @Nullable
     public Component getEnterMessage() {
         return enterMessage;
@@ -152,48 +188,5 @@ public class MKJigsawStructure extends JigsawFeature implements IControlNaturalS
     @Nullable
     public Component getExitMessage() {
         return exitMessage;
-    }
-
-    public static class Start extends JigsawFeature.FeatureStart implements IAdditionalStartData {
-        private final MKJigsawStructure structure;
-        private UUID instanceId;
-
-        public Start(MKJigsawStructure p_159914_, ChunkPos p_159915_, int p_159916_, long p_159917_MK) {
-            super(p_159914_, p_159915_, p_159916_, p_159917_MK);
-            this.structure = p_159914_;
-            instanceId = UUID.randomUUID();
-        }
-
-        public UUID getInstanceId() {
-            return instanceId;
-        }
-
-        @Override
-        public CompoundTag createTag(ServerLevel p_163607_, ChunkPos p_163608_) {
-            CompoundTag tag = super.createTag(p_163607_, p_163608_);
-            if (isValid()){
-                tag.putUUID("instanceId", instanceId);
-            }
-            return tag;
-        }
-
-        public void generatePieces(RegistryAccess p_159927_, ChunkGenerator p_159928_,
-                                   StructureManager p_159929_, ChunkPos p_159930_,
-                                   Biome p_159931_, JigsawConfiguration p_159932_, LevelHeightAccessor p_159933_) {
-            BlockPos blockpos = new BlockPos(p_159930_.getMinBlockX(), this.structure.startY, p_159930_.getMinBlockZ());
-            JigsawPlacement.addPieces(p_159927_, p_159932_,
-                    (tempManager, piece, pos, groundLevelDelta, rotation, boundingBox) ->
-                            new MKAbstractJigsawPiece(tempManager, piece, pos, groundLevelDelta, rotation, boundingBox,
-                                    getFeature().getRegistryName(), getInstanceId()),
-                    p_159928_, p_159929_, blockpos, this, this.random, this.structure.doExpansionHack, this.structure.projectStartToHeightmap, p_159933_);
-        }
-
-
-        @Override
-        public void readAdditional(CompoundTag tag) {
-            if (tag.contains("instanceId")){
-                instanceId = tag.getUUID("instanceId");
-            }
-        }
     }
 }

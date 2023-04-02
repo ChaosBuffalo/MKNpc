@@ -4,17 +4,21 @@ import com.chaosbuffalo.mknpc.MKNpc;
 import com.chaosbuffalo.mknpc.capabilities.IWorldNpcData;
 import com.chaosbuffalo.mknpc.capabilities.NpcCapabilities;
 import com.chaosbuffalo.mknpc.capabilities.WorldStructureManager;
+import com.chaosbuffalo.mknpc.world.gen.IStructureStartMixin;
 import com.chaosbuffalo.mknpc.world.gen.feature.structure.MKJigsawStructure;
+import net.minecraft.data.BuiltinRegistries;
+import net.minecraft.server.MinecraftServer;
 import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.world.level.Level;
 import net.minecraft.world.level.StructureFeatureManager;
+import net.minecraft.world.level.levelgen.feature.ConfiguredStructureFeature;
 import net.minecraft.world.level.levelgen.structure.StructureStart;
 import net.minecraft.server.level.ServerLevel;
 import net.minecraftforge.event.TickEvent;
+import net.minecraftforge.event.server.ServerStartedEvent;
 import net.minecraftforge.eventbus.api.SubscribeEvent;
 import net.minecraftforge.fml.common.Mod;
-import net.minecraftforge.fmlserverevents.FMLServerStartedEvent;
 import net.minecraftforge.registries.ForgeRegistries;
 
 import java.util.HashMap;
@@ -26,13 +30,13 @@ import java.util.stream.Collectors;
 @Mod.EventBusSubscriber(modid= MKNpc.MODID, bus=Mod.EventBusSubscriber.Bus.FORGE)
 public class WorldStructureHandler {
 
-    public static List<MKJigsawStructure> MK_STRUCTURE_CACHE;
-    public static final Map<ResourceLocation, MKJigsawStructure> MK_STRUCTURE_INDEX = new HashMap<>();
+    public static List<ConfiguredStructureFeature<?, MKJigsawStructure>> MK_STRUCTURE_CACHE;
+    public static final Map<ResourceLocation, ConfiguredStructureFeature<?, MKJigsawStructure>> MK_STRUCTURE_INDEX = new HashMap<>();
 
 
     @SubscribeEvent
-    public static void serverStarted(final FMLServerStartedEvent event) {
-        WorldStructureHandler.cacheStructures();
+    public static void serverStarted(final ServerStartedEvent event) {
+        WorldStructureHandler.cacheStructures(event.getServer());
     }
 
     @SubscribeEvent
@@ -49,14 +53,13 @@ public class WorldStructureHandler {
                 IWorldNpcData over = overOpt.get();
                 WorldStructureManager activeStructures = over.getStructureManager();
                 for (ServerPlayer player : sWorld.players()) {
-                    List<MKJigsawStructure.Start> starts = WorldStructureHandler.MK_STRUCTURE_CACHE.stream().map(
-                            x -> manager.getStructureAt(player.blockPosition(), false, x))
+                    List<StructureStart> starts = WorldStructureHandler.MK_STRUCTURE_CACHE.stream().map(
+                            x -> manager.getStructureAt(player.blockPosition(), x))
                             .filter(x -> x != StructureStart.INVALID_START)
-                            .map(x -> (MKJigsawStructure.Start) x)
                             .collect(Collectors.toList());
-                    for (MKJigsawStructure.Start start : starts) {
+                    for (StructureStart start : starts) {
                         over.setupStructureDataIfAbsent(start, ev.world);
-                        activeStructures.visitStructure(start.getInstanceId(), player);
+                        activeStructures.visitStructure(IStructureStartMixin.getInstanceIdFromStart(start), player);
                     }
                 }
                 if (ev.world.dimension() == Level.OVERWORLD) {
@@ -66,14 +69,19 @@ public class WorldStructureHandler {
         }
     }
 
-    public static void cacheStructures() {
-        MK_STRUCTURE_CACHE = ForgeRegistries.STRUCTURE_FEATURES.getValues().stream()
-                .filter(x -> x instanceof MKJigsawStructure).map(x -> (MKJigsawStructure) x)
-                .collect(Collectors.toList());
-        MK_STRUCTURE_INDEX.clear();
-        MK_STRUCTURE_CACHE.forEach(x -> {
-            MKNpc.LOGGER.info("Caching MK Structure {}", x.getFeatureName());
-            MK_STRUCTURE_INDEX.put(x.getRegistryName(), x);
+    public static void cacheStructures(MinecraftServer server) {
+        server.registryAccess().registry(BuiltinRegistries.CONFIGURED_STRUCTURE_FEATURE.key()).ifPresent(registry -> {
+            MK_STRUCTURE_CACHE = registry.entrySet().stream()
+                    .filter(x -> x.getValue().feature instanceof MKJigsawStructure)
+                    .map(x -> (ConfiguredStructureFeature<?, MKJigsawStructure>) x.getValue())
+                    .collect(Collectors.toList());
+            MK_STRUCTURE_INDEX.clear();
+            MK_STRUCTURE_CACHE.forEach(x -> {
+                ResourceLocation featureName = ForgeRegistries.STRUCTURE_FEATURES.getKey(x.feature);
+                MKNpc.LOGGER.info("Caching MK Structure {}", featureName);
+                MK_STRUCTURE_INDEX.put(featureName, x);
+            });
         });
+
     }
 }

@@ -1,27 +1,27 @@
 package com.chaosbuffalo.mknpc.world.gen.feature.structure;
 
+import com.chaosbuffalo.mknpc.init.MKNpcWorldGen;
 import com.mojang.datafixers.util.Either;
 import com.mojang.serialization.Codec;
 import com.mojang.serialization.codecs.RecordCodecBuilder;
+import net.minecraft.core.Holder;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.world.level.block.Rotation;
 import net.minecraft.core.BlockPos;
 import net.minecraft.world.level.levelgen.structure.BoundingBox;
 import net.minecraft.world.level.WorldGenLevel;
 import net.minecraft.world.level.chunk.ChunkGenerator;
-import net.minecraft.world.level.levelgen.feature.structures.StructurePoolElementType;
-import net.minecraft.world.level.levelgen.feature.structures.StructureTemplatePool;
-import net.minecraft.world.level.levelgen.feature.structures.SinglePoolElement;
 import net.minecraft.world.level.StructureFeatureManager;
 
 import java.util.List;
 import java.util.Random;
 import java.util.function.Function;
-import java.util.function.Supplier;
 
-import static com.chaosbuffalo.mknpc.world.gen.feature.structure.MKJigsawDeserializers.MK_SINGLE_JIGSAW_DESERIALIZER;
 
 import net.minecraft.data.worldgen.ProcessorLists;
+import net.minecraft.world.level.levelgen.structure.pools.SinglePoolElement;
+import net.minecraft.world.level.levelgen.structure.pools.StructurePoolElementType;
+import net.minecraft.world.level.levelgen.structure.pools.StructureTemplatePool;
 import net.minecraft.world.level.levelgen.structure.templatesystem.BlockIgnoreProcessor;
 import net.minecraft.world.level.levelgen.structure.templatesystem.StructureManager;
 import net.minecraft.world.level.levelgen.structure.templatesystem.StructurePlaceSettings;
@@ -31,14 +31,14 @@ import net.minecraft.world.level.levelgen.structure.templatesystem.StructureTemp
 public class MKSingleJigsawPiece extends SinglePoolElement implements IMKJigsawPiece{
 
     public static final Codec<MKSingleJigsawPiece> codec = RecordCodecBuilder.create((builder) ->
-            builder.group(templateCodec(), processorsCodec(), projectionCodec(), Codec.BOOL.fieldOf("bWaterlog")
+            builder.group(templateCodec(), processorsCodec(), projectionCodec(), Codec.BOOL.fieldOf("bWaterLog")
                     .forGetter(MKSingleJigsawPiece::doWaterlog))
                     .apply(builder, MKSingleJigsawPiece::new));
 
     private boolean bWaterlogBlocks;
 
     protected MKSingleJigsawPiece(Either<ResourceLocation, StructureTemplate> templateEither,
-                                  Supplier<StructureProcessorList> structureProcessor,
+                                  Holder<StructureProcessorList> structureProcessor,
                                   StructureTemplatePool.Projection placementBehaviour, boolean waterlogBlocks) {
         super(templateEither, structureProcessor, placementBehaviour);
         bWaterlogBlocks = waterlogBlocks;
@@ -59,11 +59,14 @@ public class MKSingleJigsawPiece extends SinglePoolElement implements IMKJigsawP
     }
 
 
+    private StructureTemplate getTemplate(StructureManager p_210433_) {
+        return this.template.map(p_210433_::getOrCreate, Function.identity());
+    }
 
     @Override
     public boolean mkPlace(StructureManager templateManager, WorldGenLevel seedReader, StructureFeatureManager structureManager,
                            ChunkGenerator chunkGenerator, BlockPos structurePos, BlockPos blockPos, Rotation rot,
-                           BoundingBox boundingBox, Random rand, boolean keepJigsaw, MKAbstractJigsawPiece parent) {
+                           BoundingBox boundingBox, Random rand, boolean keepJigsaw, MKPoolElementPiece parent) {
         StructureTemplate template = this.getTemplate(templateManager);
         StructurePlaceSettings placementsettings = this.getSettings(rot, boundingBox, keepJigsaw);
         placementsettings.popProcessor(BlockIgnoreProcessor.STRUCTURE_BLOCK);
@@ -86,13 +89,13 @@ public class MKSingleJigsawPiece extends SinglePoolElement implements IMKJigsawP
         }
     }
 
+
     @Override
     public StructurePoolElementType<?> getType() {
-        return MK_SINGLE_JIGSAW_DESERIALIZER;
+        return MKNpcWorldGen.MK_SINGLE_JIGSAW_DESERIALIZER.get();
     }
 
     public static Function<StructureTemplatePool.Projection, MKSingleJigsawPiece> getMKSingleJigsaw(ResourceLocation pieceName, boolean doWaterlog) {
-        return (placementBehaviour) -> new MKSingleJigsawPiece(Either.left(pieceName),
-                () -> ProcessorLists.EMPTY, placementBehaviour, doWaterlog);
+        return (placementBehaviour) -> new MKSingleJigsawPiece(Either.left(pieceName), ProcessorLists.EMPTY, placementBehaviour, doWaterlog);
     }
 }

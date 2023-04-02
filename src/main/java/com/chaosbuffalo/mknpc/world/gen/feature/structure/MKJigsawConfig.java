@@ -1,13 +1,14 @@
 package com.chaosbuffalo.mknpc.world.gen.feature.structure;
 
-import net.minecraft.world.level.levelgen.feature.structures.StructureTemplatePool;
-import net.minecraft.world.level.levelgen.feature.configurations.JigsawConfiguration;
 
-import java.util.function.Supplier;
+import net.minecraft.core.Holder;
+import net.minecraft.world.level.levelgen.feature.configurations.JigsawConfiguration;
+import net.minecraft.world.level.levelgen.structure.pools.StructureTemplatePool;
+
 
 public class MKJigsawConfig extends JigsawConfiguration {
 
-    public MKJigsawConfig(Supplier<StructureTemplatePool> p_i241987_1_, int p_i241987_2_) {
-        super(p_i241987_1_, p_i241987_2_);
+    public MKJigsawConfig(Holder<StructureTemplatePool> p_204800_, int p_i241987_2_) {
+        super(p_204800_, p_i241987_2_);
     }
 }

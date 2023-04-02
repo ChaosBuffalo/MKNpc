@@ -38,7 +38,7 @@ public class UseAbilityGoal extends Goal {
     @Override
     public boolean canUse() {
         Optional<MKAbility> abilityOptional = entity.getBrain().getMemory(MKMemoryModuleTypes.CURRENT_ABILITY);
-        Optional<LivingEntity> target = entity.getBrain().getMemory(MKAbilityMemories.ABILITY_TARGET);
+        Optional<LivingEntity> target = entity.getBrain().getMemory(MKAbilityMemories.ABILITY_TARGET.get());
         if (abilityOptional.isPresent() && target.isPresent()) {
             currentAbility = abilityOptional.get();
             LivingEntity targetEntity = target.get();
@@ -75,7 +75,7 @@ public class UseAbilityGoal extends Goal {
     public boolean canContinueToUse() {
         return ticksSinceSeenTarget < CAN_SEE_TIMEOUT && entity.getCapability(CoreCapabilities.ENTITY_CAPABILITY).map(
                 (entityData) -> entityData.getAbilityExecutor().isCasting()).orElse(false) && entity.getBrain()
-                .getMemory(MKAbilityMemories.ABILITY_TARGET).map(tar -> tar.isAlive()
+                .getMemory(MKAbilityMemories.ABILITY_TARGET.get()).map(tar -> tar.isAlive()
                         && tar.is(target)).orElse(false) && entity.getBrain().getMemory(MKMemoryModuleTypes.CURRENT_ABILITY)
                 .map(mkAbility -> mkAbility.equals(currentAbility)).orElse(false);
     }
@@ -111,8 +111,8 @@ public class UseAbilityGoal extends Goal {
         currentAbility = null;
         target = null;
         entity.getBrain().eraseMemory(MKMemoryModuleTypes.CURRENT_ABILITY);
-        entity.getBrain().eraseMemory(MKAbilityMemories.ABILITY_TARGET);
-        entity.getBrain().eraseMemory(MKAbilityMemories.ABILITY_POSITION_TARGET);
+        entity.getBrain().eraseMemory(MKAbilityMemories.ABILITY_TARGET.get());
+        entity.getBrain().eraseMemory(MKAbilityMemories.ABILITY_POSITION_TARGET.get());
         entity.returnToDefaultMovementState();
         ticksSinceSeenTarget = 0;
 

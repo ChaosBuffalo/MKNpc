@@ -1,6 +1,7 @@
 package com.chaosbuffalo.mknpc.world.gen.feature.structure;
 
-import net.minecraft.world.level.levelgen.feature.structures.StructurePoolElementType;
+
+import net.minecraft.world.level.levelgen.structure.pools.StructurePoolElementType;
 
 public class MKJigsawDeserializers {
 
