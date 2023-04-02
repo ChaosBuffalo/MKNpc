@@ -93,7 +93,6 @@ public class EntityHandler {
             event.getChunk().getBlockEntitiesPos().forEach(pos -> {
                 BlockEntity entity = event.getChunk().getBlockEntity(pos);
                 if (entity != null){
-                    entity.getCapability(NpcCapabilities.CHEST_NPC_DATA_CAPABILITY).ifPresent(IChestNpcData::onLoad);
                     server.overworld().getCapability(NpcCapabilities.WORLD_NPC_DATA_CAPABILITY).ifPresent(x ->
                             x.queueChestForProcessing(GlobalPos.of(level.dimension(), pos)));
                 }
