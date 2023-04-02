@@ -6,20 +6,35 @@ import com.chaosbuffalo.mknpc.capabilities.WorldStructureManager;
 import com.chaosbuffalo.mknpc.npc.MKStructureEntry;
 import com.chaosbuffalo.mknpc.world.gen.feature.structure.events.StructureEvent;
 import com.mojang.serialization.Codec;
+import net.minecraft.core.BlockPos;
+import net.minecraft.core.Holder;
+import net.minecraft.core.RegistryAccess;
+import net.minecraft.data.worldgen.Pools;
 import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.Util;
 import net.minecraft.network.chat.Component;
+import net.minecraft.world.level.ChunkPos;
 import net.minecraft.world.level.Level;
 
 import javax.annotation.Nullable;
 import java.util.HashMap;
 import java.util.Map;
+import java.util.Optional;
 import java.util.function.Predicate;
 
+import net.minecraft.world.level.LevelHeightAccessor;
+import net.minecraft.world.level.biome.Biome;
+import net.minecraft.world.level.biome.BiomeSource;
+import net.minecraft.world.level.chunk.ChunkGenerator;
 import net.minecraft.world.level.levelgen.GenerationStep;
 import net.minecraft.world.level.levelgen.feature.JigsawFeature;
 import net.minecraft.world.level.levelgen.feature.configurations.JigsawConfiguration;
+import net.minecraft.world.level.levelgen.structure.BoundingBox;
+import net.minecraft.world.level.levelgen.structure.PoolElementStructurePiece;
 import net.minecraft.world.level.levelgen.structure.pieces.PieceGeneratorSupplier;
+import net.minecraft.world.level.levelgen.structure.pools.JigsawPlacement;
+import net.minecraft.world.level.levelgen.structure.pools.StructurePoolElement;
+import net.minecraft.world.level.levelgen.structure.templatesystem.StructureManager;
 
 public class MKJigsawStructure extends JigsawFeature implements IControlNaturalSpawns {
 
@@ -29,10 +44,9 @@ public class MKJigsawStructure extends JigsawFeature implements IControlNaturalS
     @Nullable
     private Component exitMessage;
     private final Map<String, StructureEvent> events = new HashMap<>();
+    private final PieceGeneratorSupplier<JigsawConfiguration> pieceGenerator;
 
 
-    //Codec<JigsawConfiguration> p_197092_, int p_197093_, boolean p_197094_,
-    // boolean p_197095_, Predicate<PieceGeneratorSupplier.Context<JigsawConfiguration>> p_197096_
     public MKJigsawStructure(Codec<JigsawConfiguration> codec, int groundLevel, boolean offsetVertical,
                              boolean offsetFromWorldSurface,
                              Predicate<PieceGeneratorSupplier.Context<JigsawConfiguration>> pieceSupplier,
@@ -41,6 +55,16 @@ public class MKJigsawStructure extends JigsawFeature implements IControlNaturalS
         this.allowSpawns = allowSpawns;
         enterMessage = null;
         exitMessage = null;
+        pieceGenerator = (p_197102_) -> {
+            if (!pieceSupplier.test(p_197102_)) {
+                return Optional.empty();
+            } else {
+                BlockPos blockpos = new BlockPos(p_197102_.chunkPos().getMinBlockX(), groundLevel, p_197102_.chunkPos().getMinBlockZ());
+                return JigsawPlacement.addPieces(p_197102_,
+                        (structureManager, poolElement, blockPos, groundLevelData, rot, boundingBox) ->
+                                new MKPoolElementPiece(structureManager, poolElement, blockPos, groundLevelData, rot, boundingBox, getRegistryName()), blockpos, offsetVertical, offsetFromWorldSurface);
+            }
+        };
     }
 
     public MKJigsawStructure addEvent(String name, StructureEvent event) {
@@ -99,6 +123,11 @@ public class MKJigsawStructure extends JigsawFeature implements IControlNaturalS
             }
         }
 
+    }
+
+    @Override
+    public boolean canGenerate(RegistryAccess p_197172_, ChunkGenerator p_197173_, BiomeSource p_197174_, StructureManager p_197175_, long p_197176_, ChunkPos p_197177_, JigsawConfiguration p_197178_, LevelHeightAccessor p_197179_, Predicate<Holder<Biome>> p_197180_) {
+        return this.pieceGenerator.createGenerator(new PieceGeneratorSupplier.Context<>(p_197173_, p_197174_, p_197176_, p_197177_, p_197178_, p_197179_, p_197180_, p_197175_, p_197172_)).isPresent();
     }
 
     protected void checkAndExecuteEvent(StructureEvent ev, MKStructureEntry entry,

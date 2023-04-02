@@ -19,16 +19,20 @@ import java.util.UUID;
 
 public class MKPoolElementPiece extends PoolElementStructurePiece implements IMKStructurePiece {
     private final ResourceLocation structureName;
-    private final UUID instanceId;
+    private UUID instanceId;
 
     public MKPoolElementPiece(StructureManager templateManager, StructurePoolElement jigsawPiece, BlockPos blockPos,
                               int groundLevelDelta, Rotation rotation, BoundingBox boundingBox,
-                              ResourceLocation structureName, UUID instanceId) {
+                              ResourceLocation structureName) {
         super(templateManager, jigsawPiece, blockPos, groundLevelDelta, rotation, boundingBox);
         this.type = MKNpcWorldGen.MK_JIGSAW_PIECE_TYPE.get();
         this.structureName = structureName;
-        this.instanceId = instanceId;
+        this.instanceId = UUID.randomUUID();
 
+    }
+
+    public void setInstanceId(UUID instanceId) {
+        this.instanceId = instanceId;
     }
 
     public MKPoolElementPiece(StructurePieceSerializationContext context, CompoundTag compoundNBT) {
@@ -45,6 +49,7 @@ public class MKPoolElementPiece extends PoolElementStructurePiece implements IMK
         tag.putUUID("instanceId", instanceId);
         tag.putString("structureName", structureName.toString());
     }
+
 
 
     @Override

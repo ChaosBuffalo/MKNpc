@@ -84,7 +84,7 @@ public abstract class StructureSetProvider implements DataProvider {
             structureEntries = new ArrayList<>();
         }
 
-        StructureSetData withStructure(ResourceLocation configuredStructureName, int weight) {
+        public StructureSetData withStructure(ResourceLocation configuredStructureName, int weight) {
             structureEntries.add(new StructureSetEntry(configuredStructureName, weight));
             return this;
         }

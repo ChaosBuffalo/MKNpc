@@ -9,16 +9,12 @@ import com.google.gson.JsonElement;
 import com.mojang.serialization.Dynamic;
 import com.mojang.serialization.DynamicOps;
 import com.mojang.serialization.JsonOps;
-import net.minecraft.core.Holder;
-import net.minecraft.data.BuiltinRegistries;
 import net.minecraft.data.DataGenerator;
 import net.minecraft.data.DataProvider;
 import net.minecraft.data.HashCache;
 import net.minecraft.resources.ResourceLocation;
-import net.minecraft.tags.BiomeTags;
 import net.minecraft.tags.TagKey;
 import net.minecraft.world.level.biome.Biome;
-import net.minecraft.world.level.levelgen.feature.ConfiguredStructureFeature;
 import net.minecraft.world.level.levelgen.feature.StructureFeature;
 import net.minecraft.world.level.levelgen.structure.StructureSpawnOverride;
 import net.minecraftforge.registries.ForgeRegistries;
@@ -27,9 +23,7 @@ import javax.annotation.Nonnull;
 import java.io.IOException;
 import java.nio.file.Path;
 import java.util.HashMap;
-import java.util.List;
 import java.util.Map;
-import java.util.stream.Collectors;
 
 public abstract class ConfiguredStructureProvider implements DataProvider {
     private static final Gson GSON = new GsonBuilder().setPrettyPrinting().disableHtmlEscaping().create();
@@ -76,12 +70,12 @@ public abstract class ConfiguredStructureProvider implements DataProvider {
             spawnOverrides = new HashMap<>();
         }
 
-        ConfiguredStructureData withAdaptNoise(boolean val) {
+        public ConfiguredStructureData withAdaptNoise(boolean val) {
             this.adaptNoise = val;
             return this;
         }
 
-        ConfiguredStructureData withSpawnOverride(String key, StructureSpawnOverride override) {
+        public ConfiguredStructureData withSpawnOverride(String key, StructureSpawnOverride override) {
             spawnOverrides.put(key, override);
             return this;
         }

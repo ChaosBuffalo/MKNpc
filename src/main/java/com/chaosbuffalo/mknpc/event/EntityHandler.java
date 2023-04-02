@@ -275,7 +275,7 @@ public class EntityHandler {
             if (event.getWorld() instanceof ServerLevel){
                 StructureFeatureManager manager = ((ServerLevel) event.getWorld()).structureFeatureManager();
                 for (ConfiguredStructureFeature<?, MKJigsawStructure> structure : WorldStructureHandler.MK_STRUCTURE_CACHE){
-                    if (!((IControlNaturalSpawns) structure).doesAllowSpawns()){
+                    if (!((IControlNaturalSpawns) structure.feature).doesAllowSpawns()){
                         StructureStart start = manager.getStructureAt(spawnPos, structure);
                         if (start != StructureStart.INVALID_START){
                             event.setResult(Event.Result.DENY);
