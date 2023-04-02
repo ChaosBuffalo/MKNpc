@@ -35,6 +35,7 @@ import net.minecraft.world.level.levelgen.structure.pieces.PieceGeneratorSupplie
 import net.minecraft.world.level.levelgen.structure.pools.JigsawPlacement;
 import net.minecraft.world.level.levelgen.structure.pools.StructurePoolElement;
 import net.minecraft.world.level.levelgen.structure.templatesystem.StructureManager;
+import org.jetbrains.annotations.NotNull;
 
 public class MKJigsawStructure extends JigsawFeature implements IControlNaturalSpawns {
 
@@ -55,7 +56,12 @@ public class MKJigsawStructure extends JigsawFeature implements IControlNaturalS
         this.allowSpawns = allowSpawns;
         enterMessage = null;
         exitMessage = null;
-        pieceGenerator = (p_197102_) -> {
+        pieceGenerator = makePieceGenerator(groundLevel, offsetVertical, offsetFromWorldSurface, pieceSupplier);
+    }
+
+    @NotNull
+    private PieceGeneratorSupplier<JigsawConfiguration> makePieceGenerator(int groundLevel, boolean offsetVertical, boolean offsetFromWorldSurface, Predicate<PieceGeneratorSupplier.Context<JigsawConfiguration>> pieceSupplier) {
+        return (p_197102_) -> {
             if (!pieceSupplier.test(p_197102_)) {
                 return Optional.empty();
             } else {
@@ -65,6 +71,11 @@ public class MKJigsawStructure extends JigsawFeature implements IControlNaturalS
                                 new MKPoolElementPiece(structureManager, poolElement, blockPos, groundLevelData, rot, boundingBox, getRegistryName()), blockpos, offsetVertical, offsetFromWorldSurface);
             }
         };
+    }
+
+    @Override
+    public PieceGeneratorSupplier<JigsawConfiguration> pieceGeneratorSupplier() {
+        return pieceGenerator;
     }
 
     public MKJigsawStructure addEvent(String name, StructureEvent event) {
