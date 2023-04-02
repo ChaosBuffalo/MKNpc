@@ -33,6 +33,7 @@ import net.minecraft.world.level.levelgen.feature.StructureFeature;
 import net.minecraft.world.level.levelgen.structure.StructurePiece;
 import net.minecraft.world.level.levelgen.structure.StructureStart;
 import net.minecraft.server.level.ServerLevel;
+import net.minecraftforge.registries.ForgeRegistries;
 
 import java.util.*;
 import java.util.stream.Collectors;
@@ -97,7 +98,7 @@ public class WorldNpcDataHandler implements IWorldNpcData{
                 start.getChunkPos().x, start.getChunkPos().z, start.getBoundingBox(), start.getPieces().stream().map(
                 this::getComponentDataFromPiece).collect(Collectors.toList()));
 
-        MKStructureEntry structureEntry = new MKStructureEntry(this, struct.getRegistryName(),
+        MKStructureEntry structureEntry = new MKStructureEntry(this, ForgeRegistries.STRUCTURE_FEATURES.getKey(struct),
                 IStructureStartMixin.getInstanceIdFromStart(start), structureData);
         indexStructureEntry(structureEntry);
     }

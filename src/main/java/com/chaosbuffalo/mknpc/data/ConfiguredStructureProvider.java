@@ -87,7 +87,8 @@ public abstract class ConfiguredStructureProvider implements DataProvider {
 
         @Override
         public <D> void writeAdditionalData(DynamicOps<D> dynamicOps, ImmutableMap.Builder<D, D> builder) {
-            builder.put(dynamicOps.createString("type"), dynamicOps.createString(feature.getRegistryName().toString()));
+            ResourceLocation featureName = ForgeRegistries.STRUCTURE_FEATURES.getKey(feature);
+            builder.put(dynamicOps.createString("type"), dynamicOps.createString(featureName.toString()));
             builder.put(dynamicOps.createString("config"), dynamicOps.createMap(
                     ImmutableMap.of(
                             dynamicOps.createString("start_pool"), dynamicOps.createString(startingPool.toString()),

@@ -29,7 +29,7 @@ public class NpcAttributeEntry {
 
     public <D> D serialize(DynamicOps<D> ops) {
         return ops.createMap(ImmutableMap.of(
-           ops.createString("attributeName"), ops.createString(attribute.getRegistryName().toString()),
+           ops.createString("attributeName"), ops.createString(ForgeRegistries.ATTRIBUTES.getKey(attribute).toString()),
            ops.createString("value"), ops.createDouble(getValue())
         ));
     }

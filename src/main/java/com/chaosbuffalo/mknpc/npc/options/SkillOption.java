@@ -76,15 +76,19 @@ public class SkillOption extends NpcDefinitionOption {
         remedialSkills.addAll(remedial_skill_entries);
     }
 
+    private static String skillId(Attribute attribute) {
+        return ForgeRegistries.ATTRIBUTES.getKey(attribute).toString();
+    }
+
     @Override
     public <D> void writeAdditionalData(DynamicOps<D> ops, ImmutableMap.Builder<D, D> builder) {
         super.writeAdditionalData(ops, builder);
         builder.put(ops.createString("minor_skills"), ops.createList(minorSkills.stream()
-                .map(x -> ops.createString(x.getRegistryName().toString()))));
+                .map(x -> ops.createString(skillId(x)))));
         builder.put(ops.createString("major_skills"), ops.createList(majorSkills.stream()
-                .map(x -> ops.createString(x.getRegistryName().toString()))));
+                .map(x -> ops.createString(skillId(x)))));
         builder.put(ops.createString("remedial_skills"), ops.createList(remedialSkills.stream()
-                .map(x -> ops.createString(x.getRegistryName().toString()))));
+                .map(x -> ops.createString(skillId(x)))));
     }
 
     public SkillOption addMajorSkill(Attribute skill) {

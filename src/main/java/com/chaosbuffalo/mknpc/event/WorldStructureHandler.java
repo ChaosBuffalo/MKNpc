@@ -19,6 +19,7 @@ import net.minecraftforge.event.TickEvent;
 import net.minecraftforge.event.server.ServerStartedEvent;
 import net.minecraftforge.eventbus.api.SubscribeEvent;
 import net.minecraftforge.fml.common.Mod;
+import net.minecraftforge.registries.ForgeRegistries;
 
 import java.util.HashMap;
 import java.util.List;
@@ -76,8 +77,9 @@ public class WorldStructureHandler {
                     .collect(Collectors.toList());
             MK_STRUCTURE_INDEX.clear();
             MK_STRUCTURE_CACHE.forEach(x -> {
-                MKNpc.LOGGER.info("Caching MK Structure {}", x.feature.getRegistryName());
-                MK_STRUCTURE_INDEX.put(x.feature.getRegistryName(), x);
+                ResourceLocation featureName = ForgeRegistries.STRUCTURE_FEATURES.getKey(x.feature);
+                MKNpc.LOGGER.info("Caching MK Structure {}", featureName);
+                MK_STRUCTURE_INDEX.put(featureName, x);
             });
         });
 

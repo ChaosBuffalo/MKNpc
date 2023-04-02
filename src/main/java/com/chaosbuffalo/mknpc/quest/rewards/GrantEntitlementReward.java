@@ -27,7 +27,7 @@ public class GrantEntitlementReward extends QuestReward {
     public GrantEntitlementReward(MKEntitlement entitlement) {
         this();
         this.entitlement = entitlement;
-        entitlementId.setValue(entitlement.getRegistryName());
+        entitlementId.setValue(entitlement.getId());
     }
 
     public GrantEntitlementReward() {

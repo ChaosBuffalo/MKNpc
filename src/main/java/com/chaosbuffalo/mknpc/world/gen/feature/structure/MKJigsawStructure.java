@@ -10,6 +10,7 @@ import net.minecraft.core.BlockPos;
 import net.minecraft.core.Holder;
 import net.minecraft.core.RegistryAccess;
 import net.minecraft.data.worldgen.Pools;
+import net.minecraft.resources.ResourceLocation;
 import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.Util;
 import net.minecraft.network.chat.Component;
@@ -35,6 +36,7 @@ import net.minecraft.world.level.levelgen.structure.pieces.PieceGeneratorSupplie
 import net.minecraft.world.level.levelgen.structure.pools.JigsawPlacement;
 import net.minecraft.world.level.levelgen.structure.pools.StructurePoolElement;
 import net.minecraft.world.level.levelgen.structure.templatesystem.StructureManager;
+import net.minecraftforge.registries.ForgeRegistries;
 import org.jetbrains.annotations.NotNull;
 
 public class MKJigsawStructure extends JigsawFeature implements IControlNaturalSpawns {
@@ -65,10 +67,11 @@ public class MKJigsawStructure extends JigsawFeature implements IControlNaturalS
             if (!pieceSupplier.test(p_197102_)) {
                 return Optional.empty();
             } else {
+                ResourceLocation featureName = ForgeRegistries.STRUCTURE_FEATURES.getKey(this);
                 BlockPos blockpos = new BlockPos(p_197102_.chunkPos().getMinBlockX(), groundLevel, p_197102_.chunkPos().getMinBlockZ());
                 return JigsawPlacement.addPieces(p_197102_,
                         (structureManager, poolElement, blockPos, groundLevelData, rot, boundingBox) ->
-                                new MKPoolElementPiece(structureManager, poolElement, blockPos, groundLevelData, rot, boundingBox, getRegistryName()), blockpos, offsetVertical, offsetFromWorldSurface);
+                                new MKPoolElementPiece(structureManager, poolElement, blockPos, groundLevelData, rot, boundingBox, featureName), blockpos, offsetVertical, offsetFromWorldSurface);
             }
         };
     }

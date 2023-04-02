@@ -18,6 +18,7 @@ import net.minecraft.Util;
 import net.minecraft.network.chat.TranslatableComponent;
 import net.minecraft.world.level.Level;
 import net.minecraft.world.level.levelgen.structure.StructureStart;
+import net.minecraftforge.registries.ForgeRegistries;
 
 
 import java.util.List;
@@ -45,8 +46,9 @@ public class MKStructureCommands {
                     player.sendMessage(new TranslatableComponent("mknpc.command.not_in_struct"), Util.NIL_UUID);
                 } else {
                     s.forEach(start -> {
+                        ResourceLocation featureName = ForgeRegistries.STRUCTURE_FEATURES.getKey(start.getFeature().feature);
                         player.sendMessage(new TranslatableComponent("mknpc.command.in_struct",
-                                start.getFeature().feature.getRegistryName(), IStructureStartMixin.getInstanceIdFromStart(start)), Util.NIL_UUID);
+                                featureName, IStructureStartMixin.getInstanceIdFromStart(start)), Util.NIL_UUID);
                     });
                 }
 
@@ -81,7 +83,7 @@ public class MKStructureCommands {
                                     s.forEach(start -> {
                                         UUID startId = IStructureStartMixin.getInstanceIdFromStart(start);
                                         MKStructureEntry entry = cap.getStructureData(startId);
-                                        ResourceLocation featureName = start.getFeature().feature.getRegistryName();
+                                        ResourceLocation featureName = ForgeRegistries.STRUCTURE_FEATURES.getKey(start.getFeature().feature);
                                         if (entry != null) {
                                             Map<String, List<PointOfInterestEntry>> pois = entry.getPointsOfInterest();
                                             if (pois.entrySet().stream().allMatch(m -> m.getValue().isEmpty())) {
