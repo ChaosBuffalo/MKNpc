@@ -809,11 +809,11 @@ public abstract class MKEntity extends PathfinderMob implements IModelLookProvid
                         MKMemoryModuleTypes.MOVEMENT_STRATEGY,
                         MKMemoryModuleTypes.MOVEMENT_TARGET,
                         MKMemoryModuleTypes.CURRENT_ABILITY,
-                        MKAbilityMemories.ABILITY_TARGET,
+                        MKAbilityMemories.ABILITY_TARGET.get(),
                         MKMemoryModuleTypes.SPAWN_POINT,
                         MKMemoryModuleTypes.IS_RETURNING,
                         MKMemoryModuleTypes.ABILITY_TIMEOUT,
-                        MKAbilityMemories.ABILITY_POSITION_TARGET
+                        MKAbilityMemories.ABILITY_POSITION_TARGET.get()
                 ),
                 ImmutableList.of(
                         MKSensorTypes.ENTITIES_SENSOR,
