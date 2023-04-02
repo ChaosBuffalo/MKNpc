@@ -11,6 +11,7 @@ import com.chaosbuffalo.mknpc.quest.QuestDefinition;
 import com.chaosbuffalo.mknpc.tile_entities.MKSpawnerTileEntity;
 import com.chaosbuffalo.mknpc.tile_entities.MKPoiTileEntity;
 import com.chaosbuffalo.mknpc.world.gen.feature.structure.MKJigsawStructure;
+import net.minecraft.core.GlobalPos;
 import net.minecraft.world.entity.Entity;
 import net.minecraft.nbt.CompoundTag;
 import net.minecraft.core.BlockPos;
@@ -67,4 +68,6 @@ public interface IWorldNpcData extends INBTSerializable<CompoundTag> {
     PointOfInterestEntry getPointOfInterest(UUID id);
 
     Level getWorld();
+
+    void queueChestForProcessing(GlobalPos pos);
 }

@@ -23,6 +23,7 @@ import com.chaosbuffalo.mknpc.utils.NpcConstants;
 import com.chaosbuffalo.mknpc.world.gen.feature.structure.IControlNaturalSpawns;
 import com.chaosbuffalo.mknpc.world.gen.feature.structure.MKJigsawStructure;
 import com.chaosbuffalo.targeting_api.TargetingContexts;
+import net.minecraft.core.GlobalPos;
 import net.minecraft.world.level.block.ChestBlock;
 import net.minecraft.world.entity.MobCategory;
 import net.minecraft.world.entity.LivingEntity;
@@ -84,10 +85,17 @@ public class EntityHandler {
     @SubscribeEvent
     public static void onChunkLoad(ChunkEvent.Load event){
         if (!event.getWorld().isClientSide()) {
+            MinecraftServer server = event.getWorld().getServer();
+            Level level = (Level) event.getWorld();
+            if (server == null || level == null) {
+                return;
+            }
             event.getChunk().getBlockEntitiesPos().forEach(pos -> {
                 BlockEntity entity = event.getChunk().getBlockEntity(pos);
                 if (entity != null){
                     entity.getCapability(NpcCapabilities.CHEST_NPC_DATA_CAPABILITY).ifPresent(IChestNpcData::onLoad);
+                    server.overworld().getCapability(NpcCapabilities.WORLD_NPC_DATA_CAPABILITY).ifPresent(x ->
+                            x.queueChestForProcessing(GlobalPos.of(level.dimension(), pos)));
                 }
             });
         }

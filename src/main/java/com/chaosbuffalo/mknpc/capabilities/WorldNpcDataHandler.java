@@ -17,6 +17,7 @@ import com.chaosbuffalo.mknpc.world.gen.IStructurePlaced;
 import com.chaosbuffalo.mknpc.world.gen.feature.structure.MKJigsawStructure;
 import com.chaosbuffalo.mknpc.world.gen.feature.structure.MKSingleJigsawPiece;
 import com.mojang.datafixers.util.Pair;
+import net.minecraft.core.GlobalPos;
 import net.minecraft.world.entity.Entity;
 import net.minecraft.nbt.CompoundTag;
 import net.minecraft.nbt.Tag;
@@ -25,6 +26,7 @@ import net.minecraft.resources.ResourceLocation;
 import net.minecraft.core.BlockPos;
 import net.minecraft.world.level.ChunkPos;
 import net.minecraft.world.level.Level;
+import net.minecraft.world.level.block.entity.BlockEntity;
 import net.minecraft.world.level.levelgen.feature.ConfiguredStructureFeature;
 import net.minecraft.world.level.levelgen.structure.PoolElementStructurePiece;
 import net.minecraft.world.level.levelgen.feature.StructureFeature;
@@ -45,6 +47,7 @@ public class WorldNpcDataHandler implements IWorldNpcData{
     private final HashMap<UUID, NotableNpcEntry> notableNpcs;
     private final HashMap<UUID, PointOfInterestEntry> pointOfInterests;
     private final WorldStructureManager structureManager;
+    private final List<GlobalPos> chestsToProcess;
     private final Level world;
 
     public WorldNpcDataHandler(Level world) {
@@ -57,7 +60,10 @@ public class WorldNpcDataHandler implements IWorldNpcData{
         quests = new HashMap<>();
         pointOfInterests = new HashMap<>();
         structureManager = new WorldStructureManager(this);
+        chestsToProcess = new ArrayList<>();
     }
+
+
 
     @Override
     public QuestChainInstance getQuest(UUID questId){
@@ -240,6 +246,8 @@ public class WorldNpcDataHandler implements IWorldNpcData{
     @Override
     public void update() {
         structureManager.tick();
+        chestsToProcess.forEach(this::processChest);
+        chestsToProcess.clear();
     }
 
     @Override
@@ -263,6 +271,23 @@ public class WorldNpcDataHandler implements IWorldNpcData{
     @Override
     public Level getWorld() {
         return world;
+    }
+
+    @Override
+    public void queueChestForProcessing(GlobalPos pos) {
+        chestsToProcess.add(pos);
+    }
+
+    protected void processChest(GlobalPos pos) {
+        if (getWorld() instanceof ServerLevel && getWorld().getServer() != null) {
+            Level chestLevel = getWorld().getServer().getLevel(pos.dimension());
+            if (chestLevel != null) {
+                BlockEntity entity = chestLevel.getBlockEntity(pos.pos());
+                if (entity != null) {
+                    entity.getCapability(NpcCapabilities.CHEST_NPC_DATA_CAPABILITY).ifPresent(IChestNpcData::onLoad);
+                }
+            }
+        }
     }
 
     @Override
